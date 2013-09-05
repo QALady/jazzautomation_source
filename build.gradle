@@ -1,0 +1,103 @@
+#!groovy
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin:'application'
+mainClassName = 'com.jazzautomation.AutomationDriver'
+
+apply from: "${project.projectDir}/gradle/dependencies.gradle"
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+
+repositories {
+	mavenCentral()
+}
+
+project.ext {
+	projectname = 'jazzautomation'
+	artifactId = 'com-jazzautomation'
+	groupId = group
+	versionNumber = 1.0	
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+task show << {
+	println relativePath(compileJava.destinationDir)
+	println relativePath(processResources.destinationDir)
+	println springVersion
+}
+
+
+task runJazz (type: JavaExec, dependsOn: 'classes', description: 'Run test automation locally'){
+
+	main = 'com.jazzautomation.AutomationDriver'
+	classpath = sourceSets.main.runtimeClasspath
+
+	List jvmArgsList = jvmArgs
+	if (project.hasProperty("jazz_configs"))
+	{
+		jvmArgsList.add('-Djazz.configs=' + jazz_configs)
+	}
+	
+	if (project.hasProperty("jazz_reports"))
+	{
+		jvmArgsList.add('-Djazz.reports=' + jazz_reports)
+	}
+	
+	if (project.hasProperty("remote"))
+	{
+		jvmArgsList.add('-Dremote=' + remote)
+	}
+		
+	if (project.hasProperty("browsers"))
+	{
+		jvmArgsList.add('-Dbrowsers=' + browsers)
+	}
+
+	if (project.hasProperty("features"))
+	{
+		jvmArgsList.add('-Dfeatures=' + features)
+	}
+		
+		
+	jvmArgs jvmArgsList
+			
+}
+
+task jazzJar(type: Jar) {
+    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.resources)    
+    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+
+    manifest {
+        attributes 'Main-Class': 'com.jazzautomation.AutomationDriver'
+    }
+}
+
+eclipse {
+	jdt {
+	  //if you want to alter the java versions (by default they are configured with gradle java plugin settings):
+	  sourceCompatibility = 1.6
+	  targetCompatibility = 1.6
+	}
+  }
+
+idea {
+	module {
+	  downloadSources=true
+	}
+  }
+  

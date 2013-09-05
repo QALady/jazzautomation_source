@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Jazz Automation Test Reports</title>
+  <link rel="stylesheet" href="jazz.css"/>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-5201171-9']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') +
+  '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</head>
+
+<body>
+  
+  <div id="jazz_report">
+    <header>
+      <h1>Jazz Automation Test Report</h1>
+    </header>  
+    <div id="main">
+      <div id="summary">    
+        <div id="projectSummary"></div>
+        <div id="featuresSummary"></div>
+      </div>
+        <center><h2 class="featuresHead">Features:</h2></center>
+      <div id="features">
+        
+      </div>
+    </div>
+      
+  </div>
+   <footer>
+      <div class="automationfooter">
+          <div style="font-size: x-small"><b>Jazz Automation</b><br/>
+          Automated testing for the future!<br/>
+          &copy; 2013 <a href="#">jazzautomation.com</a></div>
+      </div>
+    </footer>
+
+
+  <script src="jslib/jquery.js"></script>
+  <script src="jslib/underscore.js"></script>
+  <script src="jslib/backbone.js"></script>
+  <script src="jslib/backbone-relational.js"></script>  
+  <script src="jslib/backbone.localStorage.js"></script>
+  <script src="data/data.js"></script>  
+  <script src="jazz.js"></script>
+
+  <!-- Templates -->
+
+
+  
+  <script type="text/template" id="summary-template">     
+    <table>
+      <tr>
+        <td class="summmaryLabel">Project:</td>
+        <td><%- project %></td>
+      </tr>          
+      <tr>
+        <td class="summmaryLabel">Overall Testing Status:</td>
+        <td>
+            <% if (successRate < 1.0) { %>
+              <span class="failedInWord">Failed</span>
+            <% } else { %>
+              <span class="successInWord">Success</span>        
+            <% } %>      
+        </td>
+      </tr>
+      <tr>
+        <td class="summmaryLabel">Performed on:</td>
+        <td><%- timestamp %></td>
+      </tr>
+      <tr>
+        <td class="summmaryLabel">Duration:</td>
+        <td><%- duration %> seconds</td>
+      </tr>
+      <tr>
+        <td class="summmaryLabel">Summary:</td>
+      </tr>      
+    </table                        
+  </script>
+
+  <script type="text/template" id="features-summary-template">
+    <table class="featuresSummaryTable" >
+              <col width="220">
+              <col width="150">
+              <col width="150">  
+              <col width="150">
+              <col width="30px">                    
+      <thead>
+        <tr class="featuresSummaryTableHeaderTr">
+          <th>Feature</th>
+          <th>Num. of Scenarios</th>        
+          <th>Num. of Failed Scenarios</th>           
+          <th>Durations</th>
+          <th></th>          
+        </tr>
+      </thead>
+      <tbody class="featuresSummaryTableBody">         
+        <% 
+          var index= 0;  
+        %>
+
+        <% _.each( featureResults, function( featureResult ){ %>
+          <tr class="featuresSummaryTableBodyTr <% if (index%2 == 0) { %>evenRow <% } else { %>oddRow<% } %>">
+            <td class="firstColumn">
+              <a href="#<%- featureResult.feature.name %>"> <%- featureResult.feature.name %></a>
+            </td>
+            <td><%- _.size(featureResult.feature.scenarios) %></td>
+            <td>
+              <span class="<% if (featureResult.success) { %>successInWord<% } else { %>failedInWord<% } %>">
+                <%- _.size(_.filter(featureResult.scenarioResults, function(scenarioResult){ return !scenarioResult.success; })) %>
+              </span>
+            </td>
+            <td><%- featureResult.duration %>s </td>
+            <td>
+              <% if (featureResult.success) { %> <span class="successInWord">&#10004;</span><% } else { %> <span class="failedInWord">X</span><% } %>
+            </td>           
+          <tr>
+        <% 
+            index++;  
+        %>          
+        <% }); %>
+      </tbody>
+    </table>                  
+  </script>  
+  
+  <script type="text/template" id="feature-template">
+    <div class="featureResult 
+      <% if (success) { %> 
+        borderColorGreen 
+      <% } else { %> 
+        borderColorRed
+      <% } %>">
+    <a name="<%- feature.name %>"></a>
+    <h3 class="featureLabel">Feature:
+      <span class="featureDescription <% if (success) { %>successInWord<% } else { %>failedInWord<% } %>"><%- feature.name %></span></h3>
+    <h4 class="featureLabel">Description:
+      <span class="featureDescription"><%- feature.description %></span></h4>
+    <h4 class="featureLabel">Background: <span class="featureDescription"><%- feature.background.description %></span><br>    
+        <table class="settings">
+          <tr>
+            <td>Url:</td><td class="settingsValue"><%- feature.background.given.settings.url%></td>
+          </tr>
+          <tr>
+            <td>Platform:</td><td class="settingsValue"><%- feature.background.given.settings.platform%></td>
+          </tr>
+          <tr>
+            <td>Browser:</td><td class="settingsValue"><%- feature.background.given.settings.browser%></td>
+          </tr>
+          <tr>
+            <%  
+                var versionKey = _.filter(_.keys(feature.background.given.settings), function(key) {return key.toLowerCase().indexOf("version")>=0;});
+                var versionValue = feature.background.given.settings[versionKey];
+            %>
+            <td>Browser Version:  </td><td class="settingsValue"><%= versionValue %></td>
+          </tr>           
+        </table>  
+      </h4>
+    
+    <% 
+      var numFailedScenarios =  _.size(_.filter(scenarioResults, function(scenarioResult){ return !scenarioResult.success; }));
+    %>    
+    <table class="featureSummaryContainer">
+      <tr>
+        <td>
+          <div class = "featureSummary">
+            <table class="featureSummaryTable">
+              <col width="100">
+              <col width="100">
+              <col width="100">          
+              <tr>
+                <td><%- numOfScenarios%></td>
+                <td>
+                  <% if (numFailedScenarios >0)  { %>
+                    <span class="failedInWord"> <%= numFailedScenarios %> </span>
+                  <% } else { %>
+                    <%= numFailedScenarios %>                    
+                  <% } %>                    
+                </td>
+                <td><%- duration %>s</td>
+              </tr>
+              <tr>
+                <td>scenarios</td>
+                <td>failures</td>
+                <td>Duration:</td>
+              </tr>
+            </table>
+          </div>
+        </td>
+        <td>
+          <div class ="featureSuccessStatus" style="background-color:
+          <% if (successRate<1) { %>  
+            red
+          <% } else { %>
+            #00FF00
+          <% } %>            
+          ">
+            <table class="featureSummaryTable">   
+              <tr>
+                <td><%- successRate * 100 %>%</td>     
+              <tr>
+                <td>successful</td>
+              </tr>
+            </table>          
+          </div>    
+        </td>
+      </tr>
+    </table>
+    <div class="featureDetails"></div>
+    </div>
+  </script>  
+
+  <script type="text/template" id="scenario-template">
+      <div class="scenarioHeader">
+        <% if (success) { %>          
+          <a><span class="expandPanel">+</span>
+        <% } else { %>
+          <a><span class="expandPanel">-</span>             
+        <% } %> 
+        </a>
+
+        <% if (success) { %>
+          <span style="color:green;font-weight:bold">Successful</span>
+        <% } else { %>
+            <span style="color:red;font-weight:bold">Failed</span>        
+        <% } %> Scenario (duration: <%- duration %>seconds)
+          <span class="scenarioDescriptionLabel">Description:</span> <span class="scenarioDescription"><%- scenario.description %></span>            
+
+      </div>
+
+      <div class="scenarioContents <% if (success) { %> hidden<% } else { %>show<% } %>">
+        <div class="scenarioText">
+          <div class="scenarioGiven">Given: <%- scenario.given.description %></div>
+          <% _.each( scenario.ands, function( and ){ %>
+            <div class=class="scenarioAnd">And: <%- and.description %></div>
+              <% _.each( and.actions, function( action ){ %>
+                <%  if (action.action=="ENTER" || action.action=="SELECT") { %>              
+                    <li class="scenarioExpect"> <%- action.componentName %>: <%- action.actionValue %> </li> 
+                  <% } %>
+                <% }); %>   
+              <% }); %>
+          <% if (scenario.then) { %>        
+            <div class="scenarioThen">Then: <%- scenario.then.description %></div>
+              <% _.each( scenario.then.expects, function( expect ){ %>
+                  <%  if (expect.condition=="==") { %>              
+                    <li class="scenarioExpect"> <%- expect.componentName %> | == | <%- expect.value %> </li> 
+                  <% } else { %>
+                    <li class="scenarioExpect"> <%- expect.componentName %> |  <%- expect.condition %> </li>       
+                <% } %>
+              <% }); %>            
+            <% } %> 
+        </div>
+          <% if (!success) { %>
+            <% _.each( actionResults, function( actionResult ){ %>
+              <%  if (!actionResult.success) { %>              
+                <div class="resultFailed"><%- actionResult.message %> </div>     
+              <% } %>
+            <% }); %> 
+            <% _.each( expectResults, function( expectResult ){ %>
+              <%  if (!expectResult.success) { %>              
+                <div class="resultFailed"><%-  expectResult.message %> </div>                   
+              <% } %>
+            <% }); %> 
+
+          <% } %>
+            <% if (message !=null) { %>
+                <div class="resultFailed"><%- message %> </div>                            
+          <% } %> 
+          <% if (!success || message !=null) { %>          
+                         <img width="920" style="margin-left:15px;" src="<%- screenShotPath %>"> 
+          <% } %>                          
+                      
+
+      </div>       
+  </script>
+  </body>
+</html>

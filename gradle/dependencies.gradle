@@ -1,0 +1,16 @@
+#! groovy
+
+ext {
+	testngVersion = '6.4'
+	logbackVersion = '1.0.1'
+	sourceCompatibility = JavaVersion.VERSION_1_6
+}
+
+
+dependencies {
+	
+  compile 	"org.seleniumhq.selenium:selenium-java:2.34.0",
+  			"com.saucelabs.selenium:selenium-client-factory:1.2",	
+			"org.codehaus.jackson:jackson-mapper-asl:1.9.3",
+  			"com.saucelabs.selenium:selenium-client-factory:1.2"								   
+}

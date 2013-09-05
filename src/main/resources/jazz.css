@@ -1,0 +1,304 @@
+html,
+body {
+	margin-left: auto;
+	margin-right: auto;
+	width: 1024px;
+	padding: 0;
+}
+
+body {
+	font: 14px "Helvetica Neue", Helvetica, Arial, sans-serif;
+	line-height: 1.4em;
+	background: #eeeeee;
+	color: #333333;
+	margin-left: 80;
+	margin-right: 80;	
+	-webkit-font-smoothing: antialiased;
+}
+
+header{
+	width: 1024px;
+	height: 100px;
+	padding-top: 15px;
+	margin-bottom: 15px;
+}
+
+footer {
+	clear: both;
+	color: rgb(51, 51, 51);
+	display: block;
+	font-family: serif, Verdana, Arial, Helvetica, sans-serif;
+	font-size: 16px;
+	height: 113px;
+	width: 1024px;
+	line-height: 18px;
+	margin: 0px;
+	padding: 0px;
+    background: #000000 url(http://www.jazzautomation.com/newImages/smallJazzAutomation1.png) no-repeat right;
+    background-size: 380px ;
+}
+
+#jazz_report {
+	background: #fff;
+	margin-bottom: 0px;
+	-webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 2px 6px 0;
+	-moz-box-shadow: rgba(0, 0, 0, 0.2) 0 2px 6px 0;
+	-ms-box-shadow: rgba(0, 0, 0, 0.2) 0 2px 6px 0;
+	-o-box-shadow: rgba(0, 0, 0, 0.2) 0 2px 6px 0;
+	box-shadow: rgba(0, 0, 0, 0.2) 0 2px 6px 0;
+	-webkit-border-radius: 0 0 5px 5px;
+	-moz-border-radius: 0 0 5px 5px;
+	-ms-border-radius: 0 0 5px 5px;
+	-o-border-radius: 0 0 5px 5px;
+	border-radius: 0 0 5px 5px;
+	padding-bottom: 15px;
+	padding-top: 0px;
+}
+
+#jazz_report h1 {
+	font-size: 36px;
+	font-weight: bold;
+	text-align: center;
+	padding: 0 0 10px 0;
+}
+
+.automationfooter {
+	padding-top: 5px;
+	margin-left: 30px;
+	color: white;
+	font-size: 18px;
+	/*font-weight: bold;*/
+	text-align: left;
+    line-height: 1.5em;
+}
+
+.featureLabel {
+	margin-left: 20px;	
+}
+.featureDescription {	
+	color: black;
+	font-weight: normal;	
+}
+
+.settings {
+	margin-left: 70px;	
+}
+
+.settingsValue {
+	margin-left: 10px;
+	font-weight: normal;	
+	color: black;	
+}
+
+#summary {
+	border-color: rgb(208, 208, 208);
+	border-style: solid;	
+	border-width: 1px;	
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;	
+	padding-top: 10px;	
+	padding-left: 10px;
+	padding-bottom: 20px;	
+	margin-left: auto;
+	margin-right: auto;	
+	width:960px;
+}
+
+.featuresHead {
+	color:black;
+	text-align: left;;
+	margin-left: 20px;
+	margin-right: 20px;
+	padding-bottom: 10px;
+	border-bottom: 1px dotted gray;
+}
+
+.summmaryLabel {
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.featureSummaryContainer {
+	margin-left: 90px;	
+}
+.featureSummary {
+	width: 400px;		
+	border-color: lightgray;
+	background-color: lightgray;
+	border-width: 1px;
+	border-style: solid;	
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	border-collapse: collapse;
+	border-image-outset: 0px;
+	border-image-repeat: stretch;
+	border-image-slice: 100%;
+	border-image-source: none;
+	border-image-width: 1;
+	color: rgb(48, 48, 48);
+	font-family: sans-serif;
+	font-size: 16px;
+	height: 80px;
+}
+
+.featuresSummaryTable {
+	margin-left: 180px;	
+	border-spacing: 0px;
+	border-color: green;
+	background-color: gb(208, 218, 253);	
+}
+
+.featuresSummaryTableHeaderTr {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	background-color: rgb(255, 250, 182);
+	height: 40px;
+}
+
+.firstColumn {
+	text-align: left;
+	padding-left: 20px;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.featuresSummaryTableBody {
+	text-align: center;	
+}
+
+.featuresSummaryTableBodyTr {
+	height: 40px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+.oddRow {
+	background-color: rgb(255, 250, 182);;
+}
+
+.evenRow {
+	background-color: rgb(255, 242, 137);
+}
+
+.successInWord{
+	color: green;
+	font-weight: bolder;
+	font-size: 18px;
+}
+
+.failedInWord{
+	color: red;
+	font-weight: bolder;
+	font-size: 18px;
+}
+
+.featureResult {
+	width: 960px;
+	border-width: 1px;
+	border-style: solid;	
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 12px;	
+}
+
+
+.borderColorGreen {
+	border-color: green;		
+}
+
+.borderColorRed {
+	border-color: red;		
+}
+
+.featureSummaryTable {	
+	margin-left: auto;
+	margin-right: auto;	
+	margin-top:15px;	
+	text-align: center;
+	font-size: 16px;	
+}
+
+
+.featureSuccessStatus {
+	height: 80px;
+	width: 100px;	
+	margin-left: 25px;
+	border-color: rgb(208, 208, 208);
+	border-width: 1px;
+	border-style: solid;	
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	border-top-left-radius: 10px;
+	border-top-right-radius: 10px;
+	border-collapse: collapse;
+	border-image-outset: 0px;
+	border-image-repeat: stretch;
+	border-image-slice: 100%;
+	border-image-source: none;
+	border-image-width: 1;
+	color: rgb(48, 48, 48);
+	font-family: sans-serif;
+	font-size: 20px;
+	font-weight: bold;		
+}
+
+.scenarioHeader {
+	border-top: 1px dotted gray;
+	margin-left: 10px;
+}
+
+.scenarioDescriptionLabel {
+	margin-left: 10px;
+	font-size: 14px;
+	font-weight: bold;			
+}
+
+.scenarioText {
+	margin-left: 45px;
+}
+
+.scenarioExpect {
+	margin-left: 50px;	
+}
+
+.expandPanel {
+	display: inline-block;	
+	text-align: center;
+	margin-top: 3px;
+	width: 15px;		
+	height: 15px;		
+	border: 1px solid lightgray;	
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+	background-color: lightgray;
+	color: orange;
+	padding: 2px;
+	font-size: 18px;
+	font-weight: bolder;	
+}
+
+.resultFailed{
+	margin-top: 5px;
+	margin-bottom: 5px;	
+	margin-left: 25px;
+	color: red;	
+	font-weight: bold;	
+}
+
+.show {
+	display: block;
+}
+
+.hidden {
+	display: none;
+}
