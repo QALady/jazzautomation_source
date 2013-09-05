@@ -387,19 +387,19 @@ public class AutomationDriver
     }
     catch (WebActionException wae)
     {
-      if (!componentAction.isOptional())
-      {
-        actionResult.setMessage("Failed to take action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - "
-                                  + wae.getMessage());
-        actionResult.setSuccess(false);
-        scenarioResult.setScreenShotPath(captureScreen(page.getWebDriver()));
-        LOG.info("Failed to take action :" + componentAction.getAction() + " " + componentAction.getComponentName());
-      }
-      else
+      if (componentAction.isOptional())
       {
         actionResult.setSuccess(true);
         actionResult.setMessage("Skipped action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - optional");
         LOG.info("Skipped action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - optional");
+      }
+      else
+      {
+        actionResult.setMessage("Failed to take action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - "
+            + wae.getMessage());
+        actionResult.setSuccess(false);
+        scenarioResult.setScreenShotPath(captureScreen(page.getWebDriver()));
+        LOG.info("Failed to take action :" + componentAction.getAction() + " " + componentAction.getComponentName());
       }
     }
   }

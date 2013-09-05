@@ -25,6 +25,8 @@ import com.jazzautomation.page.HtmlActionConditionEnum;
 import com.jazzautomation.page.DomElement;
 import com.jazzautomation.page.DomElementExpect;
 import com.jazzautomation.page.Page;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import static com.jazzautomation.cucumber.CucumberConstants.*;
 import static com.jazzautomation.util.Constants.SUPPORTED_BROWSERS;
 
@@ -34,6 +36,7 @@ import static com.jazzautomation.util.Constants.SUPPORTED_BROWSERS;
  */
 public class FeatureParser
 {
+  private static Log LOG          = LogFactory.getLog(FeatureParser.class);
   private static FeatureParser instance = null;
 
   /** Standard singleton implementation. */
@@ -237,6 +240,10 @@ public class FeatureParser
       if (possibleStringForOption.trim().toLowerCase().startsWith(OPTIONAL))
       {
         isOptional = true;
+        if(LOG.isDebugEnabled())
+        {
+          LOG.debug("Returning optional flag [" + isOptional + "]");
+        }
       }
     }
 
@@ -375,6 +382,7 @@ public class FeatureParser
     ComponentAction componentAction = new ComponentAction();
 
     componentAction.setAction(action.toString());
+    componentAction.setOptional(and.isOptional());
 
     // for click/hover - expect a webcomponent
     if (action.equals(HtmlAction.HOVER) || action.equals(HtmlAction.CLICK))

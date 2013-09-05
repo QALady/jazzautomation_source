@@ -63,8 +63,6 @@ public class Page
    * setup is needed if you need to have some value for your web components. For exmaple, a login page will need username and password before
    * performing web actions.
    *
-   * @param   map  <String, String> - the key is domElement name, for example, username; the value is the value you intend to use later.
-   *
    * @throws  WebActionException
    */
   public void setup() throws WebActionException
@@ -536,8 +534,7 @@ public class Page
     }
     catch (WebDriverException wde)
     {
-      wde.printStackTrace();
-      throw new WebActionException(wde.getMessage());
+      throw new WebActionException("Error executing click event.", wde);
     }
   }
 
