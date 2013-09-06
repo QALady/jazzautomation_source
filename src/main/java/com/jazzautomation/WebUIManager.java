@@ -16,6 +16,7 @@ import java.util.Properties;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.Proxy.ProxyType;
@@ -49,9 +50,9 @@ public class WebUIManager
   private static final String           SYSTEM_CONFIGURATION_PATH = "jazz.configs";
   private static WebUIManager           instance                  = null;
   private static Log                    LOG                       = LogFactory.getLog(WebUIManager.class);
-  private Map<String, Page>             pages                     = new HashMap<String, Page>();
-  private Map<String, DomElement>       domElementPool            = new HashMap<String, DomElement>();
-  private Map<String, List<PageAction>> pageActions               = new HashMap<String, List<PageAction>>();
+  private Map<String, Page>             pages                     = new HashMap<>();
+  private Map<String, DomElement>       domElementPool            = new HashMap<>();
+  private Map<String, List<PageAction>> pageActions               = new HashMap<>();
 
   // configurations and reportsPath
   private String configurationsPath;
@@ -69,7 +70,7 @@ public class WebUIManager
   private String browser        = null;
   private String platform       = null;
   private String browserVersion = null;
-  Properties     settings       = new Properties();
+  private Properties     settings       = new Properties();
 
   /**
    * Singleton instance of UIManager to hold information of pages and page actions.
@@ -112,7 +113,8 @@ public class WebUIManager
 
       File configurationsFile = null;
 
-      if ((null != configurationsPath) && (configurationsPath.trim().length() > 0))
+
+      if (StringUtils.isNotEmpty(configurationsPath))
       {
         configurationsFile = new File(configurationsPath);
       }
@@ -125,7 +127,7 @@ public class WebUIManager
 
       File logsFile = null;
 
-      if ((null != reportsPath) && (reportsPath.trim().length() > 0))
+      if (StringUtils.isNotEmpty(reportsPath))
       {
         logsFile = new File(reportsPath);
 
@@ -493,7 +495,7 @@ public class WebUIManager
 
     for (PageAction pageAction : pageActionsForFirstPage)
     {
-      List<String> path = new ArrayList<String>();
+      List<String> path = new ArrayList<>();
 
       // path.add(startingPathName);
       String pageName     = pageAction.getSourcePageName();
@@ -520,7 +522,7 @@ public class WebUIManager
 
   private ArrayList<String> clonePath(List<String> path)
   {
-    ArrayList<String> newPath = new ArrayList<String>();
+    ArrayList<String> newPath = new ArrayList<>();
 
     for (String pageName : path)
     {
@@ -548,6 +550,11 @@ public class WebUIManager
     {
       if (System.getProperty("webdriver.chrome.driver") == null)
       {
+        String chromeDriver = settings.getProperty("chrome.webdriver.chrome.driver");
+        if(StringUtils.isEmpty(chromeDriver))
+        {
+          throw new IllegalArgumentException("No chrome driver specified! Please specify as a system property or in your jazz.properties file.");
+        }
         System.setProperty("webdriver.chrome.driver", settings.getProperty("chrome.webdriver.chrome.driver"));
       }
 
@@ -709,7 +716,7 @@ public class WebUIManager
     {
       File parentDir = aDir.getParentFile();
 
-      if (!parentDir.exists())
+      if (null != parentDir && !parentDir.exists())
       {
         recursiveLyCreatePath(parentDir);
       }

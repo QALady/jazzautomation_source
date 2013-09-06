@@ -5,6 +5,7 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.io.*;
 import java.util.*;
+import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.Augmenter;
 import org.apache.commons.io.FileUtils;
@@ -25,7 +26,8 @@ import static com.jazzautomation.util.Constants.*;
 /** This is a driver class to start automation. */
 public class AutomationDriver
 {
-  private static Log    LOG          = LogFactory.getLog(AutomationDriver.class);
+  private static final String FEATURE_SEPERATOR = ",";
+  private static final Log    LOG          = LogFactory.getLog(AutomationDriver.class);
   private static String siteUrl      = null;
   private static String featureNames;
 
@@ -35,7 +37,7 @@ public class AutomationDriver
 
     try
     {
-      successful = drive(null);
+      successful = drive();
     }
     catch (Exception e)
     {
@@ -52,16 +54,16 @@ public class AutomationDriver
     }
   }
 
-  public static boolean drive(WebDriver driver) throws IOException, WebActionException
+  public static boolean drive() throws IOException, WebActionException
   {
     final WebUIManager webUIManager = WebUIManager.getInstance();
 
     new HashMap<String, String>();
 
-    List<String> featureNameList = new ArrayList<String>();
-    String       siteUrl         = System.getProperty("siteUrl");
-    String       browserName     = (System.getProperty(BROWSER) == null) ? WebUIManager.getInstance().getBrowser()
-                                                                         : System.getProperty(BROWSER).trim();
+    List<String> featureNameList = new ArrayList<>();
+//    String       siteUrl         = System.getProperty("siteUrl");
+//    String       browserName     = (System.getProperty(BROWSER) == null) ? WebUIManager.getInstance().getBrowser()
+//                                                                         : System.getProperty(BROWSER).trim();
 
     // override features from jazz.properties
     if (System.getProperty(FEATURE_NAMES_EXECUTION) != null)
@@ -73,26 +75,32 @@ public class AutomationDriver
       featureNames = WebUIManager.getInstance().getFeatureNames();
     }
 
-    if ((featureNames != null) && (featureNames.trim().length() > 0))
+
+    if (StringUtils.isNotEmpty(featureNames))
     {
-      String[] featureArray = featureNames.split(",");
+      String[] featureArray = featureNames.split(FEATURE_SEPERATOR);
 
       for (String aFeatureName : featureArray)
       {
-        System.out.println("Preparing feature : " + aFeatureName);
+        LOG.info("Preparing feature : " + aFeatureName);
         featureNameList.add(aFeatureName.trim());
       }
     }
+    else
+    {
+      // error checking
+      throw new IllegalArgumentException("No features have been specified, so exiting. Please update the jazz.properties file or system property.");
+    }
 
-    loadFeatures(webUIManager, featureNameList, browserName, siteUrl, driver);
+    loadFeatures(webUIManager, featureNameList);
 
     return true;
   }
 
-  public static boolean loadFeatures(WebUIManager WebUIManager, List<String> featureNameList, String browserName, String siteUrl, WebDriver driver)
+  public static boolean loadFeatures(WebUIManager WebUIManager, List<String> featureNameList)
   {
     String        featurePath = WebUIManager.getConfigurationsPath() + File.separator + "features" + File.separator;
-    List<Feature> features    = new ArrayList<Feature>();
+    List<Feature> features    = new ArrayList<>();
 
     for (String featureName : featureNameList)
     {
@@ -107,13 +115,11 @@ public class AutomationDriver
       }
       catch (FileNotFoundException e)
       {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        LOG.warn("Could not locate file for Feature[" + featureName + "]. Feature has been excluded from the test run.", e);
       }
       catch (IllegalCucumberFormatException ice)
       {
-        // TODO Auto-generated catch block
-        ice.printStackTrace();
+        LOG.warn("Could not parse Feature[" + featureName + "]. Feature has been excluded from the test run.", ice);
       }
     }
 
@@ -536,7 +542,7 @@ public class AutomationDriver
     ObjectMapper           mapper         = new ObjectMapper();
     String                 jsonString     = null;
     File                   dataJsonFile   = new File(dataFolder.getAbsolutePath() + File.separator + DATA_FOLDER_NAME + ".js");
-    List<SuiteResultLight> dataList       = new ArrayList<SuiteResultLight>();
+    List<SuiteResultLight> dataList       = new ArrayList<>();
     String                 dataJsonString = "";
     SuiteResultLight       suiteLight     = new SuiteResultLight();
 
