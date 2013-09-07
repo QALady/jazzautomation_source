@@ -551,6 +551,7 @@ public class Page
     {
       final String jqueryString = "return " + domElement.getJqueryGetDomElement() + ";";
 
+      WebUIManager.getInstance().loadJQuery(jsDriver);
       LOG.info("\t\tcalling jquery script: \"" + jqueryString + "\"");
 
       try
@@ -657,7 +658,7 @@ public class Page
               return true;
             }
 
-            return domElement.isExisted() && domElement.isVisible();
+            return domElement.isExisted();
           }
         });
 

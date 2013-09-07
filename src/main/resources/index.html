@@ -254,9 +254,9 @@
             <div class="scenarioThen">Then: <%- scenario.then.description %></div>
               <% _.each( scenario.then.expects, function( expect ){ %>
                   <%  if (expect.condition=="==") { %>              
-                    <li class="scenarioExpect"> <%- expect.componentName %> | == | <%- expect.value %> </li> 
+                    <li class="scenarioExpect"> <%- expect.componentName %>  ==  <%- expect.value %> </li> 
                   <% } else { %>
-                    <li class="scenarioExpect"> <%- expect.componentName %> |  <%- expect.condition %> </li>       
+                    <li class="scenarioExpect"> <%- expect.componentName %> is  <%- expect.condition %> </li>       
                 <% } %>
               <% }); %>            
             <% } %> 

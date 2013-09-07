@@ -75,7 +75,6 @@ public class AutomationDriver
       featureNames = WebUIManager.getInstance().getFeatureNames();
     }
 
-
     if (StringUtils.isNotEmpty(featureNames))
     {
       String[] featureArray = featureNames.split(FEATURE_SEPERATOR);

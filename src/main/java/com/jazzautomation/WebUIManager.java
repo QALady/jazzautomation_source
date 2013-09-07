@@ -113,7 +113,6 @@ public class WebUIManager
 
       File configurationsFile = null;
 
-
       if (StringUtils.isNotEmpty(configurationsPath))
       {
         configurationsFile = new File(configurationsPath);
@@ -547,10 +546,12 @@ public class WebUIManager
       if (System.getProperty("webdriver.chrome.driver") == null)
       {
         String chromeDriver = settings.getProperty("chrome.webdriver.chrome.driver");
+
         if(StringUtils.isEmpty(chromeDriver))
         {
           throw new IllegalArgumentException("No chrome driver specified! Please specify as a system property or in your jazz.properties file.");
         }
+
         System.setProperty("webdriver.chrome.driver", settings.getProperty("chrome.webdriver.chrome.driver"));
       }
 
@@ -664,7 +665,7 @@ public class WebUIManager
 
   public void loadJQuery(JavascriptExecutor jsDriver)
   {
-    Object jquery = jsDriver.executeScript(" if ( typeof jQuery != 'undefined') { return 1;} else { return null; }");
+    Object jquery = jsDriver.executeScript(" if ( typeof $ != 'undefined') { return 1;} else { return null; }");
 
     if (jquery == null)
     {
@@ -712,7 +713,7 @@ public class WebUIManager
     {
       File parentDir = aDir.getParentFile();
 
-      if (null != parentDir && !parentDir.exists())
+      if ((null != parentDir) && !parentDir.exists())
       {
         recursiveLyCreatePath(parentDir);
       }
