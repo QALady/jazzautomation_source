@@ -125,7 +125,7 @@ public class WebUIManager
 
       configurationsPath = configurationsFile.getAbsolutePath();
 
-      File logsFile = null;
+      File logsFile;
 
       if (StringUtils.isNotEmpty(reportsPath))
       {
@@ -149,7 +149,7 @@ public class WebUIManager
       settings.load(jazzSettings);
 
       // loading jazz.properties and populate all WebPages from its configurations.
-      loadConfigurations();
+      loadConfiguration();
 
       long endTime = System.currentTimeMillis();
 
@@ -157,16 +157,12 @@ public class WebUIManager
     }
     catch (FileNotFoundException e)
     {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.error("An unexpected error has occurred; a configuration file could not be found.", e);
     }
     catch (IOException e)
     {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.error("An unexpected error has occurred.", e);
     }
-
-    // rb       = ResourceBundle.getBundle("settings");
   }
 
   // getter and setters
@@ -312,23 +308,23 @@ public class WebUIManager
    *
    * @throws  FileNotFoundException
    */
-  private void loadConfigurations() throws FileNotFoundException
+  private void loadConfiguration() throws FileNotFoundException
   {
     boolean useXml = false;
 
-    if (settings.getProperty(PROJECT_NAME) != null)
+    if (StringUtils.isNotEmpty(settings.getProperty(PROJECT_NAME)))
     {
       projectName = settings.getProperty(PROJECT_NAME);
     }
 
-    if (settings.getProperty(USE_REMOTE) != null)
+    if (StringUtils.isNotEmpty(settings.getProperty(USE_REMOTE)))
     {
       useRemoteWebDriver = new Boolean(settings.getProperty(USE_REMOTE));
     }
 
     if (useRemoteWebDriver)
     {
-      if ((settings.getProperty(REMOTE_WEB_DRIVER_URL) != null) && (settings.getProperty(REMOTE_WEB_DRIVER_URL).trim().length() > 0))
+      if (StringUtils.isNotEmpty(settings.getProperty(REMOTE_WEB_DRIVER_URL)))
       {
         remoteWebDriverUrl = settings.getProperty(REMOTE_WEB_DRIVER_URL);
       }
@@ -339,7 +335,7 @@ public class WebUIManager
       }
     }
 
-    if (settings.getProperty(SETTINGS_USE_XML) != null)
+    if (StringUtils.isNotEmpty(settings.getProperty(SETTINGS_USE_XML)))
     {
       useXml = new Boolean(settings.getProperty(SETTINGS_USE_XML));
     }
@@ -347,7 +343,7 @@ public class WebUIManager
     String pagesDirectoryName = settings.getProperty(PAGES_DIRECTORY_NAME);
 
     // by default, use pages as the folder name
-    pagesDirectoryName = (pagesDirectoryName == null) ? "pages"
+    pagesDirectoryName = (StringUtils.isEmpty(pagesDirectoryName)) ? "pages"
                                                       : pagesDirectoryName;
 
     String pagesFolderPath = configurationsPath + File.separator + pagesDirectoryName;
@@ -377,8 +373,8 @@ public class WebUIManager
 
     if (!pageFolder.isDirectory())
     {
-      LOG.error("\t" + pageFolder.getAbsolutePath() + " must be a directory. ");
-      throw new RuntimeException(pageFolder.getAbsolutePath() + " must be a directory. ");
+      LOG.error("'Pages' folder must be a directory, [" + pageFolder.getAbsolutePath() + "] is invalid.");
+      throw new RuntimeException("'" + pageFolder.getAbsolutePath() + "' must be a directory. ");
     }
 
     List<String> fileNames = Arrays.asList(pageFolder.list());
@@ -392,13 +388,13 @@ public class WebUIManager
       Page            page   = null;
       FileInputStream fileIn = new FileInputStream(pagesFolderPath + File.separator + fileName);
 
-      LOG.info("\tprocessing page configuration file: " + fileName + " with useXml = " + useXml);
+      LOG.info("Processing page configuration file: " + fileName + ", useXml = " + useXml );
 
       if (useXml)
       {
         if (!fileName.toLowerCase().endsWith(".xml"))
         {
-          LOG.info("\tignore file: " + fileName);
+          LOG.info("Ignored file: " + fileName);
 
           continue;
         }
@@ -409,11 +405,11 @@ public class WebUIManager
           Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
           page = (Page) jaxbUnmarshaller.unmarshal(fileIn);
-          LOG.info("\t\tloaded weboage " + page.getPageName() + " from  " + fileName);
+          LOG.info("\t\tloaded webpage " + page.getPageName() + " from  " + fileName);
         }
         catch (JAXBException e)
         {
-          // TODO Auto-generated catch block
+          // error out if we cannot marshall the XML into a page
           e.printStackTrace();
 
           continue;
@@ -482,7 +478,7 @@ public class WebUIManager
         }
       }
 
-      LOG.info("\t\tsuccessfully adding page entry of " + page.getPageName() + " with domElements: " + page.getDomElements());
+      LOG.info("\t\tSuccessfully adding page entry of " + page.getPageName() + " with domElements: " + page.getDomElements());
     }
   }
 
