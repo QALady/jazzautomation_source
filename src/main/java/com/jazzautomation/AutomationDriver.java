@@ -1,34 +1,68 @@
 package com.jazzautomation;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.jazzautomation.action.ComponentAction;
+import com.jazzautomation.action.HtmlAction;
+import com.jazzautomation.cucumber.And;
+import com.jazzautomation.cucumber.Background;
+import com.jazzautomation.cucumber.Feature;
+import com.jazzautomation.cucumber.Scenario;
+import com.jazzautomation.cucumber.Then;
+import com.jazzautomation.cucumber.parser.FeatureParser;
+import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
+import com.jazzautomation.page.DomElementExpect;
+import com.jazzautomation.page.Page;
+import com.jazzautomation.report.ActionResult;
+import com.jazzautomation.report.ExpectResult;
+import com.jazzautomation.report.FeatureResult;
+import com.jazzautomation.report.ScenarioResult;
+import com.jazzautomation.report.SuiteResult;
+import com.jazzautomation.report.SuiteResultLight;
+import com.jazzautomation.util.WebActionException;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.io.*;
-import java.util.*;
-import org.apache.commons.lang3.StringUtils;
-import org.openqa.selenium.*;
-import org.openqa.selenium.remote.Augmenter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.Augmenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-import com.jazzautomation.action.*;
-import com.jazzautomation.cucumber.*;
-import com.jazzautomation.cucumber.parser.FeatureParser;
-import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
-import com.jazzautomation.page.*;
-import com.jazzautomation.report.*;
-import com.jazzautomation.util.WebActionException;
-import static com.jazzautomation.util.Constants.*;
+import static com.jazzautomation.util.Constants.DATA_FOLDER_NAME;
+import static com.jazzautomation.util.Constants.DATA_JS_PRE_JSON;
+import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
+import static com.jazzautomation.util.Constants.IMG_FOLDER_NAME;
+import static com.jazzautomation.util.Constants.INDEX_FILES;
+import static com.jazzautomation.util.Constants.JS_LIB_FILES;
+import static com.jazzautomation.util.Constants.JS_LIB_FOLDER;
+import static com.jazzautomation.util.Constants.REPORT_JS_PRE_JSON;
 
-/** This is a driver class to start automation. */
+/**
+ * This is a driver class to start automation.
+ */
 public class AutomationDriver
 {
   private static final String FEATURE_SEPERATOR = ",";
-  private static final Logger    LOG          = LoggerFactory.getLogger(AutomationDriver.class);
-  private static String siteUrl      = null;
+  private static final Logger LOG = LoggerFactory.getLogger(AutomationDriver.class);
+  private static String siteUrl = null;
   private static String featureNames;
 
   public static void main(String[] args)
@@ -48,7 +82,7 @@ public class AutomationDriver
     finally
     {
       int returnStatus = successful ? 0
-                                    : -1;
+          : -1;
 
       System.exit(returnStatus);
     }
@@ -98,16 +132,16 @@ public class AutomationDriver
 
   public static boolean loadFeatures(WebUIManager WebUIManager, List<String> featureNameList)
   {
-    String        featurePath = WebUIManager.getConfigurationsPath() + File.separator + "features" + File.separator;
-    List<Feature> features    = new ArrayList<>();
+    String featurePath = WebUIManager.getConfigurationsPath() + File.separator + "features" + File.separator;
+    List<Feature> features = new ArrayList<>();
 
     for (String featureName : featureNameList)
     {
       try
       {
-        FileInputStream in      = new FileInputStream(featurePath + featureName + ".feature");
-        FeatureParser   parser  = FeatureParser.getInstance();
-        Feature         feature = parser.parse(in);
+        FileInputStream in = new FileInputStream(featurePath + featureName + ".feature");
+        FeatureParser parser = FeatureParser.getInstance();
+        Feature feature = parser.parse(in);
 
         feature.setName(featureName);
         features.add(feature);
@@ -131,8 +165,8 @@ public class AutomationDriver
 
   private static SuiteResult runSuite(List<Feature> features, WebDriver driver)
   {
-    SuiteResult suiteResult      = new SuiteResult();
-    long        suiteTimeStarted = System.currentTimeMillis();
+    SuiteResult suiteResult = new SuiteResult();
+    long suiteTimeStarted = System.currentTimeMillis();
 
     for (Feature feature : features)
     {
@@ -150,13 +184,13 @@ public class AutomationDriver
 
   private static void runFeature(Feature feature, SuiteResult suiteResult, WebDriver driver)
   {
-    long          featureTimeStarted = System.currentTimeMillis();
-    FeatureResult featureResult      = new FeatureResult();
+    long featureTimeStarted = System.currentTimeMillis();
+    FeatureResult featureResult = new FeatureResult();
 
     featureResult.setFeature(feature);
     suiteResult.addFeatureResult(featureResult);
 
-    Background          background         = feature.getBackground();
+    Background background = feature.getBackground();
     Map<String, String> backgroundSettings = background.getGiven().getSettings();
 
     LOG.info("Background settings = " + backgroundSettings);
@@ -176,16 +210,16 @@ public class AutomationDriver
       catch (MalformedURLException e)
       {
         featureResult.setMessage("Error: remoteWebDriver Url is incorrect (STOPPED): " + WebUIManager.getInstance().getRemoteWebDriverUrl()
-                                   + " Please check your settings.properties ");
+            + " Please check your settings.properties ");
         featureResult.setSuccess(false);
         resetSettings(null, true);
       }
     }
 
     // go to the set
-    JavascriptExecutor jsDriver        = null;
-    String             startingSiteUrl = (backgroundSettings.get("url") != null) ? backgroundSettings.get("url").trim()
-                                                                                 : siteUrl;
+    JavascriptExecutor jsDriver = null;
+    String startingSiteUrl = (backgroundSettings.get("url") != null) ? backgroundSettings.get("url").trim()
+        : siteUrl;
 
     LOG.info("\nGo to site: " + startingSiteUrl);
     driver.get(startingSiteUrl);
@@ -198,7 +232,7 @@ public class AutomationDriver
     {
       if (isFirstPage)
       {
-        jsDriver    = WebUIManager.getInstance().getJQueryDriver(driver);
+        jsDriver = WebUIManager.getInstance().getJQueryDriver(driver);
         isFirstPage = false;
       }
 
@@ -215,9 +249,9 @@ public class AutomationDriver
 
   private static void runScenario(Scenario scenario, FeatureResult featureResult, WebDriver driver, JavascriptExecutor jsDriver)
   {
-    long           scenarioTimeSatrted = System.currentTimeMillis();
-    long           scenarioTimeEnded   = System.currentTimeMillis();
-    ScenarioResult scenarioResult      = new ScenarioResult();
+    long scenarioTimeSatrted = System.currentTimeMillis();
+    long scenarioTimeEnded = System.currentTimeMillis();
+    ScenarioResult scenarioResult = new ScenarioResult();
 
     featureResult.addScenarioResult(scenarioResult);
     scenarioResult.setScenario(scenario);
@@ -443,7 +477,7 @@ public class AutomationDriver
   private static WebDriver setWebDriver(String browserName) throws MalformedURLException
   {
     WebUIManager webUIManager = WebUIManager.getInstance();
-    WebDriver    driver;
+    WebDriver driver;
 
     LOG.debug("browser name =" + browserName + "'");
 
@@ -483,12 +517,12 @@ public class AutomationDriver
       }
 
       //
-      File             source   = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
-      String           fileName = source.getName();
-      Date             now      = new Date();
-      SimpleDateFormat sdf      = new SimpleDateFormat("MM_dd_yyyy");
-      String           dirName  = IMG_FOLDER_NAME + "_" + sdf.format(now);
-      File             dirFile  = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
+      File source = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
+      String fileName = source.getName();
+      Date now = new Date();
+      SimpleDateFormat sdf = new SimpleDateFormat("MM_dd_yyyy");
+      String dirName = IMG_FOLDER_NAME + "_" + sdf.format(now);
+      File dirFile = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
 
       if (!dirFile.exists())
       {
@@ -512,8 +546,8 @@ public class AutomationDriver
 
   private static void generateReports(SuiteResult suiteResult)
   {
-    String reportPath   = WebUIManager.getInstance().getLogsPath();
-    File   logsPathFile = new File(reportPath);
+    String reportPath = WebUIManager.getInstance().getLogsPath();
+    File logsPathFile = new File(reportPath);
 
     // load data.json if exist
     if (!logsPathFile.exists())
@@ -526,24 +560,24 @@ public class AutomationDriver
 
     // find data path
     String dataFolderPath = logsPathFile.getAbsolutePath() + File.separator + DATA_FOLDER_NAME;
-    File   dataFolder     = new File(dataFolderPath);
+    File dataFolder = new File(dataFolderPath);
 
     if (!dataFolder.exists())
     {
       dataFolder.mkdir();
     }
 
-    Date                   now            = new Date();
-    SimpleDateFormat       sdf            = new SimpleDateFormat("MM_dd_yyyy_'at'_HH_mm");
-    String                 reportName     = WebUIManager.getInstance().getProjectName() + "_" + sdf.format(now);
-    String                 reportFileName = dataFolder.getAbsolutePath() + File.separator + reportName + ".js";
-    File                   reportJsonFile = new File(reportFileName);
-    ObjectMapper           mapper         = new ObjectMapper();
-    String                 jsonString     = null;
-    File                   dataJsonFile   = new File(dataFolder.getAbsolutePath() + File.separator + DATA_FOLDER_NAME + ".js");
-    List<SuiteResultLight> dataList       = new ArrayList<>();
-    String                 dataJsonString = "";
-    SuiteResultLight       suiteLight     = new SuiteResultLight();
+    Date now = new Date();
+    SimpleDateFormat sdf = new SimpleDateFormat("MM_dd_yyyy_'at'_HH_mm");
+    String reportName = WebUIManager.getInstance().getProjectName() + "_" + sdf.format(now);
+    String reportFileName = dataFolder.getAbsolutePath() + File.separator + reportName + ".js";
+    File reportJsonFile = new File(reportFileName);
+    ObjectMapper mapper = new ObjectMapper();
+    String jsonString = null;
+    File dataJsonFile = new File(dataFolder.getAbsolutePath() + File.separator + DATA_FOLDER_NAME + ".js");
+    List<SuiteResultLight> dataList = new ArrayList<>();
+    String dataJsonString = "";
+    SuiteResultLight suiteLight = new SuiteResultLight();
 
     suiteLight.setName(reportName);
     suiteLight.setProject(WebUIManager.getInstance().getProjectName());
@@ -556,9 +590,9 @@ public class AutomationDriver
       try
       {
         FileInputStream fileIn = new FileInputStream(dataJsonFile);
-        BufferedReader  stdin  = new BufferedReader(new InputStreamReader(fileIn));
-        StringBuffer    buffer = new StringBuffer();
-        String          line   = "";
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(fileIn));
+        StringBuffer buffer = new StringBuffer();
+        String line = "";
 
         while ((line = stdin.readLine()) != null)
         {
@@ -585,7 +619,7 @@ public class AutomationDriver
 
     try
     {
-      jsonString     = REPORT_JS_PRE_JSON + mapper.writeValueAsString(suiteResult);
+      jsonString = REPORT_JS_PRE_JSON + mapper.writeValueAsString(suiteResult);
       dataJsonString = DATA_JS_PRE_JSON + mapper.writeValueAsString(dataList);
     }
     catch (Exception e)
@@ -597,7 +631,7 @@ public class AutomationDriver
     // serialize SuiteResult
     try
     {
-      FileOutputStream outForReport       = new FileOutputStream(reportJsonFile);
+      FileOutputStream outForReport = new FileOutputStream(reportJsonFile);
       FileOutputStream outForDataJsonFile = new FileOutputStream(dataJsonFile);
 
       if (jsonString != null)
@@ -627,8 +661,8 @@ public class AutomationDriver
     }
 
     // create jslib folder
-    String jsLibPath       = logsPathFile.getAbsolutePath() + File.separator + JS_LIB_FOLDER;
-    File   jsLibFolderFile = new File(jsLibPath);
+    String jsLibPath = logsPathFile.getAbsolutePath() + File.separator + JS_LIB_FOLDER;
+    File jsLibFolderFile = new File(jsLibPath);
 
     if (!jsLibFolderFile.exists())
     {
@@ -648,9 +682,9 @@ public class AutomationDriver
 
     try
     {
-      URL    aFileUrl      = Resources.getResource(resourceUrlPath);
+      URL aFileUrl = Resources.getResource(resourceUrlPath);
       String aFileInString = Resources.toString(aFileUrl, Charsets.UTF_8);
-      File   aFileInreport = new File(reportFilePath);
+      File aFileInreport = new File(reportFilePath);
 
       outForReport = new FileOutputStream(aFileInreport);
       outForReport.write(aFileInString.getBytes());
