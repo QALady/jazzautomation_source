@@ -12,5 +12,8 @@ dependencies {
   compile 	"org.seleniumhq.selenium:selenium-java:2.34.0",
   			"com.saucelabs.selenium:selenium-client-factory:1.2",	
 			"org.codehaus.jackson:jackson-mapper-asl:1.9.3",
-  			"com.saucelabs.selenium:selenium-client-factory:1.2"								   
+  			"com.saucelabs.selenium:selenium-client-factory:1.2",
+            "ch.qos.logback:logback-core:1.0.13",
+            "ch.qos.logback:logback-classic:1.0.13"
+
 }

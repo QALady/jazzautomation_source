@@ -6,13 +6,13 @@ import com.jazzautomation.page.DomElementExpect;
 
 public class ComponentAction
 {
-  String                               componentName;
-  HtmlAction                            action;
-  String                               actionValue = null;  // only apply to ENTER/SELECT as action
+  private String                               componentName;
+  private HtmlAction                            action;
+  private String                               actionValue = null;  // only apply to ENTER/SELECT as action
   @JsonIgnore
-  boolean                              optional;
+  private boolean                              optional;
   @JsonIgnore
-  List<DomElementExpect>             expects;
+  private List<DomElementExpect>             expects;
 
   public String getComponentName()
   {

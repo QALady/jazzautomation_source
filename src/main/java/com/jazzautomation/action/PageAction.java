@@ -12,7 +12,7 @@ public class PageAction
   String                      sourcePageName;
   String                      targetPageName;
   boolean                     optional     = false;
-  List<List<ComponentAction>> actionChains = new ArrayList<List<ComponentAction>>();
+  List<List<ComponentAction>> actionChains = new ArrayList<>();
   List<DomElementExpect>    expects;
 
   public boolean isOptional()
@@ -75,7 +75,7 @@ public class PageAction
 
     if (actionChains.size() == 0)
     {
-      List<ComponentAction> componentActionList0 = new ArrayList<ComponentAction>();
+      List<ComponentAction> componentActionList0 = new ArrayList<>();
 
       componentActionList0.add(compAction);
       actionChains.add(componentActionList0);
@@ -123,7 +123,7 @@ public class PageAction
 
   public static List<ComponentAction> deserializeList(String componentActionString)
   {
-    List<ComponentAction> componentActions = new ArrayList<ComponentAction>();
+    List<ComponentAction> componentActions = new ArrayList<>();
 
     // split actions
     String[] actionsStringSplit = componentActionString.split(DOUBLE_AND);

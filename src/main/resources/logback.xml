@@ -1,0 +1,26 @@
+<configuration>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>logs/jazzautomation.log</file>
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="org.apache" level="ERROR"/>
+  <logger name="com.jazzautomation" level="ERROR"/>
+  <logger name="com.jazzautomation.page" level="ERROR"/>
+  <logger name="com.jazzautomation.AutomationDriver" level="DEBUG"/>
+  <logger name="com.jazzautomation.cucumber" level="INFO"/>
+
+  <root level="ERROR">
+    <!--<appender-ref ref="STDOUT" />-->
+    <appender-ref ref="FILE" />
+  </root>
+
+</configuration>

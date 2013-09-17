@@ -30,8 +30,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -49,7 +49,7 @@ public class WebUIManager
   private static final String           SYSTEM_REPORTS_PATH       = "jazz.reports";
   private static final String           SYSTEM_CONFIGURATION_PATH = "jazz.configs";
   private static WebUIManager           instance                  = null;
-  private static Log                    LOG                       = LogFactory.getLog(WebUIManager.class);
+  private static Logger                    LOG                    = LoggerFactory.getLogger(WebUIManager.class);
   private Map<String, Page>             pages                     = new HashMap<>();
   private Map<String, DomElement>       domElementPool            = new HashMap<>();
   private Map<String, List<PageAction>> pageActions               = new HashMap<>();
@@ -329,7 +329,7 @@ public class WebUIManager
       }
       else
       {
-        System.err.println("When useRemote, you must specify property: remoteWebDriverUrl.");
+        LOG.error("When 'useRemote', you must specify property: remoteWebDriverUrl.");
         System.exit(0);
       }
     }
@@ -698,8 +698,7 @@ public class WebUIManager
     }
     catch (IOException e)
     {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.info("Error in javascript!", e);
     }
 
     return jsText;

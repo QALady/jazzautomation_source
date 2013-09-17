@@ -10,7 +10,7 @@ public class Feature extends CucumberBase
   private String             originalText;
   private String             name;
   private Background         background = null;
-  private List<Scenario>     scenarios  = new ArrayList<Scenario>();
+  private List<Scenario>     scenarios  = new ArrayList<>();
 
   public Background getBackground()
   {

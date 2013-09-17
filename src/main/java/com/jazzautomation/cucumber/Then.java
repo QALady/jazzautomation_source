@@ -12,7 +12,7 @@ public class Then extends CucumberBase
   @JsonIgnore
   private Page                  pageExpected;
   private boolean                  forExpects;
-  private List<DomElementExpect> expects = new ArrayList<DomElementExpect>();
+  private List<DomElementExpect> expects = new ArrayList<>();
 
   public Page getPageExpected()
   {

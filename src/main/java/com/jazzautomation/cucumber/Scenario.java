@@ -6,7 +6,7 @@ import java.util.List;
 public class Scenario extends CucumberBase
 {
   private Given     given;
-  private List<And> ands     = new ArrayList<And>();
+  private List<And> ands     = new ArrayList<>();
   private Then      then;
   private boolean   optional;
 

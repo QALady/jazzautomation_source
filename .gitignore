@@ -11,3 +11,5 @@ jazzautomation_source.iml
 jazzautomation_source.ipr
 
 jazzautomation_source.iws
+
+logs/*

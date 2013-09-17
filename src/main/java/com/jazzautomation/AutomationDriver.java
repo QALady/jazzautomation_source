@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.Augmenter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
@@ -27,7 +27,7 @@ import static com.jazzautomation.util.Constants.*;
 public class AutomationDriver
 {
   private static final String FEATURE_SEPERATOR = ",";
-  private static final Log    LOG          = LogFactory.getLog(AutomationDriver.class);
+  private static final Logger    LOG          = LoggerFactory.getLogger(AutomationDriver.class);
   private static String siteUrl      = null;
   private static String featureNames;
 
@@ -41,8 +41,8 @@ public class AutomationDriver
     }
     catch (Exception e)
     {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.error("Test failure", e);
+
       successful = false;
     }
     finally
@@ -143,7 +143,7 @@ public class AutomationDriver
 
     suiteResult.calculateSuccessRate();
     suiteResult.setDuration((suiteTimeEnded - suiteTimeStarted) / 1000.0);
-    System.out.println("suiteResult = \n" + suiteResult);
+    LOG.info("\nSuiteResult = \n" + suiteResult);
 
     return suiteResult;
   }
@@ -159,7 +159,7 @@ public class AutomationDriver
     Background          background         = feature.getBackground();
     Map<String, String> backgroundSettings = background.getGiven().getSettings();
 
-    LOG.info("background settings = " + backgroundSettings);
+    LOG.info("Background settings = " + backgroundSettings);
 
     if (backgroundSettings.size() > 0)
     {
@@ -429,7 +429,7 @@ public class AutomationDriver
         }
         else if (key.toLowerCase().equals("browser"))
         {
-          System.out.println("browser is " + backgroundSettings.get(key));
+          LOG.info("browser is " + backgroundSettings.get(key));
           WebUIManager.getInstance().setBrowser(backgroundSettings.get(key).trim());
         }
         else if (key.toLowerCase().equals("browserVersion"))
@@ -445,7 +445,7 @@ public class AutomationDriver
     WebUIManager webUIManager = WebUIManager.getInstance();
     WebDriver    driver;
 
-    System.out.println("browser name =" + browserName + "'");
+    LOG.debug("browser name =" + browserName + "'");
 
     if (browserName.trim().equalsIgnoreCase("chrome"))
     {
