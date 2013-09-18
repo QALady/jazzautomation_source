@@ -81,7 +81,7 @@ public class FeatureParser
   public Feature parse(FileInputStream in) throws IllegalCucumberFormatException
   {
     Feature feature = new Feature();
-    List<String> stringsForFile = new ArrayList<String>();
+    List<String> stringsForFile = new ArrayList<>();
     BufferedReader stdin = new BufferedReader(new InputStreamReader(in));
     StringBuffer originalTextBuffer = new StringBuffer();
     String line;
@@ -119,7 +119,7 @@ public class FeatureParser
 
       String[] descriptionEndWords = {};
 
-      retriveDescription(lines, descBuffer, descriptionEndWords);
+      retrieveDescription(lines, descBuffer, descriptionEndWords);
       feature.setDescription(descBuffer.toString());
 
       // setup background
@@ -152,7 +152,7 @@ public class FeatureParser
       LOG.debug("Error parsing feature", e);
     }
 
-    LOG.info("Successfully parsed feature:\n" + feature.getOriginalText());
+    LOG.info("Successfully parsed feature: " + feature.getOriginalText());
 
     return feature;
   }
@@ -294,7 +294,7 @@ public class FeatureParser
     descBuffer.append(filterWords(lines.get(0), GIVEN, "") + "\n");
 
     String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
-    int index = retriveDescription(lines, descBuffer, descriptionEndWords);
+    int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
 
     given.setDescription(descBuffer.toString());
 
@@ -368,7 +368,7 @@ public class FeatureParser
     descBuffer.append(filterWords(lines.get(0), AND, "") + "\n");
 
     String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
-    int index = retriveDescription(lines, descBuffer, descriptionEndWords);
+    int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
 
     and.setDescription(descBuffer.toString());
     and.setOptional(isTaskOptional(and.getDescription()));
@@ -391,7 +391,7 @@ public class FeatureParser
 
     if (action == null)
     {
-      LOG.info("And descrtion is [" + and.getDescription() + "]");
+      LOG.info("And description is [" + and.getDescription() + "]");
       throw new IllegalCucumberFormatException("Illegal And statement - no valid action can be found in your And statement:\n" + and.getText()
           + "\nPlease check your configuration.");
     }
@@ -454,7 +454,7 @@ public class FeatureParser
     descBuffer.append(filterWords(lines.get(0), THEN, "") + "\n");
 
     String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
-    int index = retriveDescription(lines, descBuffer, descriptionEndWords);
+    int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
 
     then.setDescription(descBuffer.toString());
 
@@ -556,7 +556,7 @@ public class FeatureParser
 
   private Map<String, String> processMap(String string) throws IllegalCucumberFormatException
   {
-    Map<String, String> keyValuePair = new LinkedHashMap<String, String>();
+    Map<String, String> keyValuePair = new LinkedHashMap<>();
     List<String> lines = scanIntoLine(string);
 
     // every line is a key value pair
@@ -671,7 +671,7 @@ public class FeatureParser
 
     descBuffer.append(filterWords(lines.get(0), leadingWord, followingWord) + "\n");
 
-    int index = retriveDescription(lines, descBuffer, endWords);
+    int index = retrieveDescription(lines, descBuffer, endWords);
 
     cucumber.setDescription(descBuffer.toString());
 
@@ -712,7 +712,7 @@ public class FeatureParser
     return stringBuffer.toString();
   }
 
-  private int retriveDescription(List<String> lines, StringBuffer descBuffer, String[] descriptionEndWords)
+  private int retrieveDescription(List<String> lines, StringBuffer descBuffer, String[] descriptionEndWords)
   {
     int index = 1;
 
@@ -767,7 +767,7 @@ public class FeatureParser
   private List<String> scanIntoLine(String string)
   {
     Scanner scanner = new Scanner(string);
-    List<String> list = new ArrayList<String>();
+    List<String> list = new ArrayList<>();
 
     while (scanner.hasNextLine())
     {
@@ -779,7 +779,7 @@ public class FeatureParser
 
   private List<String> retrieveSpecialWords(String[] words)
   {
-    List<String> specialWords = new ArrayList<String>();
+    List<String> specialWords = new ArrayList<>();
 
     for (String word : words)
     {

@@ -1,5 +1,10 @@
 package com.jazzautomation;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+import com.jazzautomation.action.PageAction;
+import com.jazzautomation.page.DomElement;
+import com.jazzautomation.page.Page;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -17,9 +22,12 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.Proxy.ProxyType;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxProfile;
@@ -28,16 +36,20 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import com.jazzautomation.action.*;
-import com.jazzautomation.page.*;
-import static com.jazzautomation.util.Constants.*;
+import static com.jazzautomation.util.Constants.ACTION_PACE;
+import static com.jazzautomation.util.Constants.BROWSER;
+import static com.jazzautomation.util.Constants.BROWSER_VERSION;
+import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
+import static com.jazzautomation.util.Constants.JAZZ;
+import static com.jazzautomation.util.Constants.PAGES_DIRECTORY_NAME;
+import static com.jazzautomation.util.Constants.PAGE_PACE;
+import static com.jazzautomation.util.Constants.PLATFORM;
+import static com.jazzautomation.util.Constants.PROJECT_NAME;
+import static com.jazzautomation.util.Constants.REMOTE_WEB_DRIVER_URL;
+import static com.jazzautomation.util.Constants.SETTINGS_USE_XML;
+import static com.jazzautomation.util.Constants.USE_REMOTE;
 
 /**
  * UIManager holds all pages and their web components, page actions. It loads all configurations from settings.properties then go through all
@@ -45,39 +57,41 @@ import static com.jazzautomation.util.Constants.*;
  */
 public class WebUIManager
 {
-  private static final String           SYSTEM_BROWSERS_SETTINGG  = "browsers";
-  private static final String           SYSTEM_REPORTS_PATH       = "jazz.reports";
-  private static final String           SYSTEM_CONFIGURATION_PATH = "jazz.configs";
-  private static WebUIManager           instance                  = null;
-  private static Logger                    LOG                    = LoggerFactory.getLogger(WebUIManager.class);
-  private Map<String, Page>             pages                     = new HashMap<>();
-  private Map<String, DomElement>       domElementPool            = new HashMap<>();
-  private Map<String, List<PageAction>> pageActions               = new HashMap<>();
+  private static final Logger LOG = LoggerFactory.getLogger(WebUIManager.class);
+  private static final String VERSION = "version";
+  private static final String SYSTEM_BROWSERS_SETTING = "browsers";
+  private static final String SYSTEM_REPORTS_PATH = "jazz.reports";
+  private static final String SYSTEM_CONFIGURATION_PATH = "jazz.configs";
+  private static WebUIManager instance = null;
+
+  // TODO - Move these to method level variables, or move this class away from a Singleton.
+  private Map<String, Page> pages = new HashMap<>();
+  private Map<String, DomElement> domElementPool = new HashMap<>();
+  private Map<String, List<PageAction>> pageActions = new HashMap<>();
 
   // configurations and reportsPath
   private String configurationsPath;
   private String reportsPath;
 
   // from jazz.properties
-  private String        projectName        = "";
-  private boolean       useRemoteWebDriver = false;
+  private String projectName = "";
+  private boolean useRemoteWebDriver = false;
   private static String remoteWebDriverUrl = null;
-  private static int    pagePace           = 10;
-  private static int    actionPace         = 1;
+  private static int pagePace = 10;
+  private static int actionPace = 1;
   private static String featureNames;
 
   // from system properties
-  private String browser        = null;
-  private String platform       = null;
+  private String browser = null;
+  private String platform = null;
   private String browserVersion = null;
-  private Properties     settings       = new Properties();
+  private Properties settings = new Properties();
 
   /**
    * Singleton instance of UIManager to hold information of pages and page actions.
    *
-   * @return  The singleton UIManager
-   *
-   * @throws  IOException
+   * @return The singleton UIManager
+   * @throws IOException
    */
   public static WebUIManager getInstance()
   {
@@ -101,10 +115,10 @@ public class WebUIManager
       long startTime = System.currentTimeMillis();
 
       configurationsPath = System.getProperty(SYSTEM_CONFIGURATION_PATH);
-      reportsPath        = System.getProperty(SYSTEM_REPORTS_PATH);
-      browser            = System.getProperty(SYSTEM_BROWSERS_SETTINGG);
+      reportsPath = System.getProperty(SYSTEM_REPORTS_PATH);
+      browser = System.getProperty(SYSTEM_BROWSERS_SETTING);
 
-      String useRemote   = System.getProperty("remote");
+      String useRemote = System.getProperty("remote");
 
       if ((useRemote != null) && useRemote.equalsIgnoreCase("true"))
       {
@@ -142,8 +156,8 @@ public class WebUIManager
       LOG.info("Initializing System ... ");
 
       // read settings files:
-      LOG.info("\treading jazz.properties from " + configurationsPath + File.separator + "jazz.properties");
-      LOG.info("\taccessing reports directory at " + reportsPath);
+      LOG.info("Reading jazz.properties from " + configurationsPath + File.separator + "jazz.properties");
+      LOG.info("Accessing reports directory at " + reportsPath);
       jazzSettings = new FileInputStream(configurationsPath + File.separator + JAZZ + ".properties");
       settings.load(jazzSettings);
 
@@ -152,7 +166,7 @@ public class WebUIManager
 
       long endTime = System.currentTimeMillis();
 
-      LOG.info("\nJazz Automation started successfully in " + (endTime - startTime) + " milliseconds.");
+      LOG.info("Jazz Automation started successfully in " + (endTime - startTime) + " milliseconds.");
     }
     catch (FileNotFoundException e)
     {
@@ -293,9 +307,8 @@ public class WebUIManager
   /**
    * Given a page name, return WebPage object in the Map of pages.
    *
-   * @param   pageName  of the WebPage.
-   *
-   * @return  WebPage.
+   * @param pageName of the WebPage.
+   * @return WebPage.
    */
   public Page getPage(String pageName)
   {
@@ -305,7 +318,7 @@ public class WebUIManager
   /**
    * loading setting.properties and populate all pages from its configurations.
    *
-   * @throws  FileNotFoundException
+   * @throws FileNotFoundException
    */
   private void loadConfiguration() throws FileNotFoundException
   {
@@ -329,21 +342,21 @@ public class WebUIManager
       }
       else
       {
-        LOG.error("When 'useRemote', you must specify property: remoteWebDriverUrl.");
+        LOG.error("When setting 'useRemote' to true, you must specify property: remoteWebDriverUrl.");
         System.exit(0);
       }
     }
 
     if (StringUtils.isNotEmpty(settings.getProperty(SETTINGS_USE_XML)))
     {
-      useXml = new Boolean(settings.getProperty(SETTINGS_USE_XML));
+      useXml = Boolean.valueOf(settings.getProperty(SETTINGS_USE_XML));
     }
 
     String pagesDirectoryName = settings.getProperty(PAGES_DIRECTORY_NAME);
 
     // by default, use pages as the folder name
     pagesDirectoryName = (StringUtils.isEmpty(pagesDirectoryName)) ? "pages"
-                                                      : pagesDirectoryName;
+        : pagesDirectoryName;
 
     String pagesFolderPath = configurationsPath + File.separator + pagesDirectoryName;
 
@@ -380,14 +393,14 @@ public class WebUIManager
 
     // sort into alphabetical order so that we can always have override features for web components
     Collections.sort(fileNames);
-    LOG.info("\tprocessing files at " + configurationsPath + File.separator + "pages" + File.separator + ":");
+    LOG.info("Processing files at " + configurationsPath + File.separator + "pages" + File.separator + ":");
 
     for (String fileName : fileNames)
     {
-      Page            page   = null;
+      Page page = null;
       FileInputStream fileIn = new FileInputStream(pagesFolderPath + File.separator + fileName);
 
-      LOG.info("Processing page configuration file: " + fileName + ", useXml = " + useXml );
+      LOG.info("Processing page configuration file: " + fileName + ", useXml = " + useXml);
 
       if (useXml)
       {
@@ -400,11 +413,11 @@ public class WebUIManager
 
         try
         {
-          JAXBContext  jaxbContext      = JAXBContext.newInstance(Page.class);
+          JAXBContext jaxbContext = JAXBContext.newInstance(Page.class);
           Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
           page = (Page) jaxbUnmarshaller.unmarshal(fileIn);
-          LOG.info("\t\tloaded webpage " + page.getPageName() + " from  " + fileName);
+          LOG.info("Loaded webpage " + page.getPageName() + " from  " + fileName);
         }
         catch (JAXBException e)
         {
@@ -427,24 +440,9 @@ public class WebUIManager
 
           page = objectMapper.readValue(fileIn, Page.class);
         }
-        catch (JsonParseException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-
-          continue;
-        }
-        catch (JsonMappingException e)
-        {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
-
-          continue;
-        }
         catch (IOException e)
         {
-          // TODO Auto-generated catch block
-          e.printStackTrace();
+          LOG.warn("Error parsing page [" + fileName + ']', e);
 
           continue;
         }
@@ -453,11 +451,12 @@ public class WebUIManager
       // something worng with the page, let's ignore it.
       if (page == null)
       {
-        LOG.warn("\t\tfailed to load web page from " + fileName + " continue to load next.");
+        LOG.warn("Failed to load web page [" + fileName + "] continue to load next.");
 
         continue;
       }
 
+      // put the pages into internal storage!
       pages.put(page.getPageName(), page);
 
       // add to domElementPool
@@ -477,7 +476,7 @@ public class WebUIManager
         }
       }
 
-      LOG.info("\t\tSuccessfully adding page entry of " + page.getPageName() + " with domElements: " + page.getDomElements());
+      LOG.info("Successfully adding page entry of " + page.getPageName() + " with domElements: " + page.getDomElements());
     }
   }
 
@@ -485,7 +484,7 @@ public class WebUIManager
   private void buildNavigationGraph()
   {
     // always starts from the first page object.
-    String           startingPathName        = settings.getProperty("startingPageName").trim();
+    String startingPathName = settings.getProperty("startingPageName").trim();
     List<PageAction> pageActionsForFirstPage = pageActions.get(startingPathName);
 
     for (PageAction pageAction : pageActionsForFirstPage)
@@ -493,10 +492,10 @@ public class WebUIManager
       List<String> path = new ArrayList<>();
 
       // path.add(startingPathName);
-      String pageName     = pageAction.getSourcePageName();
+      String pageName = pageAction.getSourcePageName();
       String nextPageName = pageAction.getTargetPageName();
       String actionString = PageAction.serializeList(pageAction.getActionChains().get(0));
-      String key          = pageName + ":" + actionString;
+      String key = pageName + ":" + actionString;
 
       path.add(key);
     }
@@ -533,7 +532,7 @@ public class WebUIManager
     DesiredCapabilities capabilities = DesiredCapabilities.chrome();
 
     capabilities.setCapability("chrome.switches", Arrays.asList(settings.getProperty("chrome.chrome.switches")));
-    capabilities.setCapability("platform", applyPlatform());
+    capabilities.setCapability(PLATFORM, applyPlatform());
 
     WebDriver driver;
 
@@ -547,7 +546,7 @@ public class WebUIManager
       {
         String chromeDriver = settings.getProperty("chrome.webdriver.chrome.driver");
 
-        if(StringUtils.isEmpty(chromeDriver))
+        if (StringUtils.isEmpty(chromeDriver))
         {
           throw new IllegalArgumentException("No chrome driver specified! Please specify as a system property or in your jazz.properties file.");
         }
@@ -570,8 +569,8 @@ public class WebUIManager
     {
       DesiredCapabilities capabilities = DesiredCapabilities.firefox();
 
-      capabilities.setCapability("platform", applyPlatform());
-      capabilities.setCapability("version", applyVerion());
+      capabilities.setCapability(PLATFORM, applyPlatform());
+      capabilities.setCapability(VERSION, applyVersion());
       driver = new RemoteWebDriver(new URL(remoteWebDriverUrl), capabilities);
     }
     else
@@ -603,8 +602,8 @@ public class WebUIManager
     {
       DesiredCapabilities capabilities = DesiredCapabilities.internetExplorer();
 
-      capabilities.setCapability("platform", applyPlatform());
-      capabilities.setCapability("version", applyVerion());
+      capabilities.setCapability(PLATFORM, applyPlatform());
+      capabilities.setCapability(VERSION, applyVersion());
       driver = new RemoteWebDriver(new URL(remoteWebDriverUrl), capabilities);
     }
     else
@@ -613,7 +612,7 @@ public class WebUIManager
 
       capabilitiesInternet.setCapability("ignoreProtectedModeSettings", settings.getProperty("ie.ignoreProtectedModeSettings"));
       capabilitiesInternet.setCapability("platform", applyPlatform());
-      capabilitiesInternet.setCapability(CapabilityType.VERSION, applyVerion());
+      capabilitiesInternet.setCapability(CapabilityType.VERSION, applyVersion());
       driver = new InternetExplorerDriver(capabilitiesInternet);
     }
 
@@ -629,8 +628,8 @@ public class WebUIManager
     {
       DesiredCapabilities capabilities = DesiredCapabilities.safari();
 
-      capabilities.setCapability("platform", applyPlatform());
-      capabilities.setCapability("version", applyVerion());
+      capabilities.setCapability(PLATFORM, applyPlatform());
+      capabilities.setCapability(VERSION, applyVersion());
 
       return new RemoteWebDriver(new URL(remoteWebDriverUrl), capabilities);
     }
@@ -647,8 +646,8 @@ public class WebUIManager
     {
       DesiredCapabilities capabilities = DesiredCapabilities.ipad();
 
-      capabilities.setCapability("platform", applyPlatform());
-      capabilities.setCapability("version", applyVerion());
+      capabilities.setCapability(PLATFORM, applyPlatform());
+      capabilities.setCapability(VERSION, applyVersion());
 
       return new RemoteWebDriver(new URL(remoteWebDriverUrl), capabilities);
     }
@@ -669,7 +668,7 @@ public class WebUIManager
 
     if (jquery == null)
     {
-      URL    jqueryUrl  = Resources.getResource("jquery-1.8.0.min.js");
+      URL jqueryUrl = Resources.getResource("jquery-1.8.0.min.js");
       String jqueryText = "";
 
       try
@@ -678,8 +677,7 @@ public class WebUIManager
       }
       catch (IOException e)
       {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        LOG.warn("Error obtaining jquery library.", e);
       }
 
       LOG.info("\tEnable Jquery");
@@ -689,7 +687,7 @@ public class WebUIManager
 
   public String getCustomJS(String jsName)
   {
-    URL    jsUrl  = Resources.getResource(jsName);
+    URL jsUrl = Resources.getResource(jsName);
     String jsText = "";
 
     try
@@ -702,8 +700,6 @@ public class WebUIManager
     }
 
     return jsText;
-           // System.out.println("jsText = " + jsText);
-           // jsDriver.executeScript(jsText);
   }
 
   private void recursiveLyCreatePath(File aDir)
@@ -733,7 +729,7 @@ public class WebUIManager
     }
   }
 
-  private String applyVerion()
+  private String applyVersion()
   {
     if ((browserVersion == null) || (browserVersion.trim().length() == 0))
     {

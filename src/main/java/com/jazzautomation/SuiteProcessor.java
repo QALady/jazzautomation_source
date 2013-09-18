@@ -108,7 +108,7 @@ public class SuiteProcessor
     JavascriptExecutor jsDriver = null;
     String startingSiteUrl = backgroundSettings.get("url").trim();
 
-    LOG.info("\nGo to site: " + startingSiteUrl);
+    LOG.info("Navigating to site: " + startingSiteUrl);
     driver.get(startingSiteUrl);
 
     boolean isFirstPage = true;
@@ -176,7 +176,7 @@ public class SuiteProcessor
     // taking actions
     for (And and : scenario.getAnds())
     {
-      LOG.info("working on and " + and.getText());
+      LOG.info("Working on and " + and.getText());
 
       for (ComponentAction componentAction : and.getActions())
       {
