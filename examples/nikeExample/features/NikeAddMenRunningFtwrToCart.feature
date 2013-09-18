@@ -24,7 +24,7 @@ Feature: Go to the Nike consumer web site, add a product to cart and all the way
   Scenario: Validate the total product count and other key elements for the page.
     Given I am ON "MensShoes"
     Then I should EXPECT
-      | productCount            |  686 Products         |
+      | productCount            |  692 Products         |
       | runningFacet            |  Running              |
       | basketballFacet         |  Basketball           |
       | jordanFacet             |  Jordan               |

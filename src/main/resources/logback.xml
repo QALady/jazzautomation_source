@@ -16,6 +16,7 @@
   <logger name="com.jazzautomation" level="ERROR"/>
   <logger name="com.jazzautomation.page" level="ERROR"/>
   <logger name="com.jazzautomation.AutomationDriver" level="DEBUG"/>
+  <logger name="com.jazzautomation.SuiteProcessor" level="DEBUG"/>
   <logger name="com.jazzautomation.cucumber" level="INFO"/>
 
   <root level="ERROR">
