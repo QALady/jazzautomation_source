@@ -2,21 +2,9 @@ package com.jazzautomation;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import com.jazzautomation.action.ComponentAction;
-import com.jazzautomation.action.HtmlAction;
-import com.jazzautomation.cucumber.And;
-import com.jazzautomation.cucumber.Background;
 import com.jazzautomation.cucumber.Feature;
-import com.jazzautomation.cucumber.Scenario;
-import com.jazzautomation.cucumber.Then;
 import com.jazzautomation.cucumber.parser.FeatureParser;
 import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
-import com.jazzautomation.page.DomElementExpect;
-import com.jazzautomation.page.Page;
-import com.jazzautomation.report.ActionResult;
-import com.jazzautomation.report.ExpectResult;
-import com.jazzautomation.report.FeatureResult;
-import com.jazzautomation.report.ScenarioResult;
 import com.jazzautomation.report.SuiteResult;
 import com.jazzautomation.report.SuiteResultLight;
 import com.jazzautomation.util.WebActionException;
@@ -27,29 +15,18 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.Augmenter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import static com.jazzautomation.util.Constants.DATA_FOLDER_NAME;
 import static com.jazzautomation.util.Constants.DATA_JS_PRE_JSON;
 import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
-import static com.jazzautomation.util.Constants.IMG_FOLDER_NAME;
 import static com.jazzautomation.util.Constants.INDEX_FILES;
 import static com.jazzautomation.util.Constants.JS_LIB_FILES;
 import static com.jazzautomation.util.Constants.JS_LIB_FOLDER;
@@ -135,10 +112,10 @@ public class AutomationDriver
     String featurePath = WebUIManager.getConfigurationsPath() + File.separator + "features" + File.separator;
     List<Feature> features = new ArrayList<>(featureNameList.size());
 
-    LOG.debug("Feature path = [" +featurePath + "]");
+    LOG.debug("Feature path = [" + featurePath + "]");
     for (String featureName : featureNameList)
     {
-      LOG.debug("Feature name = [" +featureName + "]");
+      LOG.debug("Feature name = [" + featureName + "]");
       try
       {
         FileInputStream in = new FileInputStream(featurePath + featureName + ".feature");
@@ -294,7 +271,7 @@ public class AutomationDriver
   private static void copyAReportFile(String resourceUrlPath, String reportFilePath)
   {
     File aFileInreport = new File(reportFilePath);
-    try(FileOutputStream outForReport = new FileOutputStream(aFileInreport))
+    try (FileOutputStream outForReport = new FileOutputStream(aFileInreport))
     {
       URL aFileUrl = Resources.getResource(resourceUrlPath);
       String aFileInString = Resources.toString(aFileUrl, Charsets.UTF_8);
