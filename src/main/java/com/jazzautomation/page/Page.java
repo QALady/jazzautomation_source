@@ -173,7 +173,7 @@ public class Page
 
       if ((title != null) && (title.trim().length() > 0))
       {
-        errorMessage += "Expect title contains: " + title + "; actual title: " + webDriver.getTitle();
+        errorMessage += "Expect title is: '" + title + "'; actual title: '" + webDriver.getTitle() + "'";
       }
 
       if ((urlExtension != null) && (urlExtension.trim().length() > 0))
@@ -183,7 +183,7 @@ public class Page
           errorMessage += " -- ";
         }
 
-        errorMessage += "Expect url contains: " + urlExtension + "; actual urlExtension: " + webDriver.getCurrentUrl();
+        errorMessage += "Expect url is: '" + urlExtension + "'; actual urlExtension: '" + webDriver.getCurrentUrl() + "'";
       }
 
       if (keyDomElementName != null)

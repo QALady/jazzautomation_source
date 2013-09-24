@@ -49,6 +49,7 @@ import static com.jazzautomation.util.Constants.SUPPORTED_BROWSERS;
  */
 public class FeatureParser
 {
+  private static final String COMMENT_MARKER = "#";
   private static Logger LOG = LoggerFactory.getLogger(FeatureParser.class);
   private static FeatureParser instance = null;
 
@@ -96,6 +97,12 @@ public class FeatureParser
         originalTextBuffer.append(line + "\n");
 
         String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + line;
+
+        if(StringUtils.isNotEmpty(line) && line.trim().startsWith(COMMENT_MARKER))
+        {
+          // skip adding comment lines to the executable feature.
+          continue;
+        }
 
         stringsForFile.add(formattedLine);
       }
@@ -578,6 +585,11 @@ public class FeatureParser
       {
         if(StringUtils.isEmpty(line))
         {
+          continue;
+        }
+        else if(line.trim().startsWith(COMMENT_MARKER))
+        {
+          LOG.info("Skipping line [" + line.trim() + "]");
           continue;
         }
         throw new IllegalCucumberFormatException("The following line could not be processed; it was invalid. Line = [" + line + ']');

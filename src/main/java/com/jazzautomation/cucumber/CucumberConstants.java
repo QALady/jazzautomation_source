@@ -16,5 +16,5 @@ public class CucumberConstants
   public static String OPTIONAL                    = "optional";
   public static String ON                          = "on";
   public static String LINE_START_MARK             = "(Line ";
-  public static String LINE_END_MARK               = ")::\t";
+  public static String LINE_END_MARK               = "):  ";
 }
