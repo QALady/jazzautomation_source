@@ -28,6 +28,7 @@ public class AutomationDriver
   {
     boolean successful = true;
 
+    LOG.info("Jazz Automation Starting");
     try
     {
       successful = drive();
@@ -43,6 +44,7 @@ public class AutomationDriver
       int returnStatus = successful ? 0
           : -1;
 
+      LOG.info("Jazz Automation Complete");
       System.exit(returnStatus);
     }
   }

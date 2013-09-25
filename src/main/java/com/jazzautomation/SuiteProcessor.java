@@ -53,6 +53,7 @@ public class SuiteProcessor
 
   private static SuiteResult runSuite(List<Feature> features, WebDriver driver)
   {
+    LOG.info("** Begin Suite **");
     SuiteResult suiteResult = new SuiteResult();
     long suiteTimeStarted = System.currentTimeMillis();
 
@@ -66,7 +67,7 @@ public class SuiteProcessor
     suiteResult.calculateSuccessRate();
     suiteResult.setDuration((suiteTimeEnded - suiteTimeStarted) / 1000.0);
     LOG.info("\nSuiteResult = \n" + suiteResult);
-
+    LOG.info("** End Suite **");
     return suiteResult;
   }
 

@@ -8,7 +8,7 @@ import com.jazzautomation.action.ComponentAction;
 
 public class And extends CucumberBase
 {
-  private List<ComponentAction> actions  = new ArrayList<ComponentAction>();
+  private List<ComponentAction> actions  = new ArrayList<>();
   private boolean               optional;
 
   public List<ComponentAction> getActions()

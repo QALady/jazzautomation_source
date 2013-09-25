@@ -94,7 +94,7 @@ public class FeatureParser
       // read everything into the stringsForFile
       while ((line = stdin.readLine()) != null)
       {
-        originalTextBuffer.append(line + "\n");
+        originalTextBuffer.append(line.trim() + "\n");
 
         String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + line;
 
@@ -583,7 +583,7 @@ public class FeatureParser
       }
       else
       {
-        if(StringUtils.isEmpty(line))
+        if(StringUtils.isBlank(line))
         {
           continue;
         }

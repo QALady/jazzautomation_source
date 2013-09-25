@@ -99,7 +99,7 @@ public class Page
             for (String window : windows)
             {
               d.switchTo().window(window);
-              LOG.info("\tswithing windows: current window url " + d.getCurrentUrl());
+              LOG.info("Switching windows: current window url " + d.getCurrentUrl());
 
               if ((d.getCurrentUrl().indexOf(urlExtension) > 0))
               {
@@ -745,7 +745,7 @@ public class Page
     String notString = expect.isNegative() ? " not "
         : " ";
 
-    LOG.info("\t\t\tchecking expect: " + expect.getComponentName() + notString + expect.getCondition() + " " + expectVlaue);
+    LOG.info("\t\t\tChecking expectation: " + expect.getComponentName() + notString + expect.getCondition() + " " + expectVlaue);
 
     String componentName = expect.getComponentName();
     DomElement domElement = getDomElement(componentName);
@@ -787,7 +787,7 @@ public class Page
         expect.setMessage("Expect failed (expect not exist): " + domElement.getIdentifier() + " exists.");
       }
 
-      LOG.info("\t\t\texpect is met. The actual does" + notString + "exist");
+      LOG.info("\t\t\tExpectation is met. The actual does" + notString + "exist");
     }
     else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.VISIBLE.getValue()))
     {
@@ -796,12 +796,12 @@ public class Page
       if (!isVisible && !expect.isNegative())
       {
         expectMet = false;
-        expect.setMessage("Expect failed (expect visible): " + domElement.getIdentifier() + " isn't visible.");
-        LOG.info("\t\t\texpect is failed. The actual is invisible.");
+        expect.setMessage("Expect failed (expected visible), however [" + domElement.getIdentifier() + "] isn't visible.");
+        LOG.info("\t\t\tExpectation failed. The actual is invisible.");
       }
       else
       {
-        LOG.info("\t\t\texpect is met. The actual is visible.");
+        LOG.info("\t\t\tExpectation is met. The actual is visible.");
       }
     }
     else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.INVISIBLE.getValue()))
@@ -811,12 +811,12 @@ public class Page
       if (isVisible)
       {
         expectMet = false;
-        expect.setMessage("Expect failed (expect not visible): " + domElement.getIdentifier() + " is visible.");
-        LOG.info("\t\t\texpect is failed. The actual is visible.");
+        expect.setMessage("Expectation failed (expected not visible), however [" + domElement.getIdentifier() + "] is visible.");
+        LOG.info("\t\t\tExpectation failed. The actual is visible.");
       }
       else
       {
-        LOG.info("\t\t\texpect is met. The actual is invisible.");
+        LOG.info("\t\t\tExpectation is met. The actual is invisible.");
       }
     }
     else
@@ -838,8 +838,8 @@ public class Page
           if (expectValue != actualValue)
           {
             expectMet = false;
-            expect.setMessage("Expect failed (expect equals): " + domElement.getIdentifier() + " expects " + expect.getValue() + "; actual ="
-                + htmlValue);
+            expect.setMessage("Expectation failed (expected equals): [" + domElement.getIdentifier() + "] expects " + expect.getValue() + "; actual = ["
+                + htmlValue + "]");
           }
         }
         else
@@ -847,19 +847,19 @@ public class Page
           if (htmlValue.indexOf(expect.getValue().trim()) < 0)
           {
             expectMet = false;
-            expect.setMessage("Expect failed (expect equals): " + domElement.getIdentifier() + " expects value of " + expect.getValue()
-                + "; actual value is :" + htmlValue);
+            expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
+                + "]; actual value is [" + htmlValue +']');
           }
         }
 
         if (expectMet)
         {
-          LOG.info("\t\t\texpect is met. The actual is " + htmlValue);
+          LOG.info("\t\t\tExpectation is met. The actual is " + htmlValue);
         }
         else
         {
-          LOG.info("\t\t\tExpect failed (expect equals): " + domElement.getIdentifier() + " expects " + expect.getValue().trim() + "; actual ="
-              + htmlValue);
+          LOG.info("\t\t\tExpectation failed (expect equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue().trim() + "]; actual is ["
+              + htmlValue + ']');
         }
       }
       else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.NOT_EQUALS.getValue()))
@@ -867,8 +867,8 @@ public class Page
         if (expect.getValue().equalsIgnoreCase(htmlValue.trim()))
         {
           expectMet = false;
-          expect.setMessage("Expect failed (expect not equals): " + domElement.getIdentifier() + " expects " + expect.getValue() + "; actual ="
-              + htmlValue);
+          expect.setMessage("Expectation failed (expect not equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue() + "]; actual is ["
+              + htmlValue +']');
         }
       }
       else
@@ -882,7 +882,7 @@ public class Page
           if (expectDoubleValue > actualDoubleValue)
           {
             expectMet = false;
-            expect.setMessage("Expect failed (expect >=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+            expect.setMessage("Expectation failed (expect >=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
                 + actualDoubleValue);
           }
         }
@@ -891,7 +891,7 @@ public class Page
           if (expectDoubleValue >= actualDoubleValue)
           {
             expectMet = false;
-            expect.setMessage("Expect failed (expect >): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+            expect.setMessage("Expectation failed (expect >): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
                 + actualDoubleValue);
           }
         }
@@ -900,7 +900,7 @@ public class Page
           if (expectDoubleValue < actualDoubleValue)
           {
             expectMet = false;
-            expect.setMessage("Expect failed (expect <=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+            expect.setMessage("Expectation failed (expect <=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
                 + actualDoubleValue);
           }
         }
@@ -909,7 +909,7 @@ public class Page
           if (expectDoubleValue <= actualDoubleValue)
           {
             expectMet = false;
-            expect.setMessage("Expect failed (expect <): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+            expect.setMessage("Expectation failed (expect <): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
                 + actualDoubleValue);
           }
         }
