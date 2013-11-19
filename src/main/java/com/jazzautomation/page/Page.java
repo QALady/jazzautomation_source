@@ -5,6 +5,8 @@ import com.jazzautomation.action.ComponentAction;
 import com.jazzautomation.action.HtmlAction;
 import com.jazzautomation.action.HtmlActionStatus;
 import com.jazzautomation.action.PageAction;
+import com.jazzautomation.customaction.Action;
+import com.jazzautomation.util.Constants;
 import com.jazzautomation.util.Utils;
 import com.jazzautomation.util.WebActionException;
 import java.util.HashMap;
@@ -844,7 +846,34 @@ public class Page
         }
         else
         {
-          if (htmlValue.indexOf(expect.getValue().trim()) < 0)
+          if(expect.isCustomAction())
+          {
+            try
+            {
+              // create instance of the custom actions and cast the class to our Action interface
+              Action instanceOfAction = (Action)expect.getCustomActionClass().newInstance();
+              // call the fire method
+              String calculatedExpectation = instanceOfAction.fire();
+              if (htmlValue.indexOf(calculatedExpectation) < 0)
+              {
+               expectMet = false;
+               expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
+                  + "]; actual value is [" + htmlValue +']');
+              }
+            }
+            catch(InstantiationException | IllegalAccessException e)
+            {
+              String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+              LOG.error("Error creating custom action [" + actionClassString + "].", e);
+              // TODO - throw some runtime exception since we really need to bail in this case.
+            }
+            catch(Exception e)
+            {
+              LOG.error("Error in custom action", e);
+            }
+
+          }
+          else if (htmlValue.indexOf(expect.getValue().trim()) < 0)
           {
             expectMet = false;
             expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()

@@ -48,4 +48,5 @@ public class Constants
   public static final String   JS_LIB_FOLDER         = "jslib";
   public static final String[] JS_LIB_FILES          = { "backbone.js", "backbone-relational.js", "jquery.js", "underscore.js" };
   public static final String[] SUPPORTED_BROWSERS    = { "ie", "firefox", "chrome", "safari" };
+  public static final String CUSTOM_ACTION_INDICATOR = "$action=";
 }

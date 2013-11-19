@@ -4,11 +4,13 @@ import java.util.List;
 
 public class DomElementExpect
 {
-  String         componentName;
-  String         condition;  // must be a format of WebActionConditionEnum
-  String         value;
+  private String         componentName;
+  private String         condition;  // must be a format of WebActionConditionEnum
+  private String         value;
   boolean        negative = false;
   private String message;
+  private boolean        customAction;
+  private Class customActionClass;
 
   public String getComponentName()
   {
@@ -50,6 +52,16 @@ public class DomElementExpect
     this.value = value;
   }
 
+  public Class getCustomActionClass()
+  {
+    return customActionClass;
+  }
+
+  public void setCustomActionClass(Class customActionClass)
+  {
+    this.customActionClass = customActionClass;
+  }
+
   public boolean isNegative()
   {
     return negative;
@@ -77,6 +89,16 @@ public class DomElementExpect
     }
 
     return returnStringBuffer.toString();
+  }
+
+  public boolean isCustomAction()
+  {
+    return customAction;
+  }
+
+  public void setCustomAction(boolean customAction)
+  {
+    this.customAction = customAction;
   }
 
   public static String normalizeExpects(List<DomElementExpect> someExpects)

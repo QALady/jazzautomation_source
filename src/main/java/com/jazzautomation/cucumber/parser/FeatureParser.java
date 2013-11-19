@@ -10,10 +10,12 @@ import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.Given;
 import com.jazzautomation.cucumber.Scenario;
 import com.jazzautomation.cucumber.Then;
+import com.jazzautomation.customaction.Action;
 import com.jazzautomation.page.DomElement;
 import com.jazzautomation.page.DomElementExpect;
 import com.jazzautomation.page.HtmlActionConditionEnum;
 import com.jazzautomation.page.Page;
+import com.jazzautomation.util.Constants;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -546,7 +548,28 @@ public class FeatureParser
           else
           {
             expect.setCondition(HtmlActionConditionEnum.EQUALS.getValue());
+            // TODO - dedrick - do we parse and set an extra value here indicating that this is an executable action?
+            LOG.error("Current expects value [" + expectMap.get(key) + "]");
+
             expect.setValue(expectMap.get(key));
+            String expectationString = expect.getValue().trim();
+
+            if(expectationString.startsWith(Constants.CUSTOM_ACTION_INDICATOR))
+            {
+              String actionClass = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+              LOG.error("CUSTOM action!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+              LOG.error(actionClass);
+              try
+              {
+                Class clazz = Class.forName(actionClass);
+                expect.setCustomActionClass(clazz);
+              }
+              catch(Exception e)
+              {
+                LOG.error("Error creating custom action", e);
+                // TODO - throw some runtime exception since we really need to bail in this case.
+              }
+            }
           }
 
           then.addExpect(expect);
