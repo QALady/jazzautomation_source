@@ -563,6 +563,7 @@ public class FeatureParser
               {
                 Class clazz = Class.forName(actionClass);
                 expect.setCustomActionClass(clazz);
+                expect.setCustomAction(true);
               }
               catch(Exception e)
               {
