@@ -15,6 +15,6 @@ public class CucumberConstants
   public static String COLON                       = ":";
   public static String OPTIONAL                    = "optional";
   public static String ON                          = "on";
-  public static String LINE_START_MARK             = "(Line ";
-  public static String LINE_END_MARK               = "):  ";
+  public static String LINE_START_MARK             = "{Feature Line # ";
+  public static String LINE_END_MARK               = "} - ";
 }

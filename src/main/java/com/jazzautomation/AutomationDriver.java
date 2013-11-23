@@ -22,6 +22,7 @@ public class AutomationDriver
 {
   private static final Logger LOG = LoggerFactory.getLogger(AutomationDriver.class);
   private static final String FEATURE_SEPERATOR = ",";
+  public static final String FEATURE = ".feature";
   private static String featureNames;
 
 
@@ -32,7 +33,7 @@ public class AutomationDriver
     LOG.info("Starting Jazz Automation");
     try
     {
-      successful = drive();
+      successful = beginTestSuite();
     }
     catch (Exception e)
     {
@@ -49,7 +50,7 @@ public class AutomationDriver
     }
   }
 
-  public static boolean drive() throws IOException, WebActionException
+  public static boolean beginTestSuite() throws IOException, WebActionException
   {
     final WebUIManager webUIManager = WebUIManager.getInstance();
     List<String> featureNameList = new ArrayList<>();
@@ -103,7 +104,7 @@ public class AutomationDriver
       LOG.debug("Feature name = [" + featureName + "]");
       try
       {
-        FileInputStream in = new FileInputStream(featurePath + featureName + ".feature");
+        FileInputStream in = new FileInputStream(featurePath + featureName + FEATURE);
         FeatureParser parser = FeatureParser.getInstance();
         Feature feature = parser.parse(in);
 

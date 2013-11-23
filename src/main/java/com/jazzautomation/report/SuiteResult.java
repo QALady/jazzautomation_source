@@ -6,7 +6,7 @@ import java.util.List;
 
 public class SuiteResult extends ResultBase
 {
-  private List<FeatureResult> featureResults = new ArrayList<FeatureResult>();
+  private List<FeatureResult> featureResults = new ArrayList<>();
   private double              successRate    = 1.0;
   private Date                timePerformed  = new Date();
 
@@ -70,19 +70,19 @@ public class SuiteResult extends ResultBase
 
   public String toString()
   {
-    StringBuffer results = new StringBuffer();
+    StringBuilder results = new StringBuilder();
 
     results.append("Overall success: " + this.isSuccess() + "\n");
-    results.append("Duration: " + this.getDuration() + "seconds\n");
-    results.append("success rate: " + this.successRate + "\n");
-    results.append("features:" + "\n");
+    results.append("Duration: " + this.getDuration() + " seconds\n");
+    results.append("Success rate: " + this.successRate + "\n");
+    results.append("Features:" + "\n");
 
     for (FeatureResult featureResult : featureResults)
     {
-      results.append("\tfeature: " + featureResult.getFeature().getDescription().trim() + "\n");
-      results.append("\t\tsuccess: " + featureResult.isSuccess() + "\n");
-      results.append("\t\tDuration: " + featureResult.getDuration() + "seconds\n");
-      results.append("\t\tsuccess rate: " + featureResult.getSuccessRate() + "\n");
+      results.append("\tFeature: " + featureResult.getFeature().getDescription().trim() + "\n");
+      results.append("\t\tSuccess: " + featureResult.isSuccess() + "\n");
+      results.append("\t\tDuration: " + featureResult.getDuration() + " seconds\n");
+      results.append("\t\tSuccess rate: " + featureResult.getSuccessRate() + "\n");
     }
 
     return results.toString();

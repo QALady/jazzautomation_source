@@ -75,16 +75,16 @@ public class WebUIManager
 
   // from jazz.properties
   private String projectName = "";
-  private boolean useRemoteWebDriver = false;
-  private static String remoteWebDriverUrl = null;
+  private boolean useRemoteWebDriver;
+  private static String remoteWebDriverUrl;
   private static int pagePace = 10;
   private static int actionPace = 1;
   private static String featureNames;
 
   // from system properties
-  private String browser = null;
-  private String platform = null;
-  private String browserVersion = null;
+  private String browser;
+  private String platform;
+  private String browserVersion;
   private Properties settings = new Properties();
 
   /**
@@ -153,11 +153,11 @@ public class WebUIManager
       }
 
       reportsPath = logsFile.getAbsolutePath();
-      LOG.info("Initializing System ... ");
+      LOG.info("Initializing Jazz Automation configuration sub-system");
 
       // read settings files:
-      LOG.info("Reading jazz.properties from " + configurationsPath + File.separator + "jazz.properties");
-      LOG.info("Accessing reports directory at " + reportsPath);
+      LOG.info("Reading jazz.properties from [" + configurationsPath + File.separator + "jazz.properties]");
+      LOG.info("Accessing reports directory at [" + reportsPath + "]");
       jazzSettings = new FileInputStream(configurationsPath + File.separator + JAZZ + ".properties");
       settings.load(jazzSettings);
 
@@ -166,7 +166,7 @@ public class WebUIManager
 
       long endTime = System.currentTimeMillis();
 
-      LOG.info("Jazz Automation started successfully in " + (endTime - startTime) + " milliseconds.");
+      LOG.info("Jazz Automation started successfully in [" + (endTime - startTime) + "] milliseconds.");
     }
     catch (FileNotFoundException e)
     {
@@ -393,7 +393,7 @@ public class WebUIManager
 
     // sort into alphabetical order so that we can always have override features for web components
     Collections.sort(fileNames);
-    LOG.info("Processing files at " + configurationsPath + File.separator + "pages" + File.separator + ":");
+    LOG.info("Processing configuration files at " + configurationsPath + File.separator + "pages" + File.separator + ":");
 
     for (String fileName : fileNames)
     {
@@ -417,7 +417,7 @@ public class WebUIManager
           Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
 
           page = (Page) jaxbUnmarshaller.unmarshal(fileIn);
-          LOG.info("Loaded webpage " + page.getPageName() + " from  " + fileName);
+          LOG.info("Loaded web page " + page.getPageName() + " from  " + fileName);
         }
         catch (JAXBException e)
         {

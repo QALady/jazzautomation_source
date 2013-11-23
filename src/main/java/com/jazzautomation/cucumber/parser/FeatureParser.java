@@ -95,11 +95,16 @@ public class FeatureParser
       // read everything into the stringsForFile
       while ((line = stdin.readLine()) != null)
       {
-        originalTextBuffer.append(line.trim() + "\n");
+        if(StringUtils.isEmpty(line))
+        {
+          continue;
+        }
 
-        String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + line;
+        String trimmedLine = line.trim();
+        originalTextBuffer.append(line + "\n");
+        String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + trimmedLine;
 
-        if(StringUtils.isNotEmpty(line) && line.trim().startsWith(COMMENT_MARKER))
+        if(StringUtils.isNotEmpty(trimmedLine) && trimmedLine.startsWith(COMMENT_MARKER))
         {
           // skip adding comment lines to the executable feature.
           continue;
@@ -373,7 +378,7 @@ public class FeatureParser
     List<String> lines = scanIntoLine(and.getText());
     StringBuffer descBuffer = new StringBuffer();
 
-    descBuffer.append(filterWords(lines.get(0), AND, "") + "\n");
+    descBuffer.append(filterWords(lines.get(0), AND, "") );
 
     String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
     int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
@@ -459,7 +464,7 @@ public class FeatureParser
     List<String> lines = scanIntoLine(then.getText());
     StringBuffer descBuffer = new StringBuffer();
 
-    descBuffer.append(filterWords(lines.get(0), THEN, "") + "\n");
+    descBuffer.append(filterWords(lines.get(0), THEN, "") );
 
     String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
     int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
@@ -528,8 +533,8 @@ public class FeatureParser
         {
           if (!this.canFindWebComponent(key.trim()))
           {
-            throw new IllegalCucumberFormatException(key.trim() + " is not a valid name at: \n" + then.getText()
-                + "\nPlease check your configurations.");
+            throw new IllegalCucumberFormatException("Component with name [" + key.trim() + "] is not a valid with text [" + then.getText()
+                + "]. Please check your configurations.");
           }
 
           DomElementExpectation expect = new DomElementExpectation();
@@ -547,17 +552,15 @@ public class FeatureParser
           else
           {
             expect.setCondition(HtmlActionConditionEnum.EQUALS.getValue());
-            // TODO - dedrick - do we parse and set an extra value here indicating that this is an executable action?
-            LOG.error("Current expects value [" + expectMap.get(key) + "]");
 
-            expect.setValue(expectMap.get(key));
+
+            expect.setValue(expectMap.get(key).trim());
             String expectationString = expect.getValue().trim();
 
             if(expectationString.startsWith(Constants.CUSTOM_ACTION_INDICATOR))
             {
               String actionClass = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
-              LOG.error("CUSTOM action!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-              LOG.error(actionClass);
+
               try
               {
                 Class clazz = Class.forName(actionClass);
@@ -567,7 +570,7 @@ public class FeatureParser
               catch(Exception e)
               {
                 LOG.error("Error creating custom action", e);
-                // TODO - throw some runtime exception since we really need to bail in this case.
+                throw new IllegalCucumberFormatException("Error creating custom action.", e);
               }
             }
           }
@@ -592,7 +595,6 @@ public class FeatureParser
     // every line is a key value pair
     for (String line : lines)
     {
-      // String line = lines.get(i);
       line = filterLineNumber(line);
 
       if (isTableStructureValid(line))
@@ -662,8 +664,8 @@ public class FeatureParser
 
     if (!hasWebComponent)
     {
-      throw new IllegalCucumberFormatException("Illegal And statement - cannot find a valid dom component in your And statement:\n" + and.getText()
-          + "\nPlease check your configuration.");
+      throw new IllegalCucumberFormatException("Illegal 'And' statement - cannot find a valid dom component in your And statement [" + and.getText()
+          + "]. Please check your configuration.");
     }
 
     componentAction.setComponentName(componentName);
@@ -715,14 +717,18 @@ public class FeatureParser
 
   private boolean isTableStructureValid(String string)
   {
-    // we should have three individual TABLE_COLUMN_SEPERATOR
+    // we should have three individual table seperators
     int count = 0;
 
     for (int i = 0; i < string.length(); i++)
     {
       if (string.charAt(i) == TABLE_COLUMN_SEPERATOR_CHAR)
       {
-        if ((i != 0) && (string.charAt(i - 1) != ESCAPE_CHAR))
+        if(i == 0)
+        {
+          count++;
+        }
+        else if (string.charAt(i - 1) != ESCAPE_CHAR)
         {
           count++;
         }

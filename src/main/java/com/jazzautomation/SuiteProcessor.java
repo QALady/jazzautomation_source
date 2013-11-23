@@ -297,11 +297,11 @@ public class SuiteProcessor
     {
       if (componentAction.getAction().equals(HtmlAction.WAIT))
       {
-        page.takeWebAction(null, componentAction.getAction(), componentAction.getActionValue());
+        page.executeWebAction(null, componentAction.getAction(), componentAction.getActionValue());
       }
       else
       {
-        page.takeWebAction(page.getDomElement(componentAction.getComponentName()), componentAction.getAction(), componentAction.getActionValue());
+        page.executeWebAction(page.getDomElement(componentAction.getComponentName()), componentAction.getAction(), componentAction.getActionValue());
       }
 
       actionResult.setSuccess(true);
