@@ -1,10 +1,10 @@
 package com.jazzautomation.cucumber;
 
+import com.jazzautomation.page.DomElementExpectation;
 import java.util.ArrayList;
 import java.util.List;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
-import com.jazzautomation.page.DomElementExpect;
 import com.jazzautomation.page.Page;
 
 public class Then extends CucumberBase
@@ -12,7 +12,7 @@ public class Then extends CucumberBase
   @JsonIgnore
   private Page                  pageExpected;
   private boolean                  forExpects;
-  private List<DomElementExpect> expects = new ArrayList<>();
+  private List<DomElementExpectation> expects = new ArrayList<>();
 
   public Page getPageExpected()
   {
@@ -34,12 +34,12 @@ public class Then extends CucumberBase
     this.forExpects = forExpects;
   }
 
-  public List<DomElementExpect> getExpects()
+  public List<DomElementExpectation> getExpects()
   {
     return expects;
   }
 
-  public void addExpect(DomElementExpect expect)
+  public void addExpect(DomElementExpectation expect)
   {
     expects.add(expect);
   }

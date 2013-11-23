@@ -2,7 +2,7 @@ package com.jazzautomation.page;
 
 import java.util.List;
 
-public class DomElementExpect
+public class DomElementExpectation
 {
   private String         componentName;
   private String         condition;  // must be a format of WebActionConditionEnum
@@ -101,7 +101,7 @@ public class DomElementExpect
     this.customAction = customAction;
   }
 
-  public static String normalizeExpects(List<DomElementExpect> someExpects)
+  public static String normalizeExpects(List<DomElementExpectation> someExpects)
   {
     if (someExpects == null)
     {

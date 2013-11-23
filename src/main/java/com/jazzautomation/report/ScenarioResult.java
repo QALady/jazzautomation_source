@@ -9,7 +9,7 @@ public class ScenarioResult extends ResultBase
   private Scenario           scenario;
   private double             successRate    = 1.0;
   private List<ActionResult> actionResults  = new ArrayList<ActionResult>();
-  private List<ExpectResult> expectResults  = new ArrayList<ExpectResult>();
+  private List<ExpectationResult> expectResults  = new ArrayList<ExpectationResult>();
 	private String screenShotPath = null;
 
   public void calculateSuccessRate()
@@ -31,7 +31,7 @@ public class ScenarioResult extends ResultBase
       }
     }
 
-    for (ExpectResult expectResult : expectResults)
+    for (ExpectationResult expectResult : expectResults)
     {
       if (!expectResult.isSuccess())
       {
@@ -83,17 +83,17 @@ public class ScenarioResult extends ResultBase
     this.actionResults = actionResults;
   }
 
-  public List<ExpectResult> getExpectResults()
+  public List<ExpectationResult> getExpectResults()
   {
     return expectResults;
   }
 
-  public void addExpectResults(ExpectResult expectResult)
+  public void addExpectResults(ExpectationResult expectResult)
   {
     expectResults.add(expectResult);
   }
 
-  public void setExpectResults(List<ExpectResult> expectResults)
+  public void setExpectResults(List<ExpectationResult> expectResults)
   {
     this.expectResults = expectResults;
   }

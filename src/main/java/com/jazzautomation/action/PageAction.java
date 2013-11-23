@@ -13,7 +13,7 @@ public class PageAction
   String                      targetPageName;
   boolean                     optional     = false;
   List<List<ComponentAction>> actionChains = new ArrayList<>();
-  List<DomElementExpect>    expects;
+  List<DomElementExpectation>    expects;
 
   public boolean isOptional()
   {
@@ -45,12 +45,12 @@ public class PageAction
     this.targetPageName = targetPageName;
   }
 
-  public List<DomElementExpect> getExpects()
+  public List<DomElementExpectation> getExpects()
   {
     return expects;
   }
 
-  public void setExpects(List<DomElementExpect> expects)
+  public void setExpects(List<DomElementExpectation> expects)
   {
     this.expects = expects;
   }
@@ -91,7 +91,7 @@ public class PageAction
     StringBuffer serializedText = new StringBuffer();
 
     serializedText.append(sourcePageName + "");
-    serializedText.append(DomElementExpect.normalizeExpects(expects));
+    serializedText.append(DomElementExpectation.normalizeExpects(expects));
     serializedText.append(":");
 
     for (int i = 0; i < actionChains.size(); i++)

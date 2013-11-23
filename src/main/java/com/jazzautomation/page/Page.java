@@ -729,17 +729,17 @@ public class Page
     return value;
   }
 
-  public void checkExpects(List<DomElementExpect> expects) throws WebActionException
+  public void checkExpects(List<DomElementExpectation> expects) throws WebActionException
   {
     explicitWait((int) actionPace * 1000 / 2);
 
-    for (DomElementExpect expect : expects)
+    for (DomElementExpectation expect : expects)
     {
       checkExpect(expect);
     }
   }
 
-  public boolean checkExpect(DomElementExpect expect)
+  public boolean checkExpect(DomElementExpectation expect)
   {
     boolean expectMet = true;
     String expectVlaue = (expect.getValue() == null) ? ""

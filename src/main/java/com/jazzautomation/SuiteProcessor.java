@@ -7,10 +7,10 @@ import com.jazzautomation.cucumber.Background;
 import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.Scenario;
 import com.jazzautomation.cucumber.Then;
-import com.jazzautomation.page.DomElementExpect;
+import com.jazzautomation.page.DomElementExpectation;
 import com.jazzautomation.page.Page;
 import com.jazzautomation.report.ActionResult;
-import com.jazzautomation.report.ExpectResult;
+import com.jazzautomation.report.ExpectationResult;
 import com.jazzautomation.report.FeatureResult;
 import com.jazzautomation.report.ScenarioResult;
 import com.jazzautomation.report.SuiteResult;
@@ -82,7 +82,7 @@ public class SuiteProcessor
     Background background = feature.getBackground();
     Map<String, String> backgroundSettings = background.getGiven().getSettings();
 
-    LOG.info("Background settings = " + backgroundSettings);
+    LOG.info("Background settings = [" + backgroundSettings + "]");
 
     if (backgroundSettings.size() > 0)
     {
@@ -195,7 +195,7 @@ public class SuiteProcessor
       }
       else
       {
-        for (DomElementExpect expect : then.getExpects())
+        for (DomElementExpectation expect : then.getExpects())
         {
           verifyComponentExpectation(scenarioResult, page, expect);
         }
@@ -247,7 +247,7 @@ public class SuiteProcessor
 
   private static void verifyPageExpectation(ScenarioResult scenarioResult, Then then)
   {
-    ExpectResult expectResult = new ExpectResult();
+    ExpectationResult expectResult = new ExpectationResult();
 
     scenarioResult.addExpectResults(expectResult);
 
@@ -264,9 +264,9 @@ public class SuiteProcessor
     }
   }
 
-  private static void verifyComponentExpectation(ScenarioResult scenarioResult, Page page, DomElementExpect expect)
+  private static void verifyComponentExpectation(ScenarioResult scenarioResult, Page page, DomElementExpectation expect)
   {
-    ExpectResult expectResult = new ExpectResult();
+    ExpectationResult expectResult = new ExpectationResult();
 
     scenarioResult.addExpectResults(expectResult);
     expectResult.setComponentExpect(expect);

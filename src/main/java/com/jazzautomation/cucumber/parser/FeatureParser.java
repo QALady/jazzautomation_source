@@ -10,9 +10,8 @@ import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.Given;
 import com.jazzautomation.cucumber.Scenario;
 import com.jazzautomation.cucumber.Then;
-import com.jazzautomation.customaction.Action;
 import com.jazzautomation.page.DomElement;
-import com.jazzautomation.page.DomElementExpect;
+import com.jazzautomation.page.DomElementExpectation;
 import com.jazzautomation.page.HtmlActionConditionEnum;
 import com.jazzautomation.page.Page;
 import com.jazzautomation.util.Constants;
@@ -533,7 +532,7 @@ public class FeatureParser
                 + "\nPlease check your configurations.");
           }
 
-          DomElementExpect expect = new DomElementExpect();
+          DomElementExpectation expect = new DomElementExpectation();
 
           expect.setComponentName(key.trim());
 

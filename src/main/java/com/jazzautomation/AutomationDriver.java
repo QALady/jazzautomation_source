@@ -42,8 +42,7 @@ public class AutomationDriver
     }
     finally
     {
-      int returnStatus = successful ? 0
-          : -1;
+      int returnStatus = successful ? 0 : -1;
 
       LOG.info("Jazz Automation Complete");
       System.exit(returnStatus);
@@ -71,7 +70,7 @@ public class AutomationDriver
 
       for (String aFeatureName : featureArray)
       {
-        LOG.info("Preparing feature : " + aFeatureName);
+        LOG.info("Preparing feature [" + aFeatureName + "]");
         featureNameList.add(aFeatureName.trim());
       }
     }

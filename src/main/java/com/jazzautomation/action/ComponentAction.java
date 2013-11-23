@@ -1,8 +1,8 @@
 package com.jazzautomation.action;
 
+import com.jazzautomation.page.DomElementExpectation;
 import java.util.List;
 import org.codehaus.jackson.annotate.JsonIgnore;
-import com.jazzautomation.page.DomElementExpect;
 
 public class ComponentAction
 {
@@ -12,7 +12,7 @@ public class ComponentAction
   @JsonIgnore
   private boolean                              optional;
   @JsonIgnore
-  private List<DomElementExpect>             expects;
+  private List<DomElementExpectation>             expects;
 
   public String getComponentName()
   {
@@ -39,7 +39,7 @@ public class ComponentAction
     this.actionValue = actionValue;
   }
 
-  public List<DomElementExpect> getExpects()
+  public List<DomElementExpectation> getExpects()
   {
     return expects;
   }
@@ -54,7 +54,7 @@ public class ComponentAction
     this.optional = optional;
   }
 
-  public void setExpects(List<DomElementExpect> expects)
+  public void setExpects(List<DomElementExpectation> expects)
   {
     this.expects = expects;
   }
@@ -125,7 +125,7 @@ public class ComponentAction
       returnStringBuffer.append(action.getActionName().toUpperCase());
     }
 
-    returnStringBuffer.append(DomElementExpect.normalizeExpects(expects));
+    returnStringBuffer.append(DomElementExpectation.normalizeExpects(expects));
 
     return returnStringBuffer.toString();
   }
