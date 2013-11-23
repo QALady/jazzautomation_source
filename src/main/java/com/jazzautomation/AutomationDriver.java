@@ -20,15 +20,16 @@ import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
  */
 public class AutomationDriver
 {
-  private static final String FEATURE_SEPERATOR = ",";
   private static final Logger LOG = LoggerFactory.getLogger(AutomationDriver.class);
+  private static final String FEATURE_SEPERATOR = ",";
   private static String featureNames;
+
 
   public static void main(String[] args)
   {
     boolean successful = true;
 
-    LOG.info("Jazz Automation Starting");
+    LOG.info("Starting Jazz Automation");
     try
     {
       successful = drive();
