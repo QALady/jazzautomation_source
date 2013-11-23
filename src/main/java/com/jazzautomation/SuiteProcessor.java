@@ -150,7 +150,7 @@ public class SuiteProcessor
     pageSetup(driver, jsDriver, page);
 
     // loading page
-    if (!loadingPage(scenario, scenarioResult, page))
+    if (!loadPage(scenario, scenarioResult, page))
     {
       scenarioResult.calculateSuccessRate();
       scenarioTimeEnded = System.currentTimeMillis();
@@ -181,7 +181,7 @@ public class SuiteProcessor
 
       for (ComponentAction componentAction : and.getActions())
       {
-        takingAction(scenarioResult, page, and, componentAction);
+        executeAction(scenarioResult, page, and, componentAction);
       }
     }
 
@@ -193,13 +193,13 @@ public class SuiteProcessor
       if (then.getPageExpected() != null)
       {
         pageSetup(driver, jsDriver, then.getPageExpected());
-        checkingPageExpect(scenarioResult, then);
+        verifyPageExpectation(scenarioResult, then);
       }
       else
       {
         for (DomElementExpect expect : then.getExpects())
         {
-          checkingComponentExpect(scenarioResult, page, expect);
+          verifyComponentExpectation(scenarioResult, page, expect);
         }
       }
     }
@@ -209,7 +209,7 @@ public class SuiteProcessor
     scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeSatrted) / 1000.0);
   }
 
-  private static boolean loadingPage(Scenario scenario, ScenarioResult scenarioResult, Page page)
+  private static boolean loadPage(Scenario scenario, ScenarioResult scenarioResult, Page page)
   {
     try
     {
@@ -247,7 +247,7 @@ public class SuiteProcessor
     page.setBrowser(WebUIManager.getInstance().getBrowser());
   }
 
-  private static void checkingPageExpect(ScenarioResult scenarioResult, Then then)
+  private static void verifyPageExpectation(ScenarioResult scenarioResult, Then then)
   {
     ExpectResult expectResult = new ExpectResult();
 
@@ -261,12 +261,12 @@ public class SuiteProcessor
     catch (WebActionException e)
     {
       expectResult.setSuccess(false);
-      expectResult.setMessage("Expect to see page:" + then.getPageExpected().getPageName() + " Failed - " + e.getMessage());
+      expectResult.setMessage("Expected to see page:" + then.getPageExpected().getPageName() + " Failed - " + e.getMessage());
       scenarioResult.setScreenShotPath(captureScreen(then.getPageExpected().getWebDriver()));
     }
   }
 
-  private static void checkingComponentExpect(ScenarioResult scenarioResult, Page page, DomElementExpect expect)
+  private static void verifyComponentExpectation(ScenarioResult scenarioResult, Page page, DomElementExpect expect)
   {
     ExpectResult expectResult = new ExpectResult();
 
@@ -291,7 +291,7 @@ public class SuiteProcessor
     }
   }
 
-  private static void takingAction(ScenarioResult scenarioResult, Page page, And and, ComponentAction componentAction)
+  private static void executeAction(ScenarioResult scenarioResult, Page page, And and, ComponentAction componentAction)
   {
     ActionResult actionResult = new ActionResult();
 
@@ -395,7 +395,7 @@ public class SuiteProcessor
 
     try
     {
-      Thread.sleep(3000);
+      Thread.sleep(3500);
 
       WebDriver augmentedDriver = driver;
 
@@ -404,11 +404,10 @@ public class SuiteProcessor
         augmentedDriver = new Augmenter().augment(driver);
       }
 
-      //
       File source = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
       String fileName = source.getName();
-      Date now = new Date();
       SimpleDateFormat sdf = new SimpleDateFormat("MM_dd_yyyy");
+      Date now = new Date();
       String dirName = IMG_FOLDER_NAME + "_" + sdf.format(now);
       File dirFile = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
 
@@ -426,7 +425,7 @@ public class SuiteProcessor
     }
     catch (Exception e)
     {
-      fileUrl = "Failed to capture screenshot: " + e.getMessage();
+      fileUrl = "Failed to capture screen shot: " + e.getMessage();
     }
 
     return fileUrl;
