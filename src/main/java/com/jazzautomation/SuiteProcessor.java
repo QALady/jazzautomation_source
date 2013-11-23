@@ -43,7 +43,7 @@ public class SuiteProcessor
   /**
    * Processes the provided suite
    * @param suite the suite to be executed
-   * @param driver the webdriver; optional
+   * @param driver the web driver; optional
    */
   public static void process(Suite suite, WebDriver driver)
   {
@@ -110,11 +110,12 @@ public class SuiteProcessor
     String startingSiteUrl = backgroundSettings.get("url").trim();
 
     LOG.info("Navigating to site: " + startingSiteUrl);
+    assert driver != null;
     driver.get(startingSiteUrl);
 
     boolean isFirstPage = true;
 
-    LOG.info("go to feature " + feature.getDescription() + " with total " + feature.getScenarios().size() + " scenarios");
+    LOG.info("Go to feature [" + feature.getDescription() + "] with total [" + feature.getScenarios().size() + "] scenarios");
 
     for (Scenario scenario : feature.getScenarios())
     {
@@ -132,18 +133,17 @@ public class SuiteProcessor
     featureResult.setDuration((featureTimeEnded - featureTimeStarted) / 1000.0);
     featureResult.calculateSuccessRate();
     driver.quit();
-    driver = null;
   }
 
   private static void runScenario(Scenario scenario, FeatureResult featureResult, WebDriver driver, JavascriptExecutor jsDriver)
   {
-    long scenarioTimeSatrted = System.currentTimeMillis();
-    long scenarioTimeEnded = System.currentTimeMillis();
+    long scenarioTimeStarted = System.currentTimeMillis();
+    long scenarioTimeEnded;
     ScenarioResult scenarioResult = new ScenarioResult();
 
     featureResult.addScenarioResult(scenarioResult);
     scenarioResult.setScenario(scenario);
-    LOG.info("start working on scenario " + scenario.getText());
+    LOG.info("start working on scenario [" + scenario.getText() + "]");
 
     Page page = scenario.getGiven().getPage();
 
@@ -154,30 +154,28 @@ public class SuiteProcessor
     {
       scenarioResult.calculateSuccessRate();
       scenarioTimeEnded = System.currentTimeMillis();
-      scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeSatrted) / 1000);
+      scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000);
 
       if (!scenario.isOptional())
       {
-        // scenarioResult.setMessage("Failed to load page: " + page.getPageName());
-        LOG.info("Not able to load page " + page.getPageName() + " for scenario " + scenario.getText());
+        LOG.info("Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + "]");
         scenarioResult.setScreenShotPath(captureScreen(driver));
       }
       else
       {
         scenarioResult.setSuccess(true);
 
-        // scenarioResult.setMessage("Skipped - Not able to load page: " + page.getPageName() + " (optional)");
-        LOG.info("Optional: Not able to load page " + page.getPageName() + " for scenario " + scenario.getText());
+        LOG.info("Optional: Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + "]");
         scenarioResult.setScreenShotPath(captureScreen(driver));
       }
 
       return;
     }
 
-    // taking actions
+    // take actions
     for (And and : scenario.getAnds())
     {
-      LOG.info("Working on and " + and.getText());
+      LOG.info("Working on 'and' [" + and.getText() + "]");
 
       for (ComponentAction componentAction : and.getActions())
       {
@@ -185,7 +183,7 @@ public class SuiteProcessor
       }
     }
 
-    // checking expects
+    // verify expectations
     Then then = scenario.getThen();
 
     if (then != null)
@@ -206,7 +204,7 @@ public class SuiteProcessor
 
     scenarioResult.calculateSuccessRate();
     scenarioTimeEnded = System.currentTimeMillis();
-    scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeSatrted) / 1000.0);
+    scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000.0);
   }
 
   private static boolean loadPage(Scenario scenario, ScenarioResult scenarioResult, Page page)
@@ -217,18 +215,18 @@ public class SuiteProcessor
 
       return true;
     }
-    catch (Exception wae)
+    catch (Exception exception)
     {
       if (!scenario.isOptional())
       {
-        scenarioResult.setMessage("Failed to load page: " + page.getPageName() + " [" + wae.getMessage() + "].");
         scenarioResult.setSuccess(false);
         scenarioResult.setSuccessRate(0.0);
-        LOG.info("Failed to load page for :" + page.getPageName() + " for " + scenario.getText() + " Please check your feature setting ");
+        scenarioResult.setMessage("Failed to load page: " + page.getPageName() + " [" + exception.getMessage() + "].");
+        LOG.info("Failed to load page for :" + page.getPageName() + " for " + scenario.getText() + " Please check your feature settings");
       }
       else
       {
-        scenarioResult.setMessage("Skipped page for :" + page.getPageName() + " [" + wae.getMessage() + "].");
+        scenarioResult.setMessage("Skipped page for :" + page.getPageName() + " [" + exception.getMessage() + "].");
         LOG.info("Skipped page for :" + page.getPageName() + " - optional.");
       }
 
@@ -241,7 +239,7 @@ public class SuiteProcessor
     page.setWebDriver(driver);
     page.setJsDriver(jsDriver);
     WebUIManager.getInstance().loadJQuery(jsDriver);
-    LOG.info("go to page " + page.getPageName());
+    LOG.info("Navigating to page " + page.getPageName());
     page.setPagePace(WebUIManager.getInstance().getPagePace());
     page.setActionPace(WebUIManager.getInstance().getActionPace());
     page.setBrowser(WebUIManager.getInstance().getBrowser());
@@ -282,12 +280,8 @@ public class SuiteProcessor
       expectResult.setSuccess(false);
       expectResult.setMessage(expect.getMessage());
 
-      // if (scenarioResult.getScreenShotPath() != null)
-      // {
       LOG.info("Failed to meet expect - capture screen ");
       scenarioResult.setScreenShotPath(captureScreen(page.getWebDriver()));
-
-      // }
     }
   }
 
