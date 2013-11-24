@@ -77,10 +77,8 @@ public class ReportGenerator
     String                 reportFileName       = dataFolder.getAbsolutePath() + File.separator + reportName + JS_EXTENSION;
     File                   reportJsonFile       = new File(reportFileName);
     ObjectMapper           mapper               = new ObjectMapper();
-    String                 jsonString           = null;
     File                   dataJsonFile         = new File(dataFolder.getAbsolutePath() + File.separator + DATA_FOLDER_NAME + JS_EXTENSION);
     List<SuiteResultLight> dataList             = new ArrayList<>();
-    String                 dataJsonString       = "";
     SuiteResultLight       suiteLight           = new SuiteResultLight();
 
     suiteLight.setName(reportName);

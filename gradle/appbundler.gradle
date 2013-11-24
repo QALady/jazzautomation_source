@@ -38,7 +38,6 @@ project.ext {
   macAppDir = "${project.projectname}.app"
 
 }
-println "Project stuff:::::::::  ${project.projectname}.app"
 
 // Mac Release - from https://github.com/anathema/anathema/blob/master/build.gradle
 task createLauncherMac(dependsOn: installApp) << {

@@ -83,4 +83,39 @@ public class ComponentAction
 
     return returnStringBuffer.toString();
   }
+
+  public void setComponentName(String componentName)
+  {
+    this.componentName = componentName;
+  }
+
+  public void setOptional(boolean optional)
+  {
+    this.optional = optional;
+  }
+
+  public void setActionValue(String actionValue)
+  {
+    this.actionValue = actionValue;
+  }
+
+  public String getComponentName()
+  {
+    return componentName;
+  }
+
+  public HtmlAction getAction()
+  {
+    return action;
+  }
+
+  public String getActionValue()
+  {
+    return actionValue;
+  }
+
+  public boolean isOptional()
+  {
+    return optional;
+  }
 }

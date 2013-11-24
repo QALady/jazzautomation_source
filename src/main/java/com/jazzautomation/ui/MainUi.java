@@ -93,8 +93,7 @@ public class MainUi extends JFrame
   {
     setTitle("Jazz Automation v1.0");
     setContentPane(mainPanel);
-    setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel", this);
-
+    // setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel", this);
     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
     // initial size of 1000 x 700, or full screen, whichever is smaller

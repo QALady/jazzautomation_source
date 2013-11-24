@@ -12,7 +12,7 @@ public class PageAction
 {
   private String                      sourcePageName;
   private String                      targetPageName;
-  private boolean                     optional     = false;
+  private boolean                     optional;
   private List<List<ComponentAction>> actionChains = new ArrayList<>();
   private List<DomElementExpectation> expects;
 

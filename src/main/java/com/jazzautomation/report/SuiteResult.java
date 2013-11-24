@@ -11,6 +11,11 @@ public class SuiteResult extends ResultBase
   private double              successRate    = 1.0;
   private LocalDate           timePerformed  = LocalDate.now();
 
+  public void addFeatureResult(FeatureResult featureResult)
+  {
+    featureResults.add(featureResult);
+  }
+
   public void calculateSuccessRate()
   {
     int numFailedResults = 0;
@@ -34,29 +39,36 @@ public class SuiteResult extends ResultBase
     }
   }
 
+  // ------------------------ CANONICAL METHODS ------------------------
+  public String toString()
+  {
+    StringBuilder results = new StringBuilder();
+
+    results.append("Overall success: ").append(isSuccess()).append('\n');
+    results.append("Duration: ").append(getDuration()).append(" seconds\n");
+    results.append("Success rate: ").append(successRate).append('\n');
+    results.append("Features:" + '\n');
+
+    for (FeatureResult featureResult : featureResults)
+    {
+      results.append("\tFeature: ").append(featureResult.getFeature().getDescription().trim()).append('\n');
+      results.append("\t\tSuccess: ").append(featureResult.isSuccess()).append('\n');
+      results.append("\t\tDuration: ").append(featureResult.getDuration()).append(" seconds\n");
+      results.append("\t\tSuccess rate: ").append(featureResult.getSuccessRate()).append('\n');
+    }
+
+    return results.toString();
+  }
+
+  // --------------------- GETTER / SETTER METHODS ---------------------
   public List<FeatureResult> getFeatureResults()
   {
     return featureResults;
   }
 
-  public void addFeatureResult(FeatureResult featureResult)
-  {
-    featureResults.add(featureResult);
-  }
-
   public void setFeatureResults(List<FeatureResult> featureResults)
   {
     this.featureResults = featureResults;
-  }
-
-  public LocalDate getTimePerformed()
-  {
-    return timePerformed;
-  }
-
-  public void setTimePerformed(LocalDate timePerformed)
-  {
-    this.timePerformed = timePerformed;
   }
 
   public double getSuccessRate()
@@ -69,23 +81,13 @@ public class SuiteResult extends ResultBase
     this.successRate = successRate;
   }
 
-  public String toString()
+  public LocalDate getTimePerformed()
   {
-    StringBuilder results = new StringBuilder();
+    return timePerformed;
+  }
 
-    results.append("Overall success: " + this.isSuccess() + "\n");
-    results.append("Duration: " + this.getDuration() + " seconds\n");
-    results.append("Success rate: " + this.successRate + "\n");
-    results.append("Features:" + "\n");
-
-    for (FeatureResult featureResult : featureResults)
-    {
-      results.append("\tFeature: " + featureResult.getFeature().getDescription().trim() + "\n");
-      results.append("\t\tSuccess: " + featureResult.isSuccess() + "\n");
-      results.append("\t\tDuration: " + featureResult.getDuration() + " seconds\n");
-      results.append("\t\tSuccess rate: " + featureResult.getSuccessRate() + "\n");
-    }
-
-    return results.toString();
+  public void setTimePerformed(LocalDate timePerformed)
+  {
+    this.timePerformed = timePerformed;
   }
 }

@@ -15,14 +15,14 @@ public class ScenarioResult extends ResultBase
 
   public void calculateSuccessRate()
   {
-    int numFailedResults = 0;
-
     if (actionResults.isEmpty() && expectResults.isEmpty())
     {
       successRate = 1.0;
 
       return;
     }
+
+    int numFailedResults = 0;
 
     for (ActionResult actionResult : actionResults)
     {
