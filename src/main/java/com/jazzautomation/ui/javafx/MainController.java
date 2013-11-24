@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * JavaFX front-end - will impoement later.
+ * JavaFX front-end - will implement later.
  *
  * <p>Created by douglas_bullard on 10/2/13.</p>
  */
