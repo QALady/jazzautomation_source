@@ -22,7 +22,9 @@ appender("STDOUT", ConsoleAppender) {
 appender("FILE", FileAppender) {
   file = "${USER_HOME}/jazzautomation.log"
   encoder(PatternLayoutEncoder) {
-    pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} [lineNum:%line] - %msg%n"
+//    pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} [lineNum:%line] - %msg%n"
+//    pattern = "%d{HH:mm:ss.SSS} %-5level %logger{36}:%line - %msg%n"
+    pattern = " %msg%n"
   }
 }
 logger("org.apache", ERROR)
