@@ -15,6 +15,8 @@ targetCompatibility = 1.7
 repositories {
 	mavenCentral()
   ivy {
+    
+//    Libraries not in Maven can be uploaded here and used
             artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
             ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
   }
