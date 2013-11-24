@@ -12,6 +12,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 
+
 repositories {
 	mavenCentral()
   ivy {
@@ -31,6 +32,7 @@ project.ext {
 	artifactId = 'com-jazzautomation'
 	groupId = group
 	versionNumber = 1.0	
+  osx_app_name = 'Jazz Automation'
 }
 
 

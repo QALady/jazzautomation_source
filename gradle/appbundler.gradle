@@ -39,7 +39,7 @@ project.ext {
 
 // Mac Release - from https://github.com/anathema/anathema/blob/master/build.gradle
 task createLauncherMac(dependsOn: installApp) << {
-println "---------Root project name is $rootProject.name"
+def appName = project.ext.get('osx_app_name')
     ant.taskdef(
             name: "bundleapp",
             classname: "com.oracle.appbundler.AppBundlerTask",
@@ -48,9 +48,9 @@ println "---------Root project name is $rootProject.name"
     mkdir("${buildDir}/dist")
     ant.bundleapp(
             outputdirectory: "${buildDir}/dist",
-            name: "${rootProject.name}",
-            displayname:  "${rootProject.name}",
-            identifier: "com.jazzautomation2",
+            name: appName,
+            displayname:  appName,
+            identifier: "com.jazzautomation",
 //            icon: "src/main/resources/gradleLogo_big.icns", //opt
 //            shortversion: "${versionString}", //opt
 //            signature: "????", //opt
@@ -58,7 +58,7 @@ println "---------Root project name is $rootProject.name"
             applicationCategory: "public.app-category.utilities", //opt
 //            mainclassname: "com.jazzautomation.ui.javafx.MainFxUi"  // JavaFX class - note that there's something which prevents the UI from showing with this.
             mainclassname: "com.jazzautomation.ui.MainUi"             // Swing class - runs fine.
-    ) {
+      ) {
         runtime(dir: "build/jre/osx/jdk1.7.0_40.jdk/Contents/Home") //opt - one way to get around who's got what - put the JRE into source control
 //        runtime(dir: "$javaHomeDir") //opt
 //
