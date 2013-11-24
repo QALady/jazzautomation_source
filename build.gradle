@@ -14,6 +14,14 @@ targetCompatibility = 1.7
 
 repositories {
 	mavenCentral()
+  ivy {
+            artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
+            ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
+  }
+}
+
+configurations {
+  jre
 }
 
 project.ext {
@@ -23,16 +31,6 @@ project.ext {
 	versionNumber = 1.0	
 }
 
-sourceSets {
-    main {
-        java {
-            srcDir 'src/main/java'
-        }
-        resources {
-            srcDir 'src/main/resources'
-        }
-    }
-}
 
 task show << {
 	println relativePath(compileJava.destinationDir)
@@ -41,6 +39,31 @@ task show << {
 }
 
 
+final path = System.properties.find { it.key == "java.home" }.toString()
+path=path.split("=")[1]
+def javaHomeDir=new File(path).parent
+
+apply from: "${project.projectDir}/gradle/dependencies.gradle"
+apply from: "${project.projectDir}/gradle/appbundler.gradle"
+//apply from: "${project.projectDir}/gradle/javafxbundler.gradle"
+
+
+println """\
+
+========================================================================================================
+Welcome to Gradle!  This is version: $gradle.gradleVersion
+              Gradle home is set to: $gradle.gradleHomeDir
+    Gradle user directory is set to: $gradle.gradleUserHomeDir
+                Java home is set to: $javaHomeDir
+                      mainClassName: $mainClassName
+
+                     Base directory: $projectDir
+
+
+Running build script ${relativePath(buildFile)}
+========================================================================================================
+
+"""
 task runJazz (type: JavaExec, dependsOn: 'classes', description: 'Run test automation locally'){
 
 	main = 'com.jazzautomation.AutomationDriver'
@@ -90,8 +113,8 @@ task jazzJar(type: Jar) {
 eclipse {
 	jdt {
 	  //if you want to alter the java versions (by default they are configured with gradle java plugin settings):
-	  sourceCompatibility = 1.6
-	  targetCompatibility = 1.6
+	  sourceCompatibility = 1.7
+	  targetCompatibility = 1.7
 	}
   }
 

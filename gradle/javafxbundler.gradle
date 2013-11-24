@@ -1,0 +1,105 @@
+//apply from: 'http://dl.bintray.com/content/shemnon/javafx-gradle/0.3.0/javafx.plugin'
+apply from: 'gradle/javafx.plugin'
+
+// add an extra bit to go thorough any samples (implement Sample and in the samples package) as a samples.txt file
+//processResources << {
+//    def samplesList = []
+//    fileTree(dir:'src/main/java').visit {
+//        if (!it.directory && it.file.text.contains(' implements Sample ') && it.path.contains("samples")) {
+//            samplesList += it.path
+//        }
+//    }
+//    ('build/resources/main/org/controlsfx/samples/samples.txt' as File).text = samplesList.join('\n')
+//}
+
+processResources << {
+}
+
+
+javafx {
+
+    profiles {
+        // not every possible platform override, but ones that have a known impact
+        windows {
+            id = '35745385-2457-4775-b4a0-5ce5daa70835'
+            category = 'Jazz Automation'
+//            javaRuntime = 'C:/Program Files (x86)/Java/jdk1.8.0' // yours may be different
+            javaRuntime = 'C:/Program Files (x86)/Java/jdk1.7.0' // yours may be different
+        }
+
+        macosx {
+            id = 'com.jazzautomation.jazzautomation'
+            category = 'public.app-category.developer-tools'
+//            javaRuntime = '/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/'
+//            javaRuntime = '/Library/Java/JavaVirtualMachines/jdk1.7.0.jdk/'
+//            javaRuntime =  "build/jre/osx/jdk1.7.0_40.jdk/Contents/Home"
+          javaRuntime = '/Library/Java/JavaVirtualMachines/jdk1.7.0_40.jdk/'
+        }
+
+        linux {
+            // linux doesn't care about id, it goes un-used at the moment
+            category = 'Development'
+            // good luck finding a standard location for the JDK
+            //javaRuntime = '/usr/lib/jvm/java-7-oracle'
+        }
+    }
+
+    appID project.ext["appID"] 
+    appName project.ext["appName"]
+//    mainClass project.ext["mainClassName"]
+    mainClass 'com.jazzautomation.AutomationDriver'
+
+    jvmArgs = ['-XX:+UseThreadPriorities']
+    systemProperties = [ 'java.library.path':'.' ]
+    arguments = []
+
+    embedLauncher = true // caution: class-path not set and is overwritten if set to false
+
+    // deplpy/info attributes
+    category = 'demo'
+    copyright = 'Copyright (c) Statement Corporation'
+    description = 'Some copyright description goes here'
+    licenseType = '3 clause BSD - ?????'
+    vendor = 'Statement Corporation'
+
+    // deploy/preferences attributes
+    installSystemWide = true
+    menu = true
+    shortcut = true
+
+//    icons {
+//        shortcut = ['shortcut-16.png', 'shortcut-32.png', 'shortcut-128.png', 'shortcut-256.png', 'shortcut-16@2x.png', 'shortcut-32@2x.png', 'shortcut-128@2x.png']
+//      volume = 'shortcut-128.png'
+//        setup = 'javafx-icon.png'
+//  }
+
+}
+
+compileJava {
+//    sourceCompatibility = 8
+//    targetCompatibility = 8
+    sourceCompatibility = 1.7
+    targetCompatibility = 1.7
+}
+
+jfxDeploy {
+    // verbose output of the deployment, to the info chanel
+    // it leaves files in the temp dir if set to true
+    verbose = false
+}
+
+
+task prepareMacJRE(type: Copy) {
+    def target = new File('build/jre/osx');
+    into target
+    from { zipTree('gradle/jre/osx_jdk1.7.0_40.zip') }
+    onlyIf { !target.exists() }
+    doLast {
+        ant.delete(includeemptydirs: true, quiet: true) {
+            fileset(dir: buildDir, includes: "tmp/expandedArchives/jre-mac64*/**", defaultexcludes: false)
+        }
+    }
+}
+
+assemble.dependsOn prepareMacJRE
+
