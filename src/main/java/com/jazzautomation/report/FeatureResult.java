@@ -1,14 +1,15 @@
 package com.jazzautomation.report;
 
+import com.jazzautomation.cucumber.Feature;
+
 import java.util.ArrayList;
 import java.util.List;
-import com.jazzautomation.cucumber.Feature;
 
 public class FeatureResult extends ResultBase
 {
   private Feature              feature;
   private double               successRate     = 1.0;
-  private List<ScenarioResult> scenarioResults = new ArrayList<ScenarioResult>();
+  private List<ScenarioResult> scenarioResults = new ArrayList<>();
 
   public void calculateSuccessRate()
   {
@@ -27,8 +28,7 @@ public class FeatureResult extends ResultBase
       setSuccess(false);
     }
 
-		successRate = Math.round((scenarioResults.size() - numFailedScenario)
-				* 1.0 / (scenarioResults.size() * 1.0) * 10000.0) / 10000.0;
+    successRate = Math.round((scenarioResults.size() - numFailedScenario) * 1.0 / (scenarioResults.size() * 1.0) * 10000.0) / 10000.0;
   }
 
   public Feature getFeature()
@@ -63,6 +63,6 @@ public class FeatureResult extends ResultBase
 
   public void addScenarioResult(ScenarioResult scenarioResult)
   {
-    this.scenarioResults.add(scenarioResult);
+    scenarioResults.add(scenarioResult);
   }
 }

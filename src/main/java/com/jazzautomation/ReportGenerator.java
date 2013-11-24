@@ -2,46 +2,54 @@ package com.jazzautomation;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+
 import com.jazzautomation.report.SuiteResult;
 import com.jazzautomation.report.SuiteResultLight;
+
+import static com.jazzautomation.util.Constants.*;
+
+import org.codehaus.jackson.map.ObjectMapper;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import org.threeten.bp.LocalDateTime;
+import org.threeten.bp.ZoneId;
+import org.threeten.bp.ZonedDateTime;
+import org.threeten.bp.format.DateTimeFormatter;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import static com.jazzautomation.util.Constants.DATA_FOLDER_NAME;
-import static com.jazzautomation.util.Constants.DATA_JS_PRE_JSON;
-import static com.jazzautomation.util.Constants.INDEX_FILES;
-import static com.jazzautomation.util.Constants.JS_LIB_FILES;
-import static com.jazzautomation.util.Constants.JS_LIB_FOLDER;
-import static com.jazzautomation.util.Constants.REPORT_JS_PRE_JSON;
 
-/**
- * Responsible for generating the Jazz Automation report
- */
+import java.net.URL;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/** Responsible for generating the Jazz Automation report. */
+@SuppressWarnings({ "StaticMethodOnlyUsedInOneClass", "TypeMayBeWeakened" })
 public class ReportGenerator
 {
-  private static final Logger LOG = LoggerFactory.getLogger(ReportGenerator.class);
-  private static final String DATE_FORMAT = "MM_dd_yyyy_'at'_HH_mm";
+  private static final Logger LOG          = LoggerFactory.getLogger(ReportGenerator.class);
+  public static final String  DATE_FORMAT  = "MM_dd_yyyy_'at'_HH_mm";
   private static final String JS_EXTENSION = ".js";
-  private static final String UNDER_SCORE = "_";
+  private static final String UNDER_SCORE  = "_";
+
+  private ReportGenerator() {}
+
   /**
-   * Generates the JazzAutomation report for the provided <code>SuiteResult</code>
-   * @param suiteResult the suite results.
+   * Generates the JazzAutomation report for the provided <code>SuiteResult.</code>
+   *
+   * @param  suiteResult  the suite results.
    */
   public static void generateReport(SuiteResult suiteResult)
   {
-    String reportPath = WebUIManager.getInstance().getLogsPath();
-    File logsPathFile = new File(reportPath);
+    String reportPath   = WebUIManager.getInstance().getLogsPath();
+    File   logsPathFile = new File(reportPath);
 
     // load data.json if exist
     if (!logsPathFile.exists())
@@ -54,63 +62,46 @@ public class ReportGenerator
 
     // find data path
     String dataFolderPath = logsPathFile.getAbsolutePath() + File.separator + DATA_FOLDER_NAME;
-    File dataFolder = new File(dataFolderPath);
+    File   dataFolder     = new File(dataFolderPath);
 
     if (!dataFolder.exists())
     {
       dataFolder.mkdir();
     }
 
-    Date now = new Date();
-    SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
-    String reportName = WebUIManager.getInstance().getProjectName() + UNDER_SCORE + sdf.format(now);
-    String reportFileName = dataFolder.getAbsolutePath() + File.separator + reportName + JS_EXTENSION;
-    File reportJsonFile = new File(reportFileName);
-    ObjectMapper mapper = new ObjectMapper();
-    String jsonString = null;
-    File dataJsonFile = new File(dataFolder.getAbsolutePath() + File.separator + DATA_FOLDER_NAME + JS_EXTENSION);
-    List<SuiteResultLight> dataList = new ArrayList<>();
-    String dataJsonString = "";
-    SuiteResultLight suiteLight = new SuiteResultLight();
+    LocalDateTime          now                  = LocalDateTime.now();
+    ZonedDateTime          gmtTime              = ZonedDateTime.now(ZoneId.of("GMT"));
+    DateTimeFormatter      dateTimeFormatter    = DateTimeFormatter.ofPattern(DATE_FORMAT);
+    DateTimeFormatter      gmtDateTimeFormatter = DateTimeFormatter.ofPattern("d MMM yyyy HH:mm:ss 'GMT'");
+    String                 reportName           = WebUIManager.getInstance().getProjectName() + UNDER_SCORE + dateTimeFormatter.format(now);
+    String                 reportFileName       = dataFolder.getAbsolutePath() + File.separator + reportName + JS_EXTENSION;
+    File                   reportJsonFile       = new File(reportFileName);
+    ObjectMapper           mapper               = new ObjectMapper();
+    String                 jsonString           = null;
+    File                   dataJsonFile         = new File(dataFolder.getAbsolutePath() + File.separator + DATA_FOLDER_NAME + JS_EXTENSION);
+    List<SuiteResultLight> dataList             = new ArrayList<>();
+    String                 dataJsonString       = "";
+    SuiteResultLight       suiteLight           = new SuiteResultLight();
 
     suiteLight.setName(reportName);
     suiteLight.setProject(WebUIManager.getInstance().getProjectName());
-    suiteLight.setTimestamp(now.toGMTString());
+    suiteLight.setTimestamp(gmtDateTimeFormatter.format(gmtTime));
     suiteLight.setDuration(suiteResult.getDuration());
     suiteLight.setSuccessRate(suiteResult.getSuccessRate());
 
     if (dataJsonFile.exists())
     {
-      try
-      {
-        FileInputStream fileIn = new FileInputStream(dataJsonFile);
-        BufferedReader stdin = new BufferedReader(new InputStreamReader(fileIn));
-        StringBuffer buffer = new StringBuffer();
-        String line;
-
-        while ((line = stdin.readLine()) != null)
-        {
-          buffer.append(line);
-        }
-
-        String stringData = buffer.toString();
-
-        if (stringData.trim().startsWith(DATA_JS_PRE_JSON))
-        {
-          dataList = mapper.readValue(stringData.trim().substring(DATA_JS_PRE_JSON.length()), ArrayList.class);
-        }
-      }
-      catch (Exception e)
-      {
-        LOG.error("Error generating report", e);
-      }
+      dataList = getSuiteResultFromJsonFile(mapper, dataJsonFile, dataList);
     }
 
     dataList.add(suiteLight);
 
+    String dataJsonString = "";
+    String jsonString     = null;
+
     try
     {
-      jsonString = REPORT_JS_PRE_JSON + mapper.writeValueAsString(suiteResult);
+      jsonString     = REPORT_JS_PRE_JSON + mapper.writeValueAsString(suiteResult);
       dataJsonString = DATA_JS_PRE_JSON + mapper.writeValueAsString(dataList);
     }
     catch (Exception e)
@@ -120,7 +111,8 @@ public class ReportGenerator
 
     // serialize SuiteResult
     try(FileOutputStream reportOutputStream = new FileOutputStream(reportJsonFile);
-        FileOutputStream jsonDataOutputFile = new FileOutputStream(dataJsonFile);)
+        FileOutputStream jsonDataOutputFile = new FileOutputStream(dataJsonFile);
+       )
     {
       if (jsonString != null)
       {
@@ -137,6 +129,34 @@ public class ReportGenerator
     }
   }
 
+  private static List<SuiteResultLight> getSuiteResultFromJsonFile(ObjectMapper mapper, File dataJsonFile, List<SuiteResultLight> dataList)
+  {
+    try(FileInputStream fileIn = new FileInputStream(dataJsonFile);
+        BufferedReader stdin = new BufferedReader(new InputStreamReader(fileIn)))
+    {
+      StringBuilder buffer = new StringBuilder();
+      String        line;
+
+      while ((line = stdin.readLine()) != null)
+      {
+        buffer.append(line);
+      }
+
+      String stringData = buffer.toString();
+
+      if (stringData.trim().startsWith(DATA_JS_PRE_JSON))
+      {
+        dataList = mapper.readValue(stringData.trim().substring(DATA_JS_PRE_JSON.length()), ArrayList.class);
+      }
+    }
+    catch (Exception e)
+    {
+      LOG.error("Error generating report", e);
+    }
+
+    return dataList;
+  }
+
   private static void copyTemplateFiles(File logsPathFile)
   {
     // copy all index files
@@ -146,8 +166,8 @@ public class ReportGenerator
     }
 
     // create jslib folder
-    String jsLibPath = logsPathFile.getAbsolutePath() + File.separator + JS_LIB_FOLDER;
-    File jsLibFolderFile = new File(jsLibPath);
+    String jsLibPath       = logsPathFile.getAbsolutePath() + File.separator + JS_LIB_FOLDER;
+    File   jsLibFolderFile = new File(jsLibPath);
 
     if (!jsLibFolderFile.exists())
     {
@@ -164,10 +184,12 @@ public class ReportGenerator
   private static void copyFile(String resourceUrlPath, String reportFilePath)
   {
     File reportFile = new File(reportFilePath);
-    try (FileOutputStream outForReport = new FileOutputStream(reportFile))
+
+    try(FileOutputStream outForReport = new FileOutputStream(reportFile))
     {
-      URL fileUrl = Resources.getResource(resourceUrlPath);
-      String string = Resources.toString(fileUrl, Charsets.UTF_8);
+      URL    fileUrl = Resources.getResource(resourceUrlPath);
+      String string  = Resources.toString(fileUrl, Charsets.UTF_8);
+
       outForReport.write(string.getBytes());
       outForReport.flush();
     }

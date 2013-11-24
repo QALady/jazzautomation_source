@@ -17,4 +17,6 @@ public class CucumberConstants
   public static String ON                          = "on";
   public static String LINE_START_MARK             = "{Feature Line # ";
   public static String LINE_END_MARK               = "} - ";
+
+  private CucumberConstants() {}
 }

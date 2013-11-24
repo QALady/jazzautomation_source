@@ -1,94 +1,48 @@
 package com.jazzautomation.action;
 
 import com.jazzautomation.page.DomElementExpectation;
-import java.util.List;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
+
+import java.util.List;
 
 public class ComponentAction
 {
-  private String                               componentName;
-  private HtmlAction                            action;
-  private String                               actionValue = null;  // only apply to ENTER/SELECT as action
-  @JsonIgnore
-  private boolean                              optional;
-  @JsonIgnore
-  private List<DomElementExpectation>             expects;
-
-  public String getComponentName()
-  {
-    return componentName;
-  }
-
-  public void setComponentName(String componentName)
-  {
-    this.componentName = componentName;
-  }
-
-  public HtmlAction getAction()
-  {
-    return action;
-  }
-
-  public String getActionValue()
-  {
-    return actionValue;
-  }
-
-  public void setActionValue(String actionValue)
-  {
-    this.actionValue = actionValue;
-  }
-
-  public List<DomElementExpectation> getExpects()
-  {
-    return expects;
-  }
-
-  public boolean isOptional()
-  {
-    return optional;
-  }
-
-  public void setOptional(boolean optional)
-  {
-    this.optional = optional;
-  }
-
-  public void setExpects(List<DomElementExpectation> expects)
-  {
-    this.expects = expects;
-  }
+  private String                                  componentName;
+  private HtmlAction                              action;
+  private String                                  actionValue = null;  // only apply to ENTER/SELECT as action
+  @JsonIgnore private boolean                     optional;
+  @JsonIgnore private List<DomElementExpectation> expects;
 
   public void setAction(String actionName)
   {
     if (actionName.equalsIgnoreCase(HtmlAction.ENTER.getActionName()))
     {
-      this.action = HtmlAction.ENTER;
+      action = HtmlAction.ENTER;
     }
     else if (actionName.equalsIgnoreCase(HtmlAction.SELECT.getActionName()))
     {
-      this.action = HtmlAction.SELECT;
+      action = HtmlAction.SELECT;
     }
     else if (actionName.equalsIgnoreCase(HtmlAction.CLICK.getActionName()))
     {
-      this.action = HtmlAction.CLICK;
+      action = HtmlAction.CLICK;
     }
     else if (actionName.equalsIgnoreCase(HtmlAction.REFRESH.getActionName()))
     {
-      this.action = HtmlAction.REFRESH;
+      action = HtmlAction.REFRESH;
     }
     else if (actionName.equalsIgnoreCase(HtmlAction.HOVER.getActionName()))
     {
-      this.action = HtmlAction.HOVER;
+      action = HtmlAction.HOVER;
     }
     else if (actionName.equalsIgnoreCase(HtmlAction.WAIT.getActionName()))
     {
-      this.action = HtmlAction.WAIT;
+      action = HtmlAction.WAIT;
     }
   }
 
-  @Override
-  public boolean equals(Object o)
+  @Override public boolean equals(Object o)
   {
     if (!(o instanceof ComponentAction))
     {
@@ -96,29 +50,29 @@ public class ComponentAction
     }
     else
     {
-      return ((ComponentAction) o).getComponentName().equals(this.componentName)
-               && ((ComponentAction) o).getAction().getActionName().equals(this.action.getActionName());
+      return ((ComponentAction) o).getComponentName().equals(componentName)
+               && ((ComponentAction) o).getAction().getActionName().equals(action.getActionName());
     }
   }
 
   public String serialize()
   {
-    return componentName + "." + action.getActionName().toUpperCase();
+    return componentName + '.' + action.getActionName().toUpperCase();
   }
 
   public String toString()
   {
-    StringBuffer returnStringBuffer = new StringBuffer();
+    StringBuilder returnStringBuffer = new StringBuilder();
 
-    returnStringBuffer.append(componentName + ".");
+    returnStringBuffer.append(componentName).append('.');
 
-    if (action.equals(HtmlAction.ENTER))
+    if (action == HtmlAction.ENTER)
     {
-      returnStringBuffer.append(HtmlAction.ENTER.getActionName().toUpperCase() + "(" + actionValue + ")");
+      returnStringBuffer.append(HtmlAction.ENTER.getActionName().toUpperCase()).append('(').append(actionValue).append(')');
     }
-    else if (action.equals(HtmlAction.SELECT))
+    else if (action == HtmlAction.SELECT)
     {
-      returnStringBuffer.append(HtmlAction.SELECT.getActionName().toUpperCase() + "(" + actionValue + ")");
+      returnStringBuffer.append(HtmlAction.SELECT.getActionName().toUpperCase()).append('(').append(actionValue).append(')');
     }
     else
     {

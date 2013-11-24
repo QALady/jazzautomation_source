@@ -2,14 +2,14 @@ package com.jazzautomation.action;
 
 public enum HtmlAction
 {
-  CLICK  ("click"),
-  HOVER  ("hover"),
-  WAIT   ("wait"),
-  REFRESH("refresh"),
-  ENTER  ("enter"),
-  SELECT ("select"),
-  FORWARD("forward"),
-  BACKWAR("backward");
+  CLICK   ("click"),
+  HOVER   ("hover"),
+  WAIT    ("wait"),
+  REFRESH ("refresh"),
+  ENTER   ("enter"),
+  SELECT  ("select"),
+  FORWARD ("forward"),
+  BACKWARD("backward");
 
   private String actionName;
 
@@ -25,6 +25,6 @@ public enum HtmlAction
 
   public String toString()
   {
-    return this.getActionName().toUpperCase();
+    return getActionName().toUpperCase();
   }
 }

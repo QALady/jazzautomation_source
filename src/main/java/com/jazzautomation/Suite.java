@@ -1,25 +1,24 @@
 package com.jazzautomation;
 
 import com.jazzautomation.cucumber.Feature;
+
 import com.jazzautomation.report.SuiteResult;
+
 import java.util.List;
 
-/**
- * Test suite containing a collections of features.
- */
+/** Test suite containing a collections of features. */
 public class Suite
 {
-  private SuiteResult result;
+  private SuiteResult   result;
   private List<Feature> features;
 
-  public Suite()
-  {
-  }
+  public Suite() {}
 
   public Suite(List<Feature> features)
   {
     this();
-    if(null == features || features.isEmpty())
+
+    if ((null == features) || features.isEmpty())
     {
       throw new IllegalArgumentException("The feature list cannot be null or empty");
     }
@@ -44,7 +43,7 @@ public class Suite
 
   public void setFeatures(List<Feature> features)
   {
-    if(null == features || features.isEmpty())
+    if ((null == features) || features.isEmpty())
     {
       throw new IllegalArgumentException("The feature list cannot be null or empty");
     }
@@ -52,4 +51,3 @@ public class Suite
     this.features = features;
   }
 }
-

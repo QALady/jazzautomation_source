@@ -2,8 +2,8 @@ package com.jazzautomation.page;
 
 public class HtmlCondition
 {
-  String                 componentName;
-  HtmlActionConditionEnum condition;
+  private String                  componentName;
+  private HtmlActionConditionEnum condition;
 
   public String getComponentName()
   {

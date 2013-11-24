@@ -1,24 +1,24 @@
 package com.jazzautomation.cucumber;
 
+import com.jazzautomation.action.ComponentAction;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.codehaus.jackson.annotate.JsonIgnore;
-
-import com.jazzautomation.action.ComponentAction;
 
 public class And extends CucumberBase
 {
   private List<ComponentAction> actions  = new ArrayList<>();
   private boolean               optional;
 
-  public List<ComponentAction> getActions()
-  {
-    return actions;
-  }
-
   public void addActions(ComponentAction action)
   {
     actions.add(action);
+  }
+
+  // --------------------- GETTER / SETTER METHODS ---------------------
+  public List<ComponentAction> getActions()
+  {
+    return actions;
   }
 
   public boolean isOptional()

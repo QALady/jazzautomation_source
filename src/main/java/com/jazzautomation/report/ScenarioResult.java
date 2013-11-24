@@ -1,22 +1,23 @@
 package com.jazzautomation.report;
 
+import com.jazzautomation.cucumber.Scenario;
+
 import java.util.ArrayList;
 import java.util.List;
-import com.jazzautomation.cucumber.Scenario;
 
 public class ScenarioResult extends ResultBase
 {
-  private Scenario           scenario;
-  private double             successRate    = 1.0;
-  private List<ActionResult> actionResults  = new ArrayList<ActionResult>();
-  private List<ExpectationResult> expectResults  = new ArrayList<ExpectationResult>();
-	private String screenShotPath = null;
+  private Scenario                scenario;
+  private double                  successRate    = 1.0;
+  private List<ActionResult>      actionResults  = new ArrayList<>();
+  private List<ExpectationResult> expectResults  = new ArrayList<>();
+  private String                  screenShotPath;
 
   public void calculateSuccessRate()
   {
     int numFailedResults = 0;
 
-    if ((actionResults.size() + expectResults.size()) == 0)
+    if (actionResults.isEmpty() && expectResults.isEmpty())
     {
       successRate = 1.0;
 

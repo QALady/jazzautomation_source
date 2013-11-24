@@ -1,6 +1,7 @@
 package com.jazzautomation.report;
 
 import com.jazzautomation.action.ComponentAction;
+
 import com.jazzautomation.cucumber.And;
 
 public class ActionResult extends ResultBase
@@ -25,6 +26,6 @@ public class ActionResult extends ResultBase
 
   public void setAction(ComponentAction componentAction)
   {
-    this.action = componentAction;
+    action = componentAction;
   }
 }

@@ -3,34 +3,40 @@ package com.jazzautomation;
 import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.parser.FeatureParser;
 import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
-import com.jazzautomation.util.WebActionException;
+
+import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
 
-/**
- * This is a driver class to start automation.
- */
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
+/** This is a driver class to start automation. */
 public class AutomationDriver
 {
-  private static final Logger LOG = LoggerFactory.getLogger(AutomationDriver.class);
+  private static final Logger LOG               = LoggerFactory.getLogger(AutomationDriver.class);
   private static final String FEATURE_SEPERATOR = ",";
-  public static final String FEATURE = ".feature";
-  private static String featureNames;
+  public static final String  FEATURE           = ".feature";
+  private static String       featureNames;
 
+  private AutomationDriver() {}
 
   public static void main(String[] args)
   {
     boolean successful = true;
 
     LOG.info("Starting Jazz Automation");
+
     try
     {
       successful = beginTestSuite();
@@ -38,22 +44,22 @@ public class AutomationDriver
     catch (Exception e)
     {
       LOG.error("Test failure", e);
-
       successful = false;
     }
     finally
     {
-      int returnStatus = successful ? 0 : -1;
+      int returnStatus = successful ? 0
+                                    : -1;
 
       LOG.info("Jazz Automation Complete");
       System.exit(returnStatus);
     }
   }
 
-  public static boolean beginTestSuite() throws IOException, WebActionException
+  public static boolean beginTestSuite()
   {
-    final WebUIManager webUIManager = WebUIManager.getInstance();
-    List<String> featureNameList = new ArrayList<>();
+    final WebUIManager webUIManager    = WebUIManager.getInstance();
+    Set<String>        featureNameList = new LinkedHashSet<>();  // use set to prevent same feature multiple times - unless this is desired?
 
     // override features from jazz.properties
     if (System.getProperty(FEATURE_NAMES_EXECUTION) != null)
@@ -76,8 +82,7 @@ public class AutomationDriver
       }
     }
     else
-    {
-      // error checking
+    {  // error checking
       throw new IllegalArgumentException("No features have been specified, so exiting. Please update the jazz.properties file or system property.");
     }
 
@@ -93,20 +98,28 @@ public class AutomationDriver
     return true;
   }
 
-  public static List<Feature> loadFeatures(WebUIManager WebUIManager, List<String> featureNameList)
+  public static List<Feature> loadFeatures(WebUIManager webUIManager, Collection<String> featureNameList)
   {
-    String featurePath = WebUIManager.getConfigurationsPath() + File.separator + "features" + File.separator;
-    List<Feature> features = new ArrayList<>(featureNameList.size());
+    String        featurePath = webUIManager.getConfigurationsPath() + File.separator + "features" + File.separator;
+    List<Feature> features    = new ArrayList<>(featureNameList.size());
 
-    LOG.debug("Feature path = [" + featurePath + "]");
+    if (LOG.isDebugEnabled())
+    {
+      LOG.debug("Feature path = [" + featurePath + ']');
+    }
+
     for (String featureName : featureNameList)
     {
-      LOG.debug("Feature name = [" + featureName + "]");
+      if (LOG.isDebugEnabled())
+      {
+        LOG.debug("Feature name = [" + featureName + ']');
+      }
+
       try
       {
-        FileInputStream in = new FileInputStream(featurePath + featureName + FEATURE);
-        FeatureParser parser = FeatureParser.getInstance();
-        Feature feature = parser.parse(in);
+        FileInputStream in      = new FileInputStream(featurePath + featureName + FEATURE);
+        FeatureParser   parser  = FeatureParser.getInstance();
+        Feature         feature = parser.parse(in);
 
         feature.setName(featureName);
         features.add(feature);
@@ -121,7 +134,11 @@ public class AutomationDriver
       }
     }
 
-    LOG.debug("Feature list size = [" + features.size() + "]");
+    if (LOG.isDebugEnabled())
+    {
+      LOG.debug("Feature list size = [" + features.size() + ']');
+    }
+
     return features;
   }
 }

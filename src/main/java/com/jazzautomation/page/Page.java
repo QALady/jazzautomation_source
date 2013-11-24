@@ -1,20 +1,18 @@
 package com.jazzautomation.page;
 
 import com.jazzautomation.WebUIManager;
+
 import com.jazzautomation.action.ComponentAction;
 import com.jazzautomation.action.HtmlAction;
 import com.jazzautomation.action.HtmlActionStatus;
 import com.jazzautomation.action.PageAction;
+
 import com.jazzautomation.customaction.Action;
+
 import com.jazzautomation.util.Constants;
 import com.jazzautomation.util.Utils;
 import com.jazzautomation.util.WebActionException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
@@ -24,122 +22,130 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  * This is the Java Page Object representing a html page object. After setWebDriver and setJsDriver, one must performing setup() to load page. To do
  * navigations from one this page to a new page, gotoPage needs to be called. Typical sequences are:
  */
-@XmlRootElement
-public class Page
+@XmlRootElement public class Page
 {
-  private static final int NUMBER_OF_RETRY = 3;
-  private static Logger LOG = LoggerFactory.getLogger(Page.class);
-  private String pageName;
-  private String title;
-  private String urlExtension;
-  private Map<String, DomElement> domElements = new HashMap<>();
+  private static final int        NUMBER_OF_RETRY = 3;
+  private static Logger           LOG             = LoggerFactory.getLogger(Page.class);
+  private String                  pageName;
+  private String                  title;
+  private String                  urlExtension;
+  private Map<String, DomElement> domElements     = new HashMap<>();
 
   // if the page need to submit a form at the end of action
-  boolean doSubmit = false;
+  private boolean doSubmit = false;
 
   // if the page need some pre-condition values such as username/password
-  boolean doSetup = false;
+  private boolean doSetup = false;
 
   // if the page needs to switch windows from a parent page
-  boolean switchWindows = false;
-  boolean optional = false;
+  private boolean switchWindows = false;
+  private boolean optional      = false;
 
   // a key component must exist before a page can be operational.
-  private String keyDomElementName = null;
-  @XmlTransient
-  private WebDriver webDriver;
-  @XmlTransient
-  private JavascriptExecutor jsDriver;
-  @XmlTransient
-  private float pagePace = 10.0f;  // default value 10 seconds
-  @XmlTransient
-  private float actionPace = 1.0f;   // default value 1 second
-  @XmlTransient
-  private String browser;
+  private String                           keyDomElementName = null;
+  @XmlTransient private WebDriver          webDriver;
+  @XmlTransient private JavascriptExecutor jsDriver;
+  @XmlTransient private float              pagePace          = 10.0f;  // default value 10 seconds
+  @XmlTransient private float              actionPace        = 1.0f;   // default value 1 second
+  @XmlTransient private String             browser;
 
   /**
    * setup is needed if you need to have some value for your web components. For exmaple, a login page will need username and password before
    * performing web actions.
    *
-   * @throws WebActionException
+   * @throws  WebActionException
    */
+  // dbulla CODEREVIEW - winnebago method
   public void setup() throws WebActionException
   {
     LOG.info("Setting up page [" + pageName + "]");
 
-    int timeout_seconds = (int) (NUMBER_OF_RETRY * pagePace);
-    int sleepMilliSeconds = (int) (pagePace * 1000);
-    final StringBuffer failedMessage = new StringBuffer();
+    int                timeout_seconds   = (int) (NUMBER_OF_RETRY * pagePace);
+    int                sleepMilliSeconds = (int) (pagePace * 1000);
+    final StringBuffer failedMessage     = new StringBuffer();  // dbulla CODEREVIEW - this is never converted to String - can remove!
 
     try
     {
-      (new WebDriverWait(webDriver, timeout_seconds, sleepMilliSeconds)).until(new ExpectedCondition<Boolean>()
-      {
-        public Boolean apply(WebDriver d)
+      new WebDriverWait(webDriver, timeout_seconds, sleepMilliSeconds).until(new ExpectedCondition<Boolean>()
         {
-          if (pagePace > 20)
+          public Boolean apply(WebDriver d)
           {
-            if (!((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"))
+            if (pagePace > 20)
             {
-              return false;
+              if (!((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"))
+              {
+                return false;
+              }
             }
+
+            boolean doTitle = (title != null) && (title.trim().length() > 0);
+
+            changeWindowsIfNecessary(d, doTitle);
+
+            boolean urlAndTitleCorrect;
+
+            if (doTitle)
+            {
+              urlAndTitleCorrect = (d.getCurrentUrl().indexOf(urlExtension) > 0) && d.getTitle().equals(title);
+            }
+            else
+            {
+              urlAndTitleCorrect = d.getCurrentUrl().indexOf(urlExtension) > 0;
+            }
+
+            boolean keyComponentExisted = true;
+
+            if (keyDomElementName != null)
+            {
+              DomElement keyDomComponent = getDomElement(keyDomElementName);
+
+              if (keyDomComponent == null)
+              {
+                LOG.info("There is no such domElement, [" + keyDomElementName + "] in your configuration.");
+                failedMessage.append("no such dom element: " + keyDomElementName);
+
+                return false;
+              }
+
+              try
+              {
+                populateDomElement(keyDomComponent);
+              }
+              catch (WebActionException e)
+              {
+                if (LOG.isDebugEnabled())
+                {
+                  LOG.debug("Web exception", e);
+                }
+
+                return false;
+              }
+
+              if (!keyDomComponent.isExisted() || !keyDomComponent.isVisible())
+              {
+                keyComponentExisted = false;
+              }
+            }
+
+            return urlAndTitleCorrect && keyComponentExisted;
           }
-
-          boolean doTitle = (title != null) && (title.trim().length() > 0);
-
-          changeWindowsIfNecessary(d, doTitle);
-
-          boolean urlAndTitleCorrect;
-
-          if (doTitle)
-          {
-            urlAndTitleCorrect = (d.getCurrentUrl().indexOf(urlExtension) > 0) && d.getTitle().equals(title);
-          }
-          else
-          {
-            urlAndTitleCorrect = d.getCurrentUrl().indexOf(urlExtension) > 0;
-          }
-
-          boolean keyComponentExisted = true;
-
-          if (keyDomElementName != null)
-          {
-            DomElement keyDomComponent = getDomElement(keyDomElementName);
-
-            if (keyDomComponent == null)
-            {
-              LOG.info("There is no such domElement, [" + keyDomElementName + "] in your configuration.");
-              failedMessage.append("no such dom element: " + keyDomElementName);
-
-              return false;
-            }
-
-            try
-            {
-              populateDomElement(keyDomComponent);
-            }
-            catch (WebActionException e)
-            {
-              LOG.debug("Web exception", e);
-              return false;
-            }
-
-            if (!keyDomComponent.isExisted() || !keyDomComponent.isVisible())
-            {
-              keyComponentExisted = false;
-            }
-          }
-
-          return urlAndTitleCorrect && keyComponentExisted;
-        }
-      });
+        });
     }
     catch (Exception te)
     {
@@ -148,24 +154,24 @@ public class Page
       // adding why failed
       String errorMessage = "";
 
-      if ((title != null) && (title.trim().length() > 0))
+      if ((title != null) && !title.trim().isEmpty())
       {
         errorMessage += "Expected title is '" + title + "'; actual title: '" + webDriver.getTitle() + "'";
       }
 
-      if ((urlExtension != null) && (urlExtension.trim().length() > 0))
+      if ((urlExtension != null) && !urlExtension.trim().isEmpty())
       {
-        if (errorMessage.length() > 0)
+        if (!errorMessage.isEmpty())
         {
           errorMessage += " -- ";
         }
 
-        errorMessage += "Expect url is: '" + urlExtension + "'; actual urlExtension: '" + webDriver.getCurrentUrl() + "'";
+        errorMessage += "Expect url is: '" + urlExtension + "'; actual urlExtension: '" + webDriver.getCurrentUrl() + '\'';
       }
 
       if (keyDomElementName != null)
       {
-        if (errorMessage.length() > 0)
+        if (!errorMessage.isEmpty())
         {
           errorMessage += " -- ";
         }
@@ -173,7 +179,7 @@ public class Page
         DomElement keyDomComponent = getDomElement(keyDomElementName);
 
         errorMessage += "Expect " + keyDomElementName + " visible; actual: visible = " + keyDomComponent.isVisible() + " with (dom exists = ? "
-            + keyDomComponent.isExisted() + ")";
+                          + keyDomComponent.isExisted() + ')';
       }
 
       LOG.info("timeout to load page: " + pageName + " with error: " + errorMessage);
@@ -210,17 +216,17 @@ public class Page
     }
   }
 
-
   /**
    * Taking webaction for the webcomponent, such as keyenter, click, etc.
    *
-   * @param domElement
-   * @param webAction
-   * @return boolean
+   * @param   domElement
+   * @param   webAction
+   *
+   * @return  boolean
    */
   public HtmlActionStatus executeWebAction(final DomElement domElement, HtmlAction webAction, String actionValue) throws WebActionException
   {
-    if (webAction.equals(HtmlAction.WAIT) || webAction.equals(HtmlAction.REFRESH))
+    if ((webAction == HtmlAction.WAIT) || (webAction == HtmlAction.REFRESH))
     {
       LOG.info("Wait or refresh");
       performDomAction(domElement, webAction, actionValue);
@@ -248,10 +254,12 @@ public class Page
     }
   }
 
+  // dbulla CODEREVIEW -  another long method
   private HtmlActionStatus performDomAction(final DomElement domElement, HtmlAction webAction, String actionValue) throws WebActionException
   {
     try
-    {
+    {        // dbulla CODEREVIEW - enum on switch misses cases, no default
+
       switch (webAction)
       {
         case ENTER:
@@ -260,8 +268,7 @@ public class Page
             domElement.getDomElement().clear();
           }
           catch (Exception e)
-          {
-            // do nothing for now.
+          {  // do nothing for now.
           }
 
           CharSequence chars;
@@ -326,8 +333,7 @@ public class Page
             performHoverAction(domElement);
           }
           else
-          {
-            // try to load domElement one more time before we quit
+          {  // try to load domElement one more time before we quit
             rePopulateDomElement(domElement);
 
             if (domElement.getDomElement().isEnabled())
@@ -392,8 +398,8 @@ public class Page
   private void performHoverAction(DomElement domElement)
   {
     String mouseOverScript = "if(document.createEvent){var evObj = document.createEvent('MouseEvents');"
-        + "evObj.initEvent('mouseover', true, false); arguments[0].dispatchEvent(evObj);} "
-        + "else if(document.createEventObject) { arguments[0].fireEvent('onmouseover');}";
+                               + "evObj.initEvent('mouseover', true, false); arguments[0].dispatchEvent(evObj);} "
+                               + "else if(document.createEventObject) { arguments[0].fireEvent('onmouseover');}";
 
     this.jsDriver.executeScript(mouseOverScript, domElement.getDomElement());
   }
@@ -456,30 +462,31 @@ public class Page
   /**
    * use jsDriver to execute jquery to get dom element.
    *
-   * @param domElement
-   * @throws WebActionException
+   * @param   domElement
+   *
+   * @throws  WebActionException
    */
   protected void setDomElement(final DomElement domElement) throws WebActionException
   {
     if (domElement.getJquery() != null)
     {
-      final String jqueryString = "return " + domElement.getJqueryGetDomElement() + ";";
+      final String jqueryString = "return " + domElement.getJqueryGetDomElement() + ';';
 
       WebUIManager.getInstance().loadJQuery(jsDriver);
       LOG.info("Calling jquery script: \"" + jqueryString + "\"");
 
       try
       {
-        (new WebDriverWait(webDriver, (long) actionPace * 5)).until(new ExpectedCondition<Boolean>()
-        {
-          public Boolean apply(WebDriver d)
+        new WebDriverWait(webDriver, (long) actionPace * 5).until(new ExpectedCondition<Boolean>()
           {
-            domElement.setDomElement((WebElement) jsDriver.executeScript(jqueryString));
-            LOG.info("Executed jquery: \"" + jqueryString + "\"");
+            public Boolean apply(WebDriver d)
+            {
+              domElement.setDomElement((WebElement) jsDriver.executeScript(jqueryString));
+              LOG.info("Executed jquery: \"" + jqueryString + "\"");
 
-            return true;
-          }
-        });
+              return true;
+            }
+          });
       }
       catch (Exception e)
       {
@@ -546,40 +553,41 @@ public class Page
     if (numTry > NUMBER_OF_RETRY)
     {
       LOG.error("Can not load web component [" + domElement.getIdentifier() + "] after " + String.valueOf(NUMBER_OF_RETRY + 1) + "] tries."
-          + ". Details: dom element exist = " + domElement.isExisted() + "; dom element is visible " + domElement.isVisible());
+                  + ". Details: dom element exist = " + domElement.isExisted() + "; dom element is visible " + domElement.isVisible());
 
       return HtmlActionStatus.SHOW_STOPPER;
     }
 
     try
     {
-      int actionTimeoutSeconds = (int) (NUMBER_OF_RETRY * actionPace);
+      int actionTimeoutSeconds    = (int) (NUMBER_OF_RETRY * actionPace);
       int actionSleepMilliSeconds = (int) (actionPace * 1000);
 
       (new WebDriverWait(webDriver, actionTimeoutSeconds, actionSleepMilliSeconds)).until(new ExpectedCondition<Boolean>()
-      {
-        public Boolean apply(WebDriver d)
         {
-          try
+          public Boolean apply(WebDriver d)
           {
-            populateDomElement(domElement);
-            LOG.info("Populated domElement " + domElement.getIdentifier() + " existed = " + domElement.isExisted() + "; isVisible = "
-                + domElement.isVisible());
-          }
-          catch (WebActionException e)
-          {
-            return true;
-          }
+            try
+            {
+              populateDomElement(domElement);
+              LOG.info("Populated domElement " + domElement.getIdentifier() + " existed = " + domElement.isExisted() + "; isVisible = "
+                         + domElement.isVisible());
+            }
+            catch (WebActionException e)
+            {
+              return true;
+            }
 
-          return domElement.isExisted();
-        }
-      });
+            return domElement.isExisted();
+          }
+        });
 
       return HtmlActionStatus.GOOD;
     }
     catch (Exception te)
     {
       LOG.trace("Retrying after exception.", te);
+
       return tryLoadDomElement(domElement, ++numTry);
     }
   }
@@ -640,16 +648,16 @@ public class Page
 
   public boolean checkExpect(DomElementExpectation expect)
   {
-    boolean expectMet = true;
-    String expectVlaue = (expect.getValue() == null) ? ""
-        : expect.getValue();
+    boolean expectMet   = true;
+    String  expectVlaue = (expect.getValue() == null) ? ""
+                                                      : expect.getValue();
     String notString = expect.isNegative() ? " not "
-        : " ";
+                                           : " ";
 
     LOG.info("Checking expectation: " + expect.getComponentName() + notString + expect.getCondition() + " " + expectVlaue);
 
-    String componentName = expect.getComponentName();
-    DomElement domElement = getDomElement(componentName);
+    String     componentName = expect.getComponentName();
+    DomElement domElement    = getDomElement(componentName);
 
     if (domElement == null)
     {
@@ -731,46 +739,49 @@ public class Page
           double expectValue = Double.parseDouble(expect.getValue());
           double actualValue = Double.parseDouble(htmlValue.replaceAll("[^0-9\\.]", ""));
 
+          // dbulla CODEREVIEW - DANGER! you're comparing two float values!!!!!
           if (expectValue != actualValue)
           {
             expectMet = false;
-            expect.setMessage("Expectation failed (expected equals): [" + domElement.getIdentifier() + "] expects " + expect.getValue() + "; actual = ["
-                + htmlValue + "]");
+            expect.setMessage("Expectation failed (expected equals): [" + domElement.getIdentifier() + "] expects " + expect.getValue()
+                                + "; actual = [" + htmlValue + "]");
           }
         }
         else
         {
-          if(expect.isCustomAction())
+          if (expect.isCustomAction())
           {
             try
-            {
-              // create instance of the custom actions and cast the class to our Action interface
-              Action instanceOfAction = (Action)expect.getCustomActionClass().newInstance();
+            {  // create instance of the custom actions and cast the class to our Action interface
+
+              Action instanceOfAction = (Action) expect.getCustomActionClass().newInstance();
+
               // call the fire method
               String calculatedExpectation = instanceOfAction.fire();
+
               if (htmlValue.indexOf(calculatedExpectation) < 0)
               {
-               expectMet = false;
-               expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
-                  + "]; actual value is [" + htmlValue +']');
+                expectMet = false;
+                expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
+                                    + "]; actual value is [" + htmlValue + ']');
               }
             }
-            catch(InstantiationException | IllegalAccessException e)
+            catch (InstantiationException | IllegalAccessException e)
             {
               String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+
               LOG.error("Error creating custom action [" + actionClassString + "].", e);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
               LOG.error("Error in custom action", e);
             }
-
           }
           else if (htmlValue.indexOf(expect.getValue().trim()) < 0)
           {
             expectMet = false;
             expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
-                + "]; actual value is [" + htmlValue +']');
+                                + "]; actual value is [" + htmlValue + ']');
           }
         }
 
@@ -781,7 +792,7 @@ public class Page
         else
         {
           LOG.info("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue().trim() + "]; actual is ["
-              + htmlValue + ']');
+                     + htmlValue + ']');
         }
       }
       else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.NOT_EQUALS.getValue()))
@@ -789,14 +800,14 @@ public class Page
         if (expect.getValue().equalsIgnoreCase(htmlValue.trim()))
         {
           expectMet = false;
-          expect.setMessage("Expectation failed (expect not equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue() + "]; actual is ["
-              + htmlValue +']');
+          expect.setMessage("Expectation failed (expect not equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue()
+                              + "]; actual is [" + htmlValue + ']');
         }
       }
       else
       {
         double expectDoubleValue = Double.parseDouble(expect.getValue());
-        String actualValue = htmlValue.replaceAll("[^0-9\\.]", "");
+        String actualValue       = htmlValue.replaceAll("[^0-9\\.]", "");
         double actualDoubleValue = Double.parseDouble(actualValue);
 
         if (condition.equalsIgnoreCase(HtmlActionConditionEnum.GREATER_EQUAL_THAN.getValue()))
@@ -805,7 +816,7 @@ public class Page
           {
             expectMet = false;
             expect.setMessage("Expectation failed (expect >=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                + actualDoubleValue);
+                                + actualDoubleValue);
           }
         }
         else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.GREATER_THAN.getValue()))
@@ -814,7 +825,7 @@ public class Page
           {
             expectMet = false;
             expect.setMessage("Expectation failed (expect >): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                + actualDoubleValue);
+                                + actualDoubleValue);
           }
         }
         else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.LESS_EQUAL_THAN.getValue()))
@@ -823,7 +834,7 @@ public class Page
           {
             expectMet = false;
             expect.setMessage("Expectation failed (expect <=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                + actualDoubleValue);
+                                + actualDoubleValue);
           }
         }
         else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.LESS_THAN.getValue()))
@@ -832,7 +843,7 @@ public class Page
           {
             expectMet = false;
             expect.setMessage("Expectation failed (expect <): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                + actualDoubleValue);
+                                + actualDoubleValue);
           }
         }
       }
@@ -844,7 +855,7 @@ public class Page
   public DomElement getDomElement(String componentName)
   {
     // try it with browser name
-    DomElement domElement = domElements.get(componentName + "-" + browser.trim());
+    DomElement domElement = domElements.get(componentName + '-' + browser.trim());
 
     // we'll just get it without browser name
     if (domElement == null)
@@ -880,14 +891,12 @@ public class Page
     return webDriver;
   }
 
-  @XmlTransient
-  public void setWebDriver(WebDriver webDriver)
+  @XmlTransient public void setWebDriver(WebDriver webDriver)
   {
     this.webDriver = webDriver;
   }
 
-  @XmlTransient
-  public void setJsDriver(JavascriptExecutor jsDriver)
+  @XmlTransient public void setJsDriver(JavascriptExecutor jsDriver)
   {
     this.jsDriver = jsDriver;
   }
@@ -947,9 +956,9 @@ public class Page
     return keyDomElementName;
   }
 
-  public void setKeyDomElementName(String KeyDomElementName)
+  public void setKeyDomElementName(String keyDomElementName)
   {
-    this.keyDomElementName = KeyDomElementName;
+    this.keyDomElementName = keyDomElementName;
   }
 
   public float getPagePace()

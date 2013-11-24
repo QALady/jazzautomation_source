@@ -2,8 +2,8 @@ package com.jazzautomation.action;
 
 public class ConditionAction
 {
-  String    componentName;
-  HtmlAction action;
+  private String     componentName;
+  private HtmlAction action;
 
   public String getComponentName()
   {

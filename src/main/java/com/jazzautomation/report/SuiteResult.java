@@ -1,14 +1,15 @@
 package com.jazzautomation.report;
 
+import org.threeten.bp.LocalDate;
+
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class SuiteResult extends ResultBase
 {
   private List<FeatureResult> featureResults = new ArrayList<>();
   private double              successRate    = 1.0;
-  private Date                timePerformed  = new Date();
+  private LocalDate           timePerformed  = LocalDate.now();
 
   public void calculateSuccessRate()
   {
@@ -27,7 +28,7 @@ public class SuiteResult extends ResultBase
       setSuccess(false);
     }
 
-    if (featureResults.size() != 0)
+    if (!featureResults.isEmpty())
     {
       successRate = (featureResults.size() - numFailedResults) / featureResults.size();
     }
@@ -48,12 +49,12 @@ public class SuiteResult extends ResultBase
     this.featureResults = featureResults;
   }
 
-  public Date getTimePerformed()
+  public LocalDate getTimePerformed()
   {
     return timePerformed;
   }
 
-  public void setTimePerformed(Date timePerformed)
+  public void setTimePerformed(LocalDate timePerformed)
   {
     this.timePerformed = timePerformed;
   }

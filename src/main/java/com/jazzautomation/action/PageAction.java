@@ -1,69 +1,20 @@
 package com.jazzautomation.action;
 
+import com.jazzautomation.page.DomElementExpectation;
+
+import static com.jazzautomation.util.Constants.DOT;
+import static com.jazzautomation.util.Constants.DOUBLE_AND;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.jazzautomation.page.*;
-
-import static com.jazzautomation.util.Constants.*;
-
 public class PageAction
 {
-  String                      sourcePageName;
-  String                      targetPageName;
-  boolean                     optional     = false;
-  List<List<ComponentAction>> actionChains = new ArrayList<>();
-  List<DomElementExpectation>    expects;
-
-  public boolean isOptional()
-  {
-    return optional;
-  }
-
-  public void setOptional(boolean optional)
-  {
-    this.optional = optional;
-  }
-
-  public String getSourcePageName()
-  {
-    return sourcePageName;
-  }
-
-  public void setSourcePageName(String sourcePageName)
-  {
-    this.sourcePageName = sourcePageName;
-  }
-
-  public String getTargetPageName()
-  {
-    return targetPageName;
-  }
-
-  public void setTargetPageName(String targetPageName)
-  {
-    this.targetPageName = targetPageName;
-  }
-
-  public List<DomElementExpectation> getExpects()
-  {
-    return expects;
-  }
-
-  public void setExpects(List<DomElementExpectation> expects)
-  {
-    this.expects = expects;
-  }
-
-  public List<List<ComponentAction>> getActionChains()
-  {
-    return actionChains;
-  }
-
-  public void setActionChains(List<List<ComponentAction>> actionChains)
-  {
-    this.actionChains = actionChains;
-  }
+  private String                      sourcePageName;
+  private String                      targetPageName;
+  private boolean                     optional     = false;
+  private List<List<ComponentAction>> actionChains = new ArrayList<>();
+  private List<DomElementExpectation> expects;
 
   public void addComponentAction(String componentActionString)
   {
@@ -73,7 +24,7 @@ public class PageAction
     compAction.setComponentName(stringSplit[0].trim());
     compAction.setAction(stringSplit[1].toLowerCase());
 
-    if (actionChains.size() == 0)
+    if (actionChains.isEmpty())
     {
       List<ComponentAction> componentActionList0 = new ArrayList<>();
 
@@ -142,19 +93,19 @@ public class PageAction
 
   public static String serializeList(List<ComponentAction> componentActions)
   {
-    String returnString = "";
+    StringBuilder returnString = new StringBuilder();
 
     for (int i = 0; i < componentActions.size(); i++)
     {
-      returnString += componentActions.get(i).serialize();
+      returnString.append(componentActions.get(i).serialize());
 
       if (i != (componentActions.size() - 1))
       {
-        returnString += DOUBLE_AND;
+        returnString.append(DOUBLE_AND);
       }
     }
 
-    return returnString;
+    return returnString.toString();
   }
 
   private static void parseActionString(String actionString, ComponentAction componentAction)
@@ -164,6 +115,56 @@ public class PageAction
 
     componentAction.setComponentName(startString.trim());
     componentAction.setAction(splitByDot[1].trim());
+  }
+
+  public boolean isOptional()
+  {
+    return optional;
+  }
+
+  public void setOptional(boolean optional)
+  {
+    this.optional = optional;
+  }
+
+  public String getSourcePageName()
+  {
+    return sourcePageName;
+  }
+
+  public void setSourcePageName(String sourcePageName)
+  {
+    this.sourcePageName = sourcePageName;
+  }
+
+  public String getTargetPageName()
+  {
+    return targetPageName;
+  }
+
+  public void setTargetPageName(String targetPageName)
+  {
+    this.targetPageName = targetPageName;
+  }
+
+  public List<DomElementExpectation> getExpects()
+  {
+    return expects;
+  }
+
+  public void setExpects(List<DomElementExpectation> expects)
+  {
+    this.expects = expects;
+  }
+
+  public List<List<ComponentAction>> getActionChains()
+  {
+    return actionChains;
+  }
+
+  public void setActionChains(List<List<ComponentAction>> actionChains)
+  {
+    this.actionChains = actionChains;
   }
 
   public String toString()

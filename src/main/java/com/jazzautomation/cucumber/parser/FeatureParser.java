@@ -1,48 +1,43 @@
 package com.jazzautomation.cucumber.parser;
 
 import com.jazzautomation.WebUIManager;
+
 import com.jazzautomation.action.ComponentAction;
 import com.jazzautomation.action.HtmlAction;
+
 import com.jazzautomation.cucumber.And;
 import com.jazzautomation.cucumber.Background;
 import com.jazzautomation.cucumber.CucumberBase;
+import static com.jazzautomation.cucumber.CucumberConstants.*;
 import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.Given;
 import com.jazzautomation.cucumber.Scenario;
 import com.jazzautomation.cucumber.Then;
+
 import com.jazzautomation.page.DomElement;
 import com.jazzautomation.page.DomElementExpectation;
 import com.jazzautomation.page.HtmlActionConditionEnum;
 import com.jazzautomation.page.Page;
+
 import com.jazzautomation.util.Constants;
+import static com.jazzautomation.util.Constants.SUPPORTED_BROWSERS;
+
+import org.apache.commons.lang3.StringUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import static com.jazzautomation.cucumber.CucumberConstants.AND;
-import static com.jazzautomation.cucumber.CucumberConstants.BACKGROUND;
-import static com.jazzautomation.cucumber.CucumberConstants.COLON;
-import static com.jazzautomation.cucumber.CucumberConstants.ESCAPE_CHAR;
-import static com.jazzautomation.cucumber.CucumberConstants.FEATURE;
-import static com.jazzautomation.cucumber.CucumberConstants.GIVEN;
-import static com.jazzautomation.cucumber.CucumberConstants.LINE_END_MARK;
-import static com.jazzautomation.cucumber.CucumberConstants.LINE_START_MARK;
-import static com.jazzautomation.cucumber.CucumberConstants.ON;
-import static com.jazzautomation.cucumber.CucumberConstants.OPTIONAL;
-import static com.jazzautomation.cucumber.CucumberConstants.SCENARIO;
-import static com.jazzautomation.cucumber.CucumberConstants.TABLE_COLUMN_SEPERATOR;
-import static com.jazzautomation.cucumber.CucumberConstants.TABLE_COLUMN_SEPERATOR_CHAR;
-import static com.jazzautomation.cucumber.CucumberConstants.THEN;
-import static com.jazzautomation.util.Constants.SUPPORTED_BROWSERS;
 
 /**
  * A singleton class to parse a Cucumber file at a time. The only public method is parse - take FileInputStream to parse through and return a Feature
@@ -50,13 +45,11 @@ import static com.jazzautomation.util.Constants.SUPPORTED_BROWSERS;
  */
 public class FeatureParser
 {
-  private static final String COMMENT_MARKER = "#";
-  private static Logger LOG = LoggerFactory.getLogger(FeatureParser.class);
-  private static FeatureParser instance = null;
+  private static final String  COMMENT_MARKER = "#";
+  private static Logger        LOG            = LoggerFactory.getLogger(FeatureParser.class);
+  private static FeatureParser instance       = null;
 
-  /**
-   * Standard singleton implementation.
-   */
+  /** Standard singleton implementation. */
   public static FeatureParser getInstance()
   {
     if (instance == null)
@@ -67,46 +60,46 @@ public class FeatureParser
     return instance;
   }
 
-  /**
-   * private constructor.
-   */
-  private FeatureParser()
-  {
-  }
+  /** private constructor. */
+  private FeatureParser() {}
 
   /**
    * parse a file return a Feature object. Throw IllegalCucumberFormatException and stop if there is formatting errors
    *
-   * @param in
+   * @param   in
+   *
    * @return
    */
   public Feature parse(FileInputStream in) throws IllegalCucumberFormatException
   {
-    Feature feature = new Feature();
-    List<String> stringsForFile = new ArrayList<>();
-    BufferedReader stdin = new BufferedReader(new InputStreamReader(in));
-    StringBuffer originalTextBuffer = new StringBuffer();
-    String line;
+    // dbulla CODEREVIEW - If we're just reading a file in, FileUtils.readLines is much nicer than buffered reader stuff
+    // dbulla CODEREVIEW - long method break up for clarity
+    Feature       feature            = new Feature();
+    List<String>  stringsForFile     = new ArrayList<>();
+    StringBuilder originalTextBuffer = new StringBuilder();
 
-    try
+    try(BufferedReader stdin = new BufferedReader(new InputStreamReader(in)))
     {
       int lineNum = 1;
 
       // read everything into the stringsForFile
+      String line;
+
       while ((line = stdin.readLine()) != null)
       {
-        if(StringUtils.isEmpty(line))
+        if (StringUtils.isEmpty(line))
         {
           continue;
         }
 
         String trimmedLine = line.trim();
-        originalTextBuffer.append(line + "\n");
+
+        originalTextBuffer.append(line).append('\n');
+
         String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + trimmedLine;
 
-        if(StringUtils.isNotEmpty(trimmedLine) && trimmedLine.startsWith(COMMENT_MARKER))
-        {
-          // skip adding comment lines to the executable feature.
+        if (StringUtils.isNotEmpty(trimmedLine) && trimmedLine.startsWith(COMMENT_MARKER))
+        {  // skip adding comment lines to the executable feature.
           continue;
         }
 
@@ -115,20 +108,18 @@ public class FeatureParser
 
       // add an extra line at the end of file.
       stringsForFile.add("\n");
-
-      int index = 0;
-
       feature.setOriginalText(originalTextBuffer.toString());
 
       // setup feature description - background is optional
-      String[] featureEndWords = {BACKGROUND, SCENARIO};
+      String[] featureEndWords = { BACKGROUND, SCENARIO };
+      int      index           = 0;
 
       index = setupText(feature, stringsForFile, index, FEATURE, featureEndWords);
 
-      List<String> lines = scanIntoLine(feature.getText());
-      StringBuffer descBuffer = new StringBuffer();
+      List<String>  lines      = scanIntoLine(feature.getText());
+      StringBuilder descBuffer = new StringBuilder();
 
-      descBuffer.append(filterWords(lines.get(0), FEATURE, COLON) + "\n");
+      descBuffer.append(filterWords(lines.get(0), FEATURE, COLON)).append('\n');
 
       String[] descriptionEndWords = {};
 
@@ -136,8 +127,8 @@ public class FeatureParser
       feature.setDescription(descBuffer.toString());
 
       // setup background
-      String[] backgroundEndWords = {SCENARIO};
-      Background background = new Background();
+      String[]   backgroundEndWords = { SCENARIO };
+      Background background         = new Background();
 
       index = setupText(background, stringsForFile, index, BACKGROUND, backgroundEndWords);
 
@@ -149,7 +140,7 @@ public class FeatureParser
 
       // loop through scenarios and add to list
       // setup scenarios
-      String[] scenarioEndWords = {SCENARIO};
+      String[] scenarioEndWords = { SCENARIO };
 
       while (index < stringsForFile.size())
       {
@@ -162,7 +153,10 @@ public class FeatureParser
     }
     catch (IOException e)
     {
-      LOG.debug("Error parsing feature", e);
+      if (LOG.isDebugEnabled())
+      {
+        LOG.debug("Error parsing feature", e);
+      }
     }
 
     LOG.info("Successfully parsed feature: " + feature.getOriginalText());
@@ -170,17 +164,18 @@ public class FeatureParser
     return feature;
   }
 
+  // dbulla CODEREVIEW - unit test would be nice
   private int setupText(CucumberBase cucumberObject, List<String> stringsForFile, int index, String leadingWord, String[] endWords)
   {
     String currentLine = stringsForFile.get(index);
 
     if (startWithAWordAfterLineNumber(currentLine, leadingWord))
     {
-      StringBuffer text = new StringBuffer();
+      StringBuilder text = new StringBuilder();
 
-      text.append(currentLine + "\n");
+      text.append(currentLine).append('\n');
 
-      while (index < (stringsForFile.size()))
+      while (index < stringsForFile.size())
       {
         if (index == (stringsForFile.size() - 1))
         {
@@ -196,9 +191,8 @@ public class FeatureParser
           break;
         }
         else
-        {
-          // take the line and move the index
-          text.append(nextLine + "\n");
+        {  // take the line and move the index
+          text.append(nextLine).append('\n');
         }
       }
 
@@ -215,9 +209,9 @@ public class FeatureParser
 
   private void processScenario(Scenario scenario) throws IllegalCucumberFormatException
   {
-    List<String> lines = scanIntoLine(scenario.getText());
-    String[] descriptionEndWords = {GIVEN};
-    int index = setupDescription(scenario, lines, SCENARIO, COLON, descriptionEndWords);
+    List<String> lines               = scanIntoLine(scenario.getText());
+    String[]     descriptionEndWords = { GIVEN };
+    int          index               = setupDescription(scenario, lines, SCENARIO, COLON, descriptionEndWords);
 
     scenario.setOptional(isTaskOptional(scenario.getDescription()));
 
@@ -228,8 +222,8 @@ public class FeatureParser
 
       if (startWithAWordAfterLineNumber(line, GIVEN))
       {
-        Given given = new Given();
-        String[] givenEndWords = {AND, THEN};
+        Given    given         = new Given();
+        String[] givenEndWords = { AND, THEN };
 
         index = setupText(given, lines, index, GIVEN, givenEndWords);
         processGiven(given);
@@ -237,8 +231,8 @@ public class FeatureParser
       }
       else if (startWithAWordAfterLineNumber(line, AND))
       {
-        And and = new And();
-        String[] andEndWords = {AND, THEN};
+        And      and         = new And();
+        String[] andEndWords = { AND, THEN };
 
         index = setupText(and, lines, index, AND, andEndWords);
         processAnd(and);
@@ -246,7 +240,7 @@ public class FeatureParser
       }
       else if (startWithAWordAfterLineNumber(line, THEN))
       {
-        Then then = new Then();
+        Then     then         = new Then();
         String[] thenEndWords = {};
 
         index = setupText(then, lines, index, THEN, thenEndWords);
@@ -261,18 +255,19 @@ public class FeatureParser
     boolean isOptional = false;
 
     if (description.trim().toLowerCase().startsWith("("))
-    {
-      // it maybe an optional scenario
-      String possibleStringForOption = description.substring(description.indexOf("(") + 1);
+    {  // it maybe an optional scenario
+
+      String possibleStringForOption = description.substring(description.indexOf('(') + 1);
 
       LOG.info("Is this optional: " + possibleStringForOption);
 
       if (possibleStringForOption.trim().toLowerCase().startsWith(OPTIONAL))
       {
         isOptional = true;
+
         if (LOG.isDebugEnabled())
         {
-          LOG.debug("Returning optional flag [" + isOptional + "]");
+          LOG.debug("Returning optional flag [" + isOptional + ']');
         }
       }
     }
@@ -282,10 +277,10 @@ public class FeatureParser
 
   private void processBackground(Background background) throws IllegalCucumberFormatException
   {
-    List<String> lines = scanIntoLine(background.getText());
-    String[] descriptionEndWords = {GIVEN};
-    int index = setupDescription(background, lines, SCENARIO, COLON, descriptionEndWords);
-    String line = lines.get(index);
+    List<String> lines               = scanIntoLine(background.getText());
+    String[]     descriptionEndWords = { GIVEN };
+    int          index               = setupDescription(background, lines, SCENARIO, COLON, descriptionEndWords);
+    String       line                = lines.get(index);
 
     // everything here is for "given"
     if (startWithAWordAfterLineNumber(line, GIVEN))
@@ -299,15 +294,16 @@ public class FeatureParser
     }
   }
 
+  // dbulla CODEREVIEW - break up into smaller methods for clarity
   private void processGiven(Given given) throws IllegalCucumberFormatException
   {
-    List<String> lines = scanIntoLine(given.getText());
-    StringBuffer descBuffer = new StringBuffer();
+    List<String>  lines      = scanIntoLine(given.getText());
+    StringBuilder descBuffer = new StringBuilder();
 
-    descBuffer.append(filterWords(lines.get(0), GIVEN, "") + "\n");
+    descBuffer.append(filterWords(lines.get(0), GIVEN, "")).append('\n');
 
-    String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
-    int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
+    String[] descriptionEndWords = { TABLE_COLUMN_SEPERATOR };
+    int      index               = retrieveDescription(lines, descBuffer, descriptionEndWords);
 
     given.setDescription(descBuffer.toString());
 
@@ -317,20 +313,20 @@ public class FeatureParser
       String line = lines.get(index);
 
       if (startWithAWordAfterLineNumber(line, TABLE_COLUMN_SEPERATOR))
-      {
-        // everything is for setting map
+      {  // everything is for setting map
+
         String mapInString = normalizeToString(lines, index);
 
         given.setSettings(processMap(mapInString));
       }
     }
     else
-    {
-      // should find a webPage
-      String[] words = given.getDescription().replaceAll("\n", " ").trim().split(" ");
+    {    // should find a webPage
+
+      String[]     words        = given.getDescription().replaceAll("\n", " ").trim().split(" ");
       List<String> specialWords = retrieveSpecialWords(words);
 
-      if (specialWords.size() == 0)
+      if (specialWords.isEmpty())
       {
         int i = 0;
 
@@ -346,8 +342,8 @@ public class FeatureParser
         specialWords.add(words[i + 1]);
       }
 
-      Set<String> pageKeys = WebUIManager.getInstance().getPages().keySet();
-      String webPageKey = null;
+      Set<String> pageKeys   = WebUIManager.getInstance().getPages().keySet();
+      String      webPageKey = null;
 
       for (String word : specialWords)
       {
@@ -368,28 +364,28 @@ public class FeatureParser
       else
       {
         throw new IllegalCucumberFormatException("Can not find a valid web page for Given statement:\n" + given.getText()
-            + "\nPlease check your configuration file.");
+                                                   + "\nPlease check your configuration file.");
       }
     }
   }
 
   private void processAnd(And and) throws IllegalCucumberFormatException
   {
-    List<String> lines = scanIntoLine(and.getText());
-    StringBuffer descBuffer = new StringBuffer();
+    List<String>  lines      = scanIntoLine(and.getText());
+    StringBuilder descBuffer = new StringBuilder();
 
-    descBuffer.append(filterWords(lines.get(0), AND, "") );
+    descBuffer.append(filterWords(lines.get(0), AND, ""));
 
-    String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
-    int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
+    String[] descriptionEndWords = { TABLE_COLUMN_SEPERATOR };
+    int      index               = retrieveDescription(lines, descBuffer, descriptionEndWords);
 
     and.setDescription(descBuffer.toString());
     and.setOptional(isTaskOptional(and.getDescription()));
 
     // see what is the action for - click, hover, refresh, select, wait
-    String[] words = and.getDescription().replaceAll("\n", " ").trim().split(" ");
+    String[]     words           = and.getDescription().replaceAll("\n", " ").trim().split(" ");
     HtmlAction[] legalWebActions = HtmlAction.values();
-    HtmlAction action = null;
+    HtmlAction   action          = null;
 
     for (String word : words)
     {
@@ -404,9 +400,9 @@ public class FeatureParser
 
     if (action == null)
     {
-      LOG.info("And description is [" + and.getDescription() + "]");
+      LOG.info("And description is [" + and.getDescription() + ']');
       throw new IllegalCucumberFormatException("Illegal And statement - no valid action can be found in your And statement:\n" + and.getText()
-          + "\nPlease check your configuration.");
+                                                 + "\nPlease check your configuration.");
     }
 
     ComponentAction componentAction = new ComponentAction();
@@ -415,29 +411,29 @@ public class FeatureParser
     componentAction.setOptional(and.isOptional());
 
     // for click/hover - expect a webcomponent
-    if (action.equals(HtmlAction.HOVER) || action.equals(HtmlAction.CLICK))
+    if ((action == HtmlAction.HOVER) || (action == HtmlAction.CLICK))
     {
       parseHoverAndClick(and, words, componentAction);
     }
-    else if (action.equals(HtmlAction.WAIT))
+    else if (action == HtmlAction.WAIT)
     {
       parseWait(and, words, componentAction);
     }
-    else if (action.equals(HtmlAction.ENTER) || action.equals(HtmlAction.SELECT))
+    else if ((action == HtmlAction.ENTER) || (action == HtmlAction.SELECT))
     {
       // do something - select can be multiple and enter can be multiple
       // the rest of line are key-value pairs
       String line = lines.get(index);
 
       if (startWithAWordAfterLineNumber(line, TABLE_COLUMN_SEPERATOR))
-      {
-        // everything is for setting map
-        String mapInString = normalizeToString(lines, index);
-        Map<String, String> inputMap = processMap(mapInString);
+      {  // everything is for setting map
+
+        String              mapInString = normalizeToString(lines, index);
+        Map<String, String> inputMap    = processMap(mapInString);
 
         for (String key : inputMap.keySet())
         {
-          if (!this.canFindWebComponent(key.trim()))
+          if (!canFindWebComponent(key.trim()))
           {
             throw new IllegalCucumberFormatException(key + " is not a valid name at " + and.getText() + ". Please check your configurations.");
           }
@@ -459,25 +455,26 @@ public class FeatureParser
     }
   }
 
+  // dbulla CODEREVIEW - very long method - break up
   private void processThen(Then then) throws IllegalCucumberFormatException
   {
-    List<String> lines = scanIntoLine(then.getText());
-    StringBuffer descBuffer = new StringBuffer();
+    List<String>  lines      = scanIntoLine(then.getText());
+    StringBuilder descBuffer = new StringBuilder();
 
-    descBuffer.append(filterWords(lines.get(0), THEN, "") );
+    descBuffer.append(filterWords(lines.get(0), THEN, ""));
 
-    String[] descriptionEndWords = {TABLE_COLUMN_SEPERATOR};
-    int index = retrieveDescription(lines, descBuffer, descriptionEndWords);
+    String[] descriptionEndWords = { TABLE_COLUMN_SEPERATOR };
+    int      index               = retrieveDescription(lines, descBuffer, descriptionEndWords);
 
     then.setDescription(descBuffer.toString());
 
-    String[] words = then.getDescription().replaceAll("\n", " ").trim().split(" ");
+    String[]     words        = then.getDescription().replaceAll("\n", " ").trim().split(" ");
     List<String> specialWords = retrieveSpecialWords(words);
 
     // these words mean a Page
-    if (specialWords.size() == 0)
+    if (specialWords.isEmpty())
     {
-      int i = 0;
+      int     i     = 0;
       boolean hasOn = false;
 
       // find any thing after ON
@@ -497,8 +494,8 @@ public class FeatureParser
       }
     }
 
-    Set<String> pageKeys = WebUIManager.getInstance().getPages().keySet();
-    String webPageKey = null;
+    Set<String> pageKeys   = WebUIManager.getInstance().getPages().keySet();
+    String      webPageKey = null;
 
     for (String word : specialWords)
     {
@@ -524,17 +521,17 @@ public class FeatureParser
       String line = lines.get(index);
 
       if (startWithAWordAfterLineNumber(line, TABLE_COLUMN_SEPERATOR))
-      {
-        // everything is for setting map
-        String mapInString = normalizeToString(lines, index);
-        Map<String, String> expectMap = processMap(mapInString);
+      {  // everything is for setting map
+
+        String              mapInString = normalizeToString(lines, index);
+        Map<String, String> expectMap   = processMap(mapInString);
 
         for (String key : expectMap.keySet())
         {
-          if (!this.canFindWebComponent(key.trim()))
+          if (!canFindWebComponent(key.trim()))
           {
             throw new IllegalCucumberFormatException("Component with name [" + key.trim() + "] is not a valid with text [" + then.getText()
-                + "]. Please check your configurations.");
+                                                       + "]. Please check your configurations.");
           }
 
           DomElementExpectation expect = new DomElementExpectation();
@@ -552,22 +549,22 @@ public class FeatureParser
           else
           {
             expect.setCondition(HtmlActionConditionEnum.EQUALS.getValue());
-
-
             expect.setValue(expectMap.get(key).trim());
+
             String expectationString = expect.getValue().trim();
 
-            if(expectationString.startsWith(Constants.CUSTOM_ACTION_INDICATOR))
+            if (expectationString.startsWith(Constants.CUSTOM_ACTION_INDICATOR))
             {
               String actionClass = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
 
               try
               {
                 Class clazz = Class.forName(actionClass);
+
                 expect.setCustomActionClass(clazz);
                 expect.setCustomAction(true);
               }
-              catch(Exception e)
+              catch (Exception e)
               {
                 LOG.error("Error creating custom action", e);
                 throw new IllegalCucumberFormatException("Error creating custom action.", e);
@@ -590,7 +587,7 @@ public class FeatureParser
   private Map<String, String> processMap(String string) throws IllegalCucumberFormatException
   {
     Map<String, String> keyValuePair = new LinkedHashMap<>();
-    List<String> lines = scanIntoLine(string);
+    List<String>        lines        = scanIntoLine(string);
 
     // every line is a key value pair
     for (String line : lines)
@@ -599,24 +596,26 @@ public class FeatureParser
 
       if (isTableStructureValid(line))
       {
-        int firstSeperatorIndex = line.indexOf(TABLE_COLUMN_SEPERATOR);
-        int lastSeperatorIndex = line.lastIndexOf(TABLE_COLUMN_SEPERATOR);
-        String innerString = line.substring(firstSeperatorIndex + 1, lastSeperatorIndex);
-        int seperatorIndex = innerString.indexOf(TABLE_COLUMN_SEPERATOR);
+        int    firstSeparatorIndex = line.indexOf(TABLE_COLUMN_SEPERATOR);
+        int    lastSeparatorIndex  = line.lastIndexOf(TABLE_COLUMN_SEPERATOR);
+        String innerString         = line.substring(firstSeparatorIndex + 1, lastSeparatorIndex);
+        int    separatorIndex      = innerString.indexOf(TABLE_COLUMN_SEPERATOR);
 
-        keyValuePair.put(innerString.substring(0, seperatorIndex).trim(), innerString.substring(seperatorIndex + 1));
+        keyValuePair.put(innerString.substring(0, separatorIndex).trim(), innerString.substring(separatorIndex + 1));
       }
       else
       {
-        if(StringUtils.isBlank(line))
+        if (StringUtils.isBlank(line))
         {
           continue;
         }
-        else if(line.trim().startsWith(COMMENT_MARKER))
+        else if (line.trim().startsWith(COMMENT_MARKER))
         {
-          LOG.info("Skipping line [" + line.trim() + "]");
+          LOG.info("Skipping line [" + line.trim() + ']');
+
           continue;
         }
+
         throw new IllegalCucumberFormatException("The following line could not be processed; it was invalid. Line = [" + line + ']');
       }
     }
@@ -628,7 +627,7 @@ public class FeatureParser
   {
     List<String> specialWords = retrieveSpecialWords(words);
 
-    if (specialWords.size() == 0)
+    if (specialWords.isEmpty())
     {
       int i = 0;
 
@@ -636,7 +635,7 @@ public class FeatureParser
       for (; i < words.length; i++)
       {
         if (words[i].trim().toUpperCase().endsWith(HtmlAction.HOVER.toString())
-            || words[i].trim().toUpperCase().endsWith(HtmlAction.CLICK.toString()))
+              || words[i].trim().toUpperCase().endsWith(HtmlAction.CLICK.toString()))
         {
           break;
         }
@@ -649,14 +648,14 @@ public class FeatureParser
     }
 
     boolean hasWebComponent = false;
-    String componentName = "";
+    String  componentName   = "";
 
     for (String word : specialWords)
     {
-      if (this.canFindWebComponent(word))
+      if (canFindWebComponent(word))
       {
         hasWebComponent = true;
-        componentName = word;
+        componentName   = word;
 
         break;
       }
@@ -665,14 +664,14 @@ public class FeatureParser
     if (!hasWebComponent)
     {
       throw new IllegalCucumberFormatException("Illegal 'And' statement - cannot find a valid dom component in your And statement [" + and.getText()
-          + "]. Please check your configuration.");
+                                                 + "]. Please check your configuration.");
     }
 
     componentAction.setComponentName(componentName);
     and.addActions(componentAction);
   }
 
-  private void parseWait(And and, String[] words, ComponentAction componentAction) throws IllegalCucumberFormatException
+  private void parseWait(And and, String[] words, ComponentAction componentAction)
   {
     // find the "wait" word
     int index = 0;
@@ -689,7 +688,7 @@ public class FeatureParser
     if (index < (words.length - 1))
     {
       String waitValue = words[index + 1].trim().toLowerCase();
-      int sIndex = waitValue.indexOf("s");
+      int    sIndex    = waitValue.indexOf('s');
 
       if (sIndex != -1)
       {
@@ -704,9 +703,9 @@ public class FeatureParser
 
   private int setupDescription(CucumberBase cucumber, List<String> lines, String leadingWord, String followingWord, String[] endWords)
   {
-    StringBuffer descBuffer = new StringBuffer();
+    StringBuilder descBuffer = new StringBuilder();
 
-    descBuffer.append(filterWords(lines.get(0), leadingWord, followingWord) + "\n");
+    descBuffer.append(filterWords(lines.get(0), leadingWord, followingWord)).append('\n');
 
     int index = retrieveDescription(lines, descBuffer, endWords);
 
@@ -717,14 +716,14 @@ public class FeatureParser
 
   private boolean isTableStructureValid(String string)
   {
-    // we should have three individual table seperators
+    // we should have three individual table separators
     int count = 0;
 
     for (int i = 0; i < string.length(); i++)
     {
       if (string.charAt(i) == TABLE_COLUMN_SEPERATOR_CHAR)
       {
-        if(i == 0)
+        if (i == 0)
         {
           count++;
         }
@@ -740,20 +739,20 @@ public class FeatureParser
 
   private String normalizeToString(List<String> lines, int index)
   {
-    StringBuffer stringBuffer = new StringBuffer();
-    String line;
+    StringBuilder stringBuilder = new StringBuilder();
 
     while (index < lines.size())
     {
-      line = lines.get(index);
-      stringBuffer.append(line + "\n");
+      String line = lines.get(index);
+
+      stringBuilder.append(line).append('\n');
       index++;
     }
 
-    return stringBuffer.toString();
+    return stringBuilder.toString();
   }
 
-  private int retrieveDescription(List<String> lines, StringBuffer descBuffer, String[] descriptionEndWords)
+  private int retrieveDescription(List<String> lines, StringBuilder descBuffer, String[] descriptionEndWords)
   {
     int index = 1;
 
@@ -767,7 +766,7 @@ public class FeatureParser
       }
       else
       {
-        descBuffer.append(aline + "\n");
+        descBuffer.append(aline).append('\n');
         index++;
       }
     }
@@ -807,8 +806,8 @@ public class FeatureParser
 
   private List<String> scanIntoLine(String string)
   {
-    Scanner scanner = new Scanner(string);
-    List<String> list = new ArrayList<>();
+    Scanner      scanner = new Scanner(string);
+    List<String> list    = new ArrayList<>();
 
     while (scanner.hasNextLine())
     {
@@ -864,11 +863,11 @@ public class FeatureParser
     DomElement webComponent = WebUIManager.getInstance().getDomElementFromPool(componentName.trim());
 
     if (webComponent == null)
-    {
-      // if it is a special case: "-browser" option
+    {  // if it is a special case: "-browser" option
+
       for (String browser : SUPPORTED_BROWSERS)
       {
-        webComponent = WebUIManager.getInstance().getDomElementFromPool(componentName.trim() + "-" + browser);
+        webComponent = WebUIManager.getInstance().getDomElementFromPool(componentName.trim() + '-' + browser);
 
         if (webComponent != null)
         {

@@ -10,6 +10,17 @@ public class SuiteResultLight
   private String timestamp;
   private double duration;
 
+  // --------------------- GETTER / SETTER METHODS ---------------------
+  public double getDuration()
+  {
+    return duration;
+  }
+
+  public void setDuration(double duration)
+  {
+    this.duration = duration;
+  }
+
   public String getName()
   {
     return name;
@@ -48,15 +59,5 @@ public class SuiteResultLight
   public void setTimestamp(String timestamp)
   {
     this.timestamp = timestamp;
-  }
-
-  public double getDuration()
-  {
-    return duration;
-  }
-
-  public void setDuration(double duration)
-  {
-    this.duration = duration;
   }
 }

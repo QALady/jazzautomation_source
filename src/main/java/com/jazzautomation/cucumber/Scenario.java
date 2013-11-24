@@ -10,6 +10,17 @@ public class Scenario extends CucumberBase
   private Then      then;
   private boolean   optional;
 
+  public void addAnd(And and)
+  {
+    ands.add(and);
+  }
+
+  // --------------------- GETTER / SETTER METHODS ---------------------
+  public List<And> getAnds()
+  {
+    return ands;
+  }
+
   public Given getGiven()
   {
     return given;
@@ -18,16 +29,6 @@ public class Scenario extends CucumberBase
   public void setGiven(Given given)
   {
     this.given = given;
-  }
-
-  public List<And> getAnds()
-  {
-    return ands;
-  }
-
-  public void addAnd(And and)
-  {
-    ands.add(and);
   }
 
   public Then getThen()

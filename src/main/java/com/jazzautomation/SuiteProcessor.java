@@ -2,60 +2,77 @@ package com.jazzautomation;
 
 import com.jazzautomation.action.ComponentAction;
 import com.jazzautomation.action.HtmlAction;
+
 import com.jazzautomation.cucumber.And;
 import com.jazzautomation.cucumber.Background;
 import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.Scenario;
 import com.jazzautomation.cucumber.Then;
+
 import com.jazzautomation.page.DomElementExpectation;
 import com.jazzautomation.page.Page;
+
 import com.jazzautomation.report.ActionResult;
 import com.jazzautomation.report.ExpectationResult;
 import com.jazzautomation.report.FeatureResult;
 import com.jazzautomation.report.ScenarioResult;
 import com.jazzautomation.report.SuiteResult;
+
+import static com.jazzautomation.ui.Browsers.*;
+
+import static com.jazzautomation.util.Constants.IMG_FOLDER_NAME;
 import com.jazzautomation.util.WebActionException;
-import java.io.File;
-import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+
 import org.apache.commons.io.FileUtils;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.Augmenter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static com.jazzautomation.util.Constants.IMG_FOLDER_NAME;
 
-/**
- * Suite processor class that will process test suites and run all features.
- */
+import org.threeten.bp.LocalDate;
+import org.threeten.bp.format.DateTimeFormatter;
+
+import java.io.File;
+
+import java.net.MalformedURLException;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/** Suite processor class that will process test suites and run all features. */
 public class SuiteProcessor
 {
-  private static Logger LOG = LoggerFactory.getLogger(SuiteProcessor.class);
-  private static final int SCREEN_CAPTURE_WAIT = 3000;
+  private static final Logger            LOG                 = LoggerFactory.getLogger(SuiteProcessor.class);
+  private static final int               SCREEN_CAPTURE_WAIT = 3000;
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM_dd_yyyy");
+
+  private SuiteProcessor() {}
 
   /**
-   * Processes the provided suite
-   * @param suite the suite to be executed
-   * @param driver the web driver; optional
+   * Processes the provided suite.
+   *
+   * @param  suite   the suite to be executed
+   * @param  driver  the web driver; optional
    */
   public static void process(Suite suite, WebDriver driver)
   {
     SuiteResult result = runSuite(suite.getFeatures(), driver);
+
     suite.setResult(result);
   }
 
   private static SuiteResult runSuite(List<Feature> features, WebDriver driver)
   {
     LOG.info("** Begin Suite **");
-    SuiteResult suiteResult = new SuiteResult();
-    long suiteTimeStarted = System.currentTimeMillis();
+
+    SuiteResult suiteResult      = new SuiteResult();
+    long        suiteTimeStarted = System.currentTimeMillis();
 
     for (Feature feature : features)
     {
@@ -68,23 +85,24 @@ public class SuiteProcessor
     suiteResult.setDuration((suiteTimeEnded - suiteTimeStarted) / 1000.0);
     LOG.info("\nSuiteResult = \n" + suiteResult);
     LOG.info("** End Suite **");
+
     return suiteResult;
   }
 
   private static void runFeature(Feature feature, SuiteResult suiteResult, WebDriver driver)
   {
-    long featureTimeStarted = System.currentTimeMillis();
-    FeatureResult featureResult = new FeatureResult();
+    long          featureTimeStarted = System.currentTimeMillis();
+    FeatureResult featureResult      = new FeatureResult();
 
     featureResult.setFeature(feature);
     suiteResult.addFeatureResult(featureResult);
 
-    Background background = feature.getBackground();
+    Background          background         = feature.getBackground();
     Map<String, String> backgroundSettings = background.getGiven().getSettings();
 
-    LOG.info("Background settings = [" + backgroundSettings + "]");
+    LOG.info("Background settings = [" + backgroundSettings + ']');
 
-    if (backgroundSettings.size() > 0)
+    if (!backgroundSettings.isEmpty())
     {
       resetSettings(backgroundSettings, false);
     }
@@ -99,29 +117,28 @@ public class SuiteProcessor
       catch (MalformedURLException e)
       {
         featureResult.setMessage("Error: remoteWebDriver Url is incorrect (STOPPED): " + WebUIManager.getInstance().getRemoteWebDriverUrl()
-            + " Please check your settings.properties ");
+                                   + " Please check your settings.properties ");
         featureResult.setSuccess(false);
         resetSettings(null, true);
       }
     }
 
     // go to the set
-    JavascriptExecutor jsDriver = null;
     String startingSiteUrl = backgroundSettings.get("url").trim();
 
     LOG.info("Navigating to site: " + startingSiteUrl);
     assert driver != null;
     driver.get(startingSiteUrl);
-
-    boolean isFirstPage = true;
-
     LOG.info("Go to feature [" + feature.getDescription() + "] with total [" + feature.getScenarios().size() + "] scenarios");
+
+    boolean            isFirstPage = true;
+    JavascriptExecutor jsDriver    = null;
 
     for (Scenario scenario : feature.getScenarios())
     {
       if (isFirstPage)
       {
-        jsDriver = WebUIManager.getInstance().getJQueryDriver(driver);
+        jsDriver    = WebUIManager.getInstance().getJQueryDriver(driver);
         isFirstPage = false;
       }
 
@@ -137,35 +154,35 @@ public class SuiteProcessor
 
   private static void runScenario(Scenario scenario, FeatureResult featureResult, WebDriver driver, JavascriptExecutor jsDriver)
   {
-    long scenarioTimeStarted = System.currentTimeMillis();
-    long scenarioTimeEnded;
-    ScenarioResult scenarioResult = new ScenarioResult();
+    long           scenarioTimeStarted = System.currentTimeMillis();
+    ScenarioResult scenarioResult      = new ScenarioResult();
 
     featureResult.addScenarioResult(scenarioResult);
     scenarioResult.setScenario(scenario);
-    LOG.info("start working on scenario [" + scenario.getText() + "]");
+    LOG.info("start working on scenario [" + scenario.getText() + ']');
 
     Page page = scenario.getGiven().getPage();
 
     pageSetup(driver, jsDriver, page);
 
     // loading page
+    long scenarioTimeEnded;
+
     if (!loadPage(scenario, scenarioResult, page))
     {
       scenarioResult.calculateSuccessRate();
       scenarioTimeEnded = System.currentTimeMillis();
       scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000);
 
-      if (!scenario.isOptional())
+      if (scenario.isOptional())
       {
-        LOG.info("Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + "]");
+        LOG.info("Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + ']');
         scenarioResult.setScreenShotPath(captureScreen(driver));
       }
       else
       {
         scenarioResult.setSuccess(true);
-
-        LOG.info("Optional: Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + "]");
+        LOG.info("Optional: Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + ']');
         scenarioResult.setScreenShotPath(captureScreen(driver));
       }
 
@@ -175,7 +192,7 @@ public class SuiteProcessor
     // take actions
     for (And and : scenario.getAnds())
     {
-      LOG.info("Working on 'and' [" + and.getText() + "]");
+      LOG.info("Working on 'and' [" + and.getText() + ']');
 
       for (ComponentAction componentAction : and.getActions())
       {
@@ -279,7 +296,6 @@ public class SuiteProcessor
     {
       expectResult.setSuccess(false);
       expectResult.setMessage(expect.getMessage());
-
       LOG.info("Failed to meet expect - capture screen ");
       scenarioResult.setScreenShotPath(captureScreen(page.getWebDriver()));
     }
@@ -295,7 +311,7 @@ public class SuiteProcessor
 
     try
     {
-      if (componentAction.getAction().equals(HtmlAction.WAIT))
+      if (componentAction.getAction() == HtmlAction.WAIT)
       {
         page.executeWebAction(null, componentAction.getAction(), componentAction.getActionValue());
       }
@@ -311,16 +327,16 @@ public class SuiteProcessor
       if (componentAction.isOptional())
       {
         actionResult.setSuccess(true);
-        actionResult.setMessage("Skipped action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - optional");
-        LOG.info("Skipped action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - optional");
+        actionResult.setMessage("Skipped action :" + componentAction.getAction() + ' ' + componentAction.getComponentName() + " - optional");
+        LOG.info("Skipped action :" + componentAction.getAction() + ' ' + componentAction.getComponentName() + " - optional");
       }
       else
       {
-        actionResult.setMessage("Failed to take action :" + componentAction.getAction() + " " + componentAction.getComponentName() + " - "
-            + wae.getMessage());
+        actionResult.setMessage("Failed to take action :" + componentAction.getAction() + ' ' + componentAction.getComponentName() + " - "
+                                  + wae.getMessage());
         actionResult.setSuccess(false);
         scenarioResult.setScreenShotPath(captureScreen(page.getWebDriver()));
-        LOG.info("Failed to take action :" + componentAction.getAction() + " " + componentAction.getComponentName());
+        LOG.info("Failed to take action :" + componentAction.getAction() + ' ' + componentAction.getComponentName());
       }
     }
   }
@@ -359,19 +375,23 @@ public class SuiteProcessor
   private static WebDriver setWebDriver(String browserName) throws MalformedURLException
   {
     WebUIManager webUIManager = WebUIManager.getInstance();
+
+    if (LOG.isDebugEnabled())
+    {
+      LOG.debug("browser name =" + browserName + '\'');
+    }
+
     WebDriver driver;
 
-    LOG.debug("browser name =" + browserName + "'");
-
-    if (browserName.trim().equalsIgnoreCase("chrome"))
+    if (browserName.trim().equalsIgnoreCase(Chrome.getLowercaseName()))
     {
       driver = webUIManager.getChromeDriver();
     }
-    else if (browserName.trim().equalsIgnoreCase("ie"))
+    else if (browserName.trim().equalsIgnoreCase(IE.getLowercaseName()))
     {
       driver = webUIManager.getIEDriver();
     }
-    else if (browserName.trim().equalsIgnoreCase("safari"))
+    else if (browserName.trim().equalsIgnoreCase(Safari.getLowercaseName()))
     {
       driver = webUIManager.getSafariDriver();
     }
@@ -398,19 +418,18 @@ public class SuiteProcessor
         augmentedDriver = new Augmenter().augment(driver);
       }
 
-      File source = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
+      //
+      File   source   = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
       String fileName = source.getName();
-      SimpleDateFormat sdf = new SimpleDateFormat("MM_dd_yyyy");
-      Date now = new Date();
-      String dirName = IMG_FOLDER_NAME + "_" + sdf.format(now);
-      File dirFile = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
+      String dirName  = IMG_FOLDER_NAME + '_' + DATE_TIME_FORMATTER.format(LocalDate.now());
+      File   dirFile  = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
 
       if (!dirFile.exists())
       {
         dirFile.mkdir();
       }
 
-      fileUrl = dirName + "/" + source.getName();
+      fileUrl = dirName + '/' + source.getName();
 
       String path = WebUIManager.getInstance().getLogsPath() + File.separator + dirName + File.separator + fileName;
 

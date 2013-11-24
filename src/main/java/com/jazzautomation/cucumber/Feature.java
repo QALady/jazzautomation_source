@@ -1,17 +1,23 @@
 package com.jazzautomation.cucumber;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.codehaus.jackson.annotate.JsonIgnore;
 
 public class Feature extends CucumberBase
 {
-  @JsonIgnore
-  private String             originalText;
+  @JsonIgnore private String originalText;
   private String             name;
-  private Background         background = null;
-  private List<Scenario>     scenarios  = new ArrayList<>();
+  private Background         background;
+  private List<Scenario>     scenarios = new ArrayList<>();
 
+  public void addScenario(Scenario scenario)
+  {
+    scenarios.add(scenario);
+  }
+
+  // --------------------- GETTER / SETTER METHODS ---------------------
   public Background getBackground()
   {
     return background;
@@ -22,14 +28,14 @@ public class Feature extends CucumberBase
     this.background = background;
   }
 
-  public List<Scenario> getScenarios()
+  public String getName()
   {
-    return scenarios;
+    return name;
   }
 
-  public void addScenario(Scenario scenario)
+  public void setName(String name)
   {
-    this.scenarios.add(scenario);
+    this.name = name;
   }
 
   public String getOriginalText()
@@ -42,13 +48,8 @@ public class Feature extends CucumberBase
     this.originalText = originalText;
   }
 
-  public String getName()
+  public List<Scenario> getScenarios()
   {
-    return name;
-  }
-
-  public void setName(String name)
-  {
-    this.name = name;
+    return scenarios;
   }
 }

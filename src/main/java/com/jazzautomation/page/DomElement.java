@@ -1,29 +1,30 @@
 package com.jazzautomation.page;
 
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import org.openqa.selenium.WebElement;
 import com.jazzautomation.action.ConditionAction;
 
+import org.openqa.selenium.WebElement;
+
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
+
 /** The class represents a DOM element on a html page. */
-@XmlRootElement
-public class DomElement
+@XmlRootElement public class DomElement
 {
   protected String identifier;
 
   // we use the following way to find a component. other than jquery, everything else is using Selenium built-in functions
-  protected String jquery          = null;
-  protected String id              = null;
-  protected String name            = null;
-  protected String linkText        = null;
-  protected String className       = null;
-  protected String xpath           = null;
-  protected String cssSelector     = null;
-  protected String partialLinkText = null;
-  protected String tagName         = null;
+  protected String jquery;
+  protected String id;
+  protected String name;
+  protected String linkText;
+  protected String className;
+  protected String xpath;
+  protected String cssSelector;
+  protected String partialLinkText;
+  protected String tagName;
 
   // end of how to find a component;
-  protected int index = 0;
+  protected int index;
 
   // protected String                 jqueryGetValue;
   protected String                 jqueryGetHtml;
@@ -32,13 +33,37 @@ public class DomElement
   protected boolean                existed;
   protected boolean                visible;
   protected String                 value;
-  protected String                 browser            = null;
-  protected HtmlCondition          webCondition       = null;
-  protected ConditionAction        webConditionAction = null;
-  @XmlTransient
-  private WebElement               domElement;
-  @XmlTransient
-  private String                   pageInfo;
+  protected String                 browser;
+  protected HtmlCondition          webCondition;
+  protected ConditionAction        webConditionAction;
+  @XmlTransient private WebElement domElement;
+  @XmlTransient private String     pageInfo;
+
+  public String getJqueryGetHtml()
+  {
+    if (jquery.trim().endsWith("]"))
+    {
+      return jquery + ".innerHTML;";
+    }
+    else
+    {
+      return jquery + "[" + index + "].innerHTML;";
+    }
+  }
+
+  public String getJqueryGetDomElement()
+  {
+    if (jquery.trim().endsWith("]"))
+    {
+      jqueryGetDomElement = jquery;
+    }
+    else
+    {
+      jqueryGetDomElement = jquery + "[" + index + "]";
+    }
+
+    return jqueryGetDomElement;
+  }
 
   public boolean isExisted()
   {
@@ -95,32 +120,6 @@ public class DomElement
     return domElement;
   }
 
-  public String getJqueryGetHtml()
-  {
-    if (jquery.trim().endsWith("]"))
-    {
-      return jquery + ".innerHTML;";
-    }
-    else
-    {
-      return jquery + "[" + index + "].innerHTML;";
-    }
-  }
-
-  public String getJqueryGetDomElement()
-  {
-    if (jquery.trim().endsWith("]"))
-    {
-      jqueryGetDomElement = jquery;
-    }
-    else
-    {
-      jqueryGetDomElement = jquery + "[" + index + "]";
-    }
-
-    return jqueryGetDomElement;
-  }
-
   public boolean isOptional()
   {
     return optional;
@@ -151,8 +150,7 @@ public class DomElement
     this.webConditionAction = webConditionAction;
   }
 
-  @XmlTransient
-  public void setDomElement(WebElement domElement)
+  @XmlTransient public void setDomElement(WebElement domElement)
   {
     this.domElement = domElement;
   }

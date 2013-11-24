@@ -8,16 +8,15 @@ public class WebActionException extends Exception
   public static int         STATUS_EXPECT_FAILED = -3;
   private int               status;
 
-
-  public WebActionException(String message) {
+  public WebActionException(String message)
+  {
     super(message);
   }
 
-
-  public WebActionException(String message, Throwable cause) {
+  public WebActionException(String message, Throwable cause)
+  {
     super(message, cause);
   }
-
 
   public int getStatus()
   {
