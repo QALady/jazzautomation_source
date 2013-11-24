@@ -6,6 +6,10 @@ ext {
 	sourceCompatibility = JavaVersion.VERSION_1_6
 }
 
+final path = System.properties.find { it.key == "java.home" }.toString()
+path=path.split("=")[1]
+def javaHomeDir=new File(path).parent
+
 
 dependencies {
 	
@@ -14,6 +18,16 @@ dependencies {
 			"org.codehaus.jackson:jackson-mapper-asl:1.9.3",
   			"com.saucelabs.selenium:selenium-client-factory:1.2",
             "ch.qos.logback:logback-core:1.0.13",
-            "ch.qos.logback:logback-classic:1.0.13"
+            "ch.qos.logback:logback-classic:1.0.13",
+            'org.codehaus.groovy:groovy:2.2.0-rc-3',
+            'org.threeten:threetenbp:0.8.1',
+            'com.intellij:forms_rt:12.0'
+
+ // these are needed for forms - when JavaFX version is working, they won't be needed
+//  compile files("gradle/lib/idea_rt.jar")
+//  compile files("gradle/lib/forms_rt.jar")
+  compile files("$javaHomeDir/jre/lib/jfxrt.jar") 
+  
+
 
 }

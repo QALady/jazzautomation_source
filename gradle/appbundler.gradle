@@ -1,0 +1,180 @@
+
+/////////////// This is the section of Gradle which uses the AppBundler. ///////////////////////
+/////////////// Note that AppBundler requires you to create your own icons /////////////////////
+/////////////// It may do a better job of making an .exe for Windows  //////////////////////////
+/////////////// i.e., not require a windows machine to make the exe ////////////////////////////
+
+apply plugin: 'application'
+//mainClassName  = "com.jazzautomation.AutomationDriver"
+
+configurations {
+  bundleapp
+  launch4j
+  jre
+}
+
+repositories {
+  ivy {
+            artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
+            ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
+  }
+}
+
+dependencies {
+  bundleapp "com.oracle:appbundler:1.0"
+  launch4j files("gradle/launch4j/launch4j.jar")
+  launch4j 'com.thoughtworks.xstream:xstream:1.4.5'
+  
+  jre group: 'com.oracle', name: 'jdk_osx', version: '1.7.0_40', ext: 'zip'
+  jre group: "com.oracle", name: "jdk_windows", version: "1.7.0_40",ext:"zip"
+  
+}
+
+
+project.ext {
+  releaseZipName = "${project.projectname}_Zip_v${project.versionNumber}.zip"
+  releaseWinName = "${project.projectname}_Win_v${project.versionNumber}.exe"
+  releaseMacName = "${project.projectname}_Mac_v${project.versionNumber}.zip"
+  macAppDir = "${project.projectname}.app"
+
+}
+println "Project stuff:::::::::  ${project.projectname}.app"
+
+// Mac Release - from https://github.com/anathema/anathema/blob/master/build.gradle
+task createLauncherMac(dependsOn: installApp) << {
+  
+    ant.taskdef(
+            name: "bundleapp",
+            classname: "com.oracle.appbundler.AppBundlerTask",
+            classpath: configurations.bundleapp.asPath
+    )
+    mkdir("${buildDir}/dist")
+    ant.bundleapp(
+            outputdirectory: "${buildDir}/dist",
+            name: "Jazz Automation",
+            displayname:  "Jazz Automation",
+            identifier: "com.jazzautomation",
+//            icon: "src/main/resources/gradleLogo_big.icns", //opt
+//            shortversion: "${versionString}", //opt
+//            signature: "????", //opt
+            //copyright: blah , //opt
+            applicationCategory: "public.app-category.utilities", //opt
+//            mainclassname: "com.jazzautomation.AutomationDriver"
+            mainclassname: "com.jazzautomation.ui.MainUi"
+    ) {
+        runtime(dir: "build/jre/osx/jdk1.7.0_40.jdk/Contents/Home") //opt - one way to get around who's got what - put the JRE into source control
+//        runtime(dir: "$javaHomeDir") //opt
+//
+        classpath(dir: "${buildDir}/install/JazzAutomation/lib/")
+//        classpath(file: "$javaHomeDir/jre/lib/jfxrt.jar")
+//        classpath(file: "src/main/resources/FobIcon.png")
+      
+      
+//        classpath(dir: "${buildDir}/dependencies/")
+//        classpath(dir: "${buildDir}/plugins/")
+
+//        option(value: "-splash:\$APP_ROOT/Contents/Java/FobIcon.png")// shows image, but app hangs with no errors
+        option(value: "-Dapple.laf-useScreenMenuBar=true")
+        option(value: "-Djazz.configs=examples/bestBuyExample")
+        option(value: "-Dfeatures=AddToCart,CheckoutAsGuest")
+//        option(value: "-Ddefaultrepository=%USER_HOME%/Library/Application Support/Anathema")
+    }
+}
+
+// Windows Release
+task createLauncherWin << {
+//    def launch4jPath = "Development_Distribution/Windows/Binaries/launch4j/bin_" + os 
+    def launch4jPath = "/Users/douglas_bullard/Downloads/launch4j"
+
+    mkdir("./build/launcher")
+  //todo make a task to always get the version number to what's expected
+    def exeVersion = "${project.versionNumber}.0.0"
+    def versionText = "${project.versionNumber}"
+    ant.taskdef(
+            name: 'launch4j',
+            classname: 'net.sf.launch4j.ant.Launch4jTask',
+            classpath: configurations.launch4j.asPath
+    )
+    ant.launch4j(
+            bindir: '/Users/douglas_bullard/Downloads/launch4j/bin'
+    ) {
+        config(
+                outfile: 'build/launcher/jazzautomation.exe',
+                jarPath: 'jazzautomation.jar',
+                dontwrapjar: true,
+                headerType: 'gui',
+                icon: 'gradle/Windows/jazzautomation.ico'
+        ) {
+            versionInfo(
+                    fileVersion: exeVersion,
+                    txtFileVersion: versionText,
+                    fileDescription: "Jazz Automation Windows Launcher",
+                    copyright: "jazzautomation.github.com",
+                    productVersion: exeVersion,
+                    txtProductVersion: versionText,
+                    productName: "$projectname",
+                    internalName: "jazzautomation",
+                    originalFilename: "jazzautomation.exe"
+            )
+            jre(
+                    path: "build/jre/win64",
+                    minVersion: "1.7.0_40"
+            )
+        }
+    }
+}
+
+task assembleWin << {
+    def nsisPath = "Development_Distribution/Windows/Binaries/NSIS/bin_" + os
+
+    ant.taskdef(name: "nsis",
+            classname: "com.danielreese.nsisant.Task",
+            classpath: configurations.nsis.asPath)
+    ant.nsis(script: "Development_Distribution/Windows/NSIS/anathema.nsi", path: nsisPath) {
+        define(name: "RELEASE_DIR", value: "${releaseDir}")
+        define(name: "RELEASE_FILE", value: "${releaseWinName}")
+        define(name: "RELEASE_VERSION", value: "${versionString}")
+        define(name: "VERSION", value: "${versionString}.0")
+        define(name: "JRE_PATH", value: "build\\jre\\win32\\jre${jreVersion}")
+    }
+}
+
+// JRE archive download and explosion into build folder
+task prepareWinJRE(type: Copy) {
+    def target = new File('build/jre/win64');
+    into target
+    from { zipTree(configurations.jre.fileCollection{dep -> dep.name == "jdk_windows-1.7.0_40.zip"}) }
+    onlyIf { !target.exists() }
+    doLast {
+        ant.delete(includeemptydirs: true, quiet: true) {
+            fileset(dir: buildDir, includes: "tmp/expandedArchives/jre-win32*/**", defaultexcludes: false)
+        }
+    }
+}
+
+task prepareMacJRE(type: Copy, dependsOn: "copyLibs") {
+    def target = new File('build/jre/osx');
+    into target
+//    from { zipTree(configurations.jre.fileCollection{dep -> dep.name == "jdk1.7.0_40_osx.zip"}) }
+    from { zipTree( "build/zippedJre/jdk_osx-1.7.0_40.zip") }
+    onlyIf { !target.exists() }
+    doLast {
+        ant.delete(includeemptydirs: true, quiet: true) {
+            fileset(dir: buildDir, includes: "tmp/expandedArchives/jre-mac64*/**", defaultexcludes: false)
+        }
+    }
+}
+
+task copyLibs(type: Copy) {
+  from configurations.jre
+  into 'build/zippedJre'
+}
+
+task listJars << {
+    configurations.jre.each { File file -> println file.name }
+}
+
+//task prepareJRE dependsOn(prepareWinJRE, prepareMacJRE)
+
+createLauncherWin.dependsOn prepareWinJRE
+createLauncherMac.dependsOn prepareMacJRE

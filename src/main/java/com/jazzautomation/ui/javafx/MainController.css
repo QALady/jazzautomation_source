@@ -1,0 +1,91 @@
+
+.theme {
+    /*master-color: grey;*/
+    /*-fx-background-color: derive(master-color, 70%);*/
+    /*-fx-font-size: 14px;*/
+  
+  -fx-base: #505359;
+  -fx-background: #505359;
+  -fx-spacing: 10;
+  -fx-padding: 10 10 10 10;
+  -fx-background-color:
+      linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%),
+      linear-gradient(#020b02, #3a3a3a),
+      linear-gradient(#9d9e9d 0%, #6b6a6b 20%, #343534 80%, #242424 100%),
+      linear-gradient(#8a8a8a 0%, #6b6a6b 20%, #343534 80%, #262626 100%),
+      linear-gradient(#777777 0%, #606060 50%, #505250 51%, #2a2b2a 100%);
+    -fx-alignment: center;
+    -fx-border-width: 3;
+  -fx-border-color: 
+    linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%) 
+          linear-gradient(#686868 10%, white 40%, #343534 90%, #757575 100%)
+          linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%)
+          linear-gradient(#686868 10%, white 40%, #343534 90%, #757575 100%);
+    -fx-border-insets: 1 1 1 1;
+    -fx-border-radius: 8 8 8 8;
+    -fx-background-radius: 10 10 10 10;
+}
+
+.tab {
+  /*-fx-background:  #505359;*/
+  /*-fx-background-color: green;*/
+  /*-fx-base: black;*/
+  /*-fx-text-fill: green;*/
+  -fx-color: gray;
+}
+
+
+
+.button {
+    /*-fx-background-color:*/
+        /*linear-gradient(*/
+            /*derive(master-color, 120%), */
+            /*derive(master-color, 90%)*/
+        /*),*/
+        /*radial-gradient(*/
+            /*center 50% -40%, */
+            /*radius 180%, */
+            /*derive(master-color, 95%) 55%, */
+            /*derive(master-color, 75%) 55%*/
+        /*);*/
+    /*-fx-background-radius: 4, 3;*/
+    /*-fx-background-insets: 0, 1;*/
+    /*-fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.55) , 5, 0.0 , 0 , 1 );*/
+    /*-fx-text-fill: derive(master-color, -60%);*/
+    /*-fx-padding: 3 11 3 11;*/
+}
+
+
+.title{
+    -fx-text-fill: derive(master-color, -50%);
+    -fx-font-size: 60px;
+}
+
+.label{
+    -fx-text-fill: derive(master-color, -20%);
+    -fx-font-size: 21px;
+}
+.label2{
+    -fx-text-fill: derive(master-color, -20%);
+    -fx-font-size:10px;
+}
+
+.smallLabel{
+  -fx-text-fill: derive(master-color, -70%);
+  -fx-font-size:15  px;
+}
+
+.borderedBox{
+  -fx-background-color: derive(master-color, 40%);
+  border: 10px;
+  -fx-align: left;
+  -fx-padding: 10 10 10 10;
+  
+}
+.borderline{
+  -fx-border-width: 2;
+  /*-fx-color: black;*/
+  color: green;
+  border: black;
+  line-height: 2px;
+}
