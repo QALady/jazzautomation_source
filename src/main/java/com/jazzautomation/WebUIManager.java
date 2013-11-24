@@ -95,7 +95,7 @@ public class WebUIManager
    */
   public static WebUIManager getInstance()
   {
-    // dbulla CODEREVIEW - Seems kludgy - can't you use Spring to get a singleton?
+    // jsheridan CODEREVIEW - Seems kludgy - can't you use Spring to get a singleton?
     if (instance == null)
     {
       instance = new WebUIManager();
@@ -601,7 +601,7 @@ public class WebUIManager
     return jsText;
   }
 
-  // dbulla CODEREVIEW - I think you can do this with aDir.mkdirs() - that creates all parent directories
+  // jsheridan CODEREVIEW - I think you can do this with aDir.mkdirs() - that creates all parent directories
   private static void recursiveLyCreatePath(File aDir)
   {
     if (!aDir.exists())

@@ -71,14 +71,14 @@ import javax.xml.bind.annotation.XmlTransient;
    *
    * @throws  WebActionException
    */
-  // dbulla CODEREVIEW - winnebago method
+  // jsheridan CODEREVIEW - winnebago method
   public void setup() throws WebActionException
   {
     LOG.info("Setting up page [" + pageName + "]");
 
     int                timeout_seconds   = (int) (NUMBER_OF_RETRY * pagePace);
     int                sleepMilliSeconds = (int) (pagePace * 1000);
-    final StringBuffer failedMessage     = new StringBuffer();  // dbulla CODEREVIEW - this is never converted to String - can remove!
+    final StringBuffer failedMessage     = new StringBuffer();  // jsheridan CODEREVIEW - this is never converted to String - can remove!
 
     try
     {
@@ -254,11 +254,11 @@ import javax.xml.bind.annotation.XmlTransient;
     }
   }
 
-  // dbulla CODEREVIEW -  another long method
+  // jsheridan CODEREVIEW -  another long method
   private HtmlActionStatus performDomAction(final DomElement domElement, HtmlAction webAction, String actionValue) throws WebActionException
   {
     try
-    {        // dbulla CODEREVIEW - enum on switch misses cases, no default
+    {        // jsheridan CODEREVIEW - enum on switch misses cases, no default
 
       switch (webAction)
       {
@@ -739,7 +739,7 @@ import javax.xml.bind.annotation.XmlTransient;
           double expectValue = Double.parseDouble(expect.getValue());
           double actualValue = Double.parseDouble(htmlValue.replaceAll("[^0-9\\.]", ""));
 
-          // dbulla CODEREVIEW - DANGER! you're comparing two float values!!!!!
+          // jsheridan CODEREVIEW - DANGER! you're comparing two float values!!!!!
           if (expectValue != actualValue)
           {
             expectMet = false;

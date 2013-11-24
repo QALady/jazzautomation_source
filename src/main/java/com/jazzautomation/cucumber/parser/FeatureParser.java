@@ -72,8 +72,8 @@ public class FeatureParser
    */
   public Feature parse(FileInputStream in) throws IllegalCucumberFormatException
   {
-    // dbulla CODEREVIEW - If we're just reading a file in, FileUtils.readLines is much nicer than buffered reader stuff
-    // dbulla CODEREVIEW - long method break up for clarity
+    // jsheridan CODEREVIEW - If we're just reading a file in, FileUtils.readLines is much nicer than buffered reader stuff
+    // jsheridan CODEREVIEW - long method break up for clarity
     Feature       feature            = new Feature();
     List<String>  stringsForFile     = new ArrayList<>();
     StringBuilder originalTextBuffer = new StringBuilder();
@@ -164,7 +164,7 @@ public class FeatureParser
     return feature;
   }
 
-  // dbulla CODEREVIEW - unit test would be nice
+  // jsheridan CODEREVIEW - unit test would be nice
   private int setupText(CucumberBase cucumberObject, List<String> stringsForFile, int index, String leadingWord, String[] endWords)
   {
     String currentLine = stringsForFile.get(index);
@@ -294,7 +294,7 @@ public class FeatureParser
     }
   }
 
-  // dbulla CODEREVIEW - break up into smaller methods for clarity
+  // jsheridan CODEREVIEW - break up into smaller methods for clarity
   private void processGiven(Given given) throws IllegalCucumberFormatException
   {
     List<String>  lines      = scanIntoLine(given.getText());
@@ -455,7 +455,7 @@ public class FeatureParser
     }
   }
 
-  // dbulla CODEREVIEW - very long method - break up
+  // jsheridan CODEREVIEW - very long method - break up
   private void processThen(Then then) throws IllegalCucumberFormatException
   {
     List<String>  lines      = scanIntoLine(then.getText());

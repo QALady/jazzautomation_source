@@ -4,7 +4,7 @@ public class Utils
 {
   private Utils() {}
 
-  // dbulla CODEREVIEW - why not use number utils?  or else rename isADouble
+  // jsheridan CODEREVIEW - why not use number utils?  or else rename isADouble
   public static boolean isANumber(String aString)
   {
     try
