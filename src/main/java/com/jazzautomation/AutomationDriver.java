@@ -6,6 +6,7 @@ import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
 
 import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
 
+import com.jazzautomation.loader.CustomClassLoader;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
@@ -56,7 +57,7 @@ public class AutomationDriver
     }
   }
 
-  public static boolean beginTestSuite()
+  public static boolean beginTestSuite() throws Exception
   {
     final WebUIManager webUIManager    = WebUIManager.getInstance();
     Set<String>        featureNameList = new LinkedHashSet<>();  // use set to prevent same feature multiple times - unless this is desired?
@@ -69,6 +70,11 @@ public class AutomationDriver
     else
     {
       featureNames = WebUIManager.getInstance().getFeatureNames();
+    }
+
+    if(null != webUIManager.getCustomClasspath())
+    {
+      CustomClassLoader.addPath(webUIManager.getCustomClasspath());
     }
 
     if (StringUtils.isNotEmpty(featureNames))

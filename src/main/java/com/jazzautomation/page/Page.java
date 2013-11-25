@@ -2,13 +2,12 @@ package com.jazzautomation.page;
 
 import com.jazzautomation.WebUIManager;
 
-import com.jazzautomation.action.ComponentAction;
 import com.jazzautomation.action.HtmlAction;
 import com.jazzautomation.action.HtmlActionStatus;
-import com.jazzautomation.action.PageAction;
 
 import com.jazzautomation.customaction.Action;
 
+import com.jazzautomation.customaction.InitializationException;
 import com.jazzautomation.util.Constants;
 import com.jazzautomation.util.Utils;
 import com.jazzautomation.util.WebActionException;
@@ -27,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -61,7 +59,7 @@ import javax.xml.bind.annotation.XmlTransient;
   private String                           keyDomElementName = null;
   @XmlTransient private WebDriver          webDriver;
   @XmlTransient private JavascriptExecutor jsDriver;
-  @XmlTransient private float              pagePace          = 10.0f;  // default value 10 seconds
+  @XmlTransient private float              pageLoadTimeout   = 10.0f;  // default value 10 seconds
   @XmlTransient private float              actionPace        = 1.0f;   // default value 1 second
   @XmlTransient private String             browser;
 
@@ -76,76 +74,76 @@ import javax.xml.bind.annotation.XmlTransient;
   {
     LOG.info("Setting up page [" + pageName + "]");
 
-    int                timeout_seconds   = (int) (NUMBER_OF_RETRY * pagePace);
-    int                sleepMilliSeconds = (int) (pagePace * 1000);
+    int                timeout_seconds   = (int) (NUMBER_OF_RETRY * pageLoadTimeout);
+    int                sleepMilliSeconds = (int) (pageLoadTimeout * 1000);
     final StringBuffer failedMessage     = new StringBuffer();  // jsheridan CODEREVIEW - this is never converted to String - can remove!
 
     try
     {
       new WebDriverWait(webDriver, timeout_seconds, sleepMilliSeconds).until(new ExpectedCondition<Boolean>()
+      {
+        public Boolean apply(WebDriver d)
         {
-          public Boolean apply(WebDriver d)
+          if (pageLoadTimeout > 20)
           {
-            if (pagePace > 20)
+            if (!((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"))
             {
-              if (!((JavascriptExecutor) d).executeScript("return document.readyState").equals("complete"))
-              {
-                return false;
-              }
+              return false;
             }
-
-            boolean doTitle = (title != null) && (title.trim().length() > 0);
-
-            changeWindowsIfNecessary(d, doTitle);
-
-            boolean urlAndTitleCorrect;
-
-            if (doTitle)
-            {
-              urlAndTitleCorrect = (d.getCurrentUrl().indexOf(urlExtension) > 0) && d.getTitle().equals(title);
-            }
-            else
-            {
-              urlAndTitleCorrect = d.getCurrentUrl().indexOf(urlExtension) > 0;
-            }
-
-            boolean keyComponentExisted = true;
-
-            if (keyDomElementName != null)
-            {
-              DomElement keyDomComponent = getDomElement(keyDomElementName);
-
-              if (keyDomComponent == null)
-              {
-                LOG.info("There is no such domElement, [" + keyDomElementName + "] in your configuration.");
-                failedMessage.append("no such dom element: " + keyDomElementName);
-
-                return false;
-              }
-
-              try
-              {
-                populateDomElement(keyDomComponent);
-              }
-              catch (WebActionException e)
-              {
-                if (LOG.isDebugEnabled())
-                {
-                  LOG.debug("Web exception", e);
-                }
-
-                return false;
-              }
-
-              if (!keyDomComponent.isExisted() || !keyDomComponent.isVisible())
-              {
-                keyComponentExisted = false;
-              }
-            }
-
-            return urlAndTitleCorrect && keyComponentExisted;
           }
-        });
+
+          boolean doTitle = (title != null) && (title.trim().length() > 0);
+
+          changeWindowsIfNecessary(d, doTitle);
+
+          boolean urlAndTitleCorrect;
+
+          if (doTitle)
+          {
+            urlAndTitleCorrect = (d.getCurrentUrl().indexOf(urlExtension) > 0) && d.getTitle().equals(title);
+          }
+          else
+          {
+            urlAndTitleCorrect = d.getCurrentUrl().indexOf(urlExtension) > 0;
+          }
+
+          boolean keyComponentExisted = true;
+
+          if (keyDomElementName != null)
+          {
+            DomElement keyDomComponent = getDomElement(keyDomElementName);
+
+            if (keyDomComponent == null)
+            {
+              LOG.info("There is no such domElement, [" + keyDomElementName + "] in your configuration.");
+              failedMessage.append("no such dom element: " + keyDomElementName);
+
+              return false;
+            }
+
+            try
+            {
+              populateDomElement(keyDomComponent);
+            }
+            catch (WebActionException e)
+            {
+              if (LOG.isDebugEnabled())
+              {
+                LOG.debug("Web exception", e);
+              }
+
+              return false;
+            }
+
+            if (!keyDomComponent.isExisted() || !keyDomComponent.isVisible())
+            {
+              keyComponentExisted = false;
+            }
+          }
+
+          return urlAndTitleCorrect && keyComponentExisted;
+        }
+      });
     }
     catch (Exception te)
     {
@@ -478,15 +476,15 @@ import javax.xml.bind.annotation.XmlTransient;
       try
       {
         new WebDriverWait(webDriver, (long) actionPace * 5).until(new ExpectedCondition<Boolean>()
+        {
+          public Boolean apply(WebDriver d)
           {
-            public Boolean apply(WebDriver d)
-            {
-              domElement.setDomElement((WebElement) jsDriver.executeScript(jqueryString));
-              LOG.info("Executed jquery: \"" + jqueryString + "\"");
+            domElement.setDomElement((WebElement) jsDriver.executeScript(jqueryString));
+            LOG.info("Executed jquery: \"" + jqueryString + "\"");
 
-              return true;
-            }
-          });
+            return true;
+          }
+        });
       }
       catch (Exception e)
       {
@@ -762,19 +760,19 @@ import javax.xml.bind.annotation.XmlTransient;
               if (htmlValue.indexOf(calculatedExpectation) < 0)
               {
                 expectMet = false;
-                expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
+                expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + calculatedExpectation
                                     + "]; actual value is [" + htmlValue + ']');
               }
             }
             catch (InstantiationException | IllegalAccessException e)
             {
               String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
-
-              LOG.error("Error creating custom action [" + actionClassString + "].", e);
+              throw new InitializationException("Error creating custom action [" + actionClassString + "].", e);
             }
             catch (Exception e)
             {
-              LOG.error("Error in custom action", e);
+              String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+              LOG.error("Error executing custom action [" + actionClassString + "]", e);
             }
           }
           else if (htmlValue.indexOf(expect.getValue().trim()) < 0)
@@ -791,8 +789,7 @@ import javax.xml.bind.annotation.XmlTransient;
         }
         else
         {
-          LOG.info("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue().trim() + "]; actual is ["
-                     + htmlValue + ']');
+          LOG.info(expect.getMessage());
         }
       }
       else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.NOT_EQUALS.getValue()))
@@ -961,14 +958,14 @@ import javax.xml.bind.annotation.XmlTransient;
     this.keyDomElementName = keyDomElementName;
   }
 
-  public float getPagePace()
+  public float getPageLoadTimeout()
   {
-    return pagePace;
+    return pageLoadTimeout;
   }
 
-  public void setPagePace(float pagePace)
+  public void setPageLoadTimeout(float pageLoadTimeout)
   {
-    this.pagePace = pagePace;
+    this.pageLoadTimeout = pageLoadTimeout;
   }
 
   public float getActionPace()

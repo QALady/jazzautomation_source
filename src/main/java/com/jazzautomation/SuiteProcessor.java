@@ -45,20 +45,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Suite processor class that will process test suites and run all features. */
+/**
+ * Suite processor class that will process test suites and run all features.
+ */
 public class SuiteProcessor
 {
-  private static final Logger            LOG                 = LoggerFactory.getLogger(SuiteProcessor.class);
-  private static final int               SCREEN_CAPTURE_WAIT = 3000;
+  private static final Logger LOG = LoggerFactory.getLogger(SuiteProcessor.class);
+  private static final int SCREEN_CAPTURE_WAIT = 3000;
   private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("MM_dd_yyyy");
 
-  private SuiteProcessor() {}
+  private SuiteProcessor()
+  {
+  }
 
   /**
    * Processes the provided suite.
    *
-   * @param  suite   the suite to be executed
-   * @param  driver  the web driver; optional
+   * @param suite  the suite to be executed
+   * @param driver the web driver; optional
    */
   public static void process(Suite suite, WebDriver driver)
   {
@@ -71,8 +75,8 @@ public class SuiteProcessor
   {
     LOG.info("** Begin Suite **");
 
-    SuiteResult suiteResult      = new SuiteResult();
-    long        suiteTimeStarted = System.currentTimeMillis();
+    SuiteResult suiteResult = new SuiteResult();
+    long suiteTimeStarted = System.currentTimeMillis();
 
     for (Feature feature : features)
     {
@@ -91,13 +95,13 @@ public class SuiteProcessor
 
   private static void runFeature(Feature feature, SuiteResult suiteResult, WebDriver driver)
   {
-    long          featureTimeStarted = System.currentTimeMillis();
-    FeatureResult featureResult      = new FeatureResult();
+    long featureTimeStarted = System.currentTimeMillis();
+    FeatureResult featureResult = new FeatureResult();
 
     featureResult.setFeature(feature);
     suiteResult.addFeatureResult(featureResult);
 
-    Background          background         = feature.getBackground();
+    Background background = feature.getBackground();
     Map<String, String> backgroundSettings = background.getGiven().getSettings();
 
     LOG.info("Background settings = [" + backgroundSettings + ']');
@@ -117,7 +121,7 @@ public class SuiteProcessor
       catch (MalformedURLException e)
       {
         featureResult.setMessage("Error: remoteWebDriver Url is incorrect (STOPPED): " + WebUIManager.getInstance().getRemoteWebDriverUrl()
-                                   + " Please check your settings.properties ");
+            + " Please check your settings.properties ");
         featureResult.setSuccess(false);
         resetSettings(null, true);
       }
@@ -131,14 +135,14 @@ public class SuiteProcessor
     driver.get(startingSiteUrl);
     LOG.info("Go to feature [" + feature.getDescription() + "] with total [" + feature.getScenarios().size() + "] scenarios");
 
-    boolean            isFirstPage = true;
-    JavascriptExecutor jsDriver    = null;
+    boolean isFirstPage = true;
+    JavascriptExecutor jsDriver = null;
 
     for (Scenario scenario : feature.getScenarios())
     {
       if (isFirstPage)
       {
-        jsDriver    = WebUIManager.getInstance().getJQueryDriver(driver);
+        jsDriver = WebUIManager.getInstance().getJQueryDriver(driver);
         isFirstPage = false;
       }
 
@@ -154,8 +158,8 @@ public class SuiteProcessor
 
   private static void runScenario(Scenario scenario, FeatureResult featureResult, WebDriver driver, JavascriptExecutor jsDriver)
   {
-    long           scenarioTimeStarted = System.currentTimeMillis();
-    ScenarioResult scenarioResult      = new ScenarioResult();
+    long scenarioTimeStarted = System.currentTimeMillis();
+    ScenarioResult scenarioResult = new ScenarioResult();
 
     featureResult.addScenarioResult(scenarioResult);
     scenarioResult.setScenario(scenario);
@@ -257,7 +261,8 @@ public class SuiteProcessor
     page.setJsDriver(jsDriver);
     WebUIManager.getInstance().loadJQuery(jsDriver);
     LOG.info("Navigating to page " + page.getPageName());
-    page.setPagePace(WebUIManager.getInstance().getPagePace());
+    // Dedrick
+    page.setPageLoadTimeout(WebUIManager.getInstance().getPageLoadTimeout());
     page.setActionPace(WebUIManager.getInstance().getActionPace());
     page.setBrowser(WebUIManager.getInstance().getBrowser());
   }
@@ -333,7 +338,7 @@ public class SuiteProcessor
       else
       {
         actionResult.setMessage("Failed to take action :" + componentAction.getAction() + ' ' + componentAction.getComponentName() + " - "
-                                  + wae.getMessage());
+            + wae.getMessage());
         actionResult.setSuccess(false);
         scenarioResult.setScreenShotPath(captureScreen(page.getWebDriver()));
         LOG.info("Failed to take action :" + componentAction.getAction() + ' ' + componentAction.getComponentName());
@@ -419,10 +424,10 @@ public class SuiteProcessor
       }
 
       //
-      File   source   = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
+      File source = ((TakesScreenshot) augmentedDriver).getScreenshotAs(OutputType.FILE);
       String fileName = source.getName();
-      String dirName  = IMG_FOLDER_NAME + '_' + DATE_TIME_FORMATTER.format(LocalDate.now());
-      File   dirFile  = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
+      String dirName = IMG_FOLDER_NAME + '_' + DATE_TIME_FORMATTER.format(LocalDate.now());
+      File dirFile = new File(WebUIManager.getInstance().getLogsPath() + File.separator + dirName);
 
       if (!dirFile.exists())
       {

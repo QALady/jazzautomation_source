@@ -9,9 +9,10 @@ public class Constants
   public static final String REMOTE_WEB_DRIVER_URL   = "remoteWebDriverUrl";
   public static final String SETTINGS_USE_XML        = "useXml";
   public static final String PAGES_DIRECTORY_NAME    = "pagesDirectoryName";
-  public static final String PAGE_PACE               = "pagePace";
+  public static final String PAGE_LOAD_TIMEOUT       = "pageLoadTimeout";
   public static final String ACTION_PACE             = "actionPace";
   public static final String FEATURE_NAMES_EXECUTION = "features";
+  public static final String CUSTOM_CLASSPATH        = "customClasspath";
 
   // jazz.properties optional:
   public static final String BROWSER         = "browser";

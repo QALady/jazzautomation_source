@@ -74,10 +74,11 @@ public class WebUIManager
 
   // from jazz.properties
   private String        projectName        = "";
-  private boolean       useRemoteWebDriver = false;
-  private static String remoteWebDriverUrl = null;
-  private static int    pagePace           = 10;
+  private boolean       useRemoteWebDriver;
+  private static String remoteWebDriverUrl;
+  private static int pageLoadTimeout = 10;
   private static int    actionPace         = 1;
+  private String customClasspath;
   private static String featureNames;
 
   // from system properties
@@ -252,9 +253,9 @@ public class WebUIManager
 
     String pagesFolderPath = configurationsPath + File.separator + pagesDirectoryName;
 
-    if (settings.getProperty(PAGE_PACE) != null)
+    if (settings.getProperty(PAGE_LOAD_TIMEOUT) != null)
     {
-      pagePace = Integer.parseInt(settings.getProperty(PAGE_PACE).trim());
+      pageLoadTimeout = Integer.parseInt(settings.getProperty(PAGE_LOAD_TIMEOUT).trim());
     }
 
     if (settings.getProperty(ACTION_PACE) != null)
@@ -270,6 +271,11 @@ public class WebUIManager
     if (settings.getProperty(BROWSER) != null)
     {
       browser = settings.getProperty(BROWSER).trim();
+    }
+
+    if(StringUtils.isNotBlank(settings.getProperty(CUSTOM_CLASSPATH)))
+    {
+      customClasspath = settings.getProperty(CUSTOM_CLASSPATH).trim();
     }
 
     // loop through directory, if useXml, add all files with xml postfix to pages, otherwise add all json files
@@ -347,7 +353,7 @@ public class WebUIManager
         }
       }
 
-      // something worng with the page, let's ignore it.
+      // something wrong with the page, let's ignore it.
       if (page == null)
       {
         LOG.warn("Failed to load web page [" + fileName + "] continue to load next.");
@@ -681,14 +687,14 @@ public class WebUIManager
     this.projectName = projectName;
   }
 
-  public static int getPagePace()
+  public static int getPageLoadTimeout()
   {
-    return pagePace;
+    return pageLoadTimeout;
   }
 
-  public static void setPagePace(int pagePace)
+  public static void setPageLoadTimeout(int pageLoadTimeout)
   {
-    WebUIManager.pagePace = pagePace;
+    WebUIManager.pageLoadTimeout = pageLoadTimeout;
   }
 
   public static int getActionPace()
@@ -744,6 +750,16 @@ public class WebUIManager
   public void setPlatform(String platform)
   {
     this.platform = platform;
+  }
+
+  public String getCustomClasspath()
+  {
+    return customClasspath;
+  }
+
+  public void setCustomClasspath(String customClasspath)
+  {
+    this.customClasspath = customClasspath;
   }
 
   public Map<String, Page> getPages()
