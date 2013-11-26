@@ -185,7 +185,7 @@ public class SuiteProcessor
       }
       else
       {
-        scenarioResult.setSuccess(true);
+        scenarioResult.setSuccess(false);
         LOG.info("Optional: Not able to load page [" + page.getPageName() + "] for scenario [" + scenario.getText() + ']');
         scenarioResult.setScreenShotPath(captureScreen(driver));
       }
@@ -261,7 +261,6 @@ public class SuiteProcessor
     page.setJsDriver(jsDriver);
     WebUIManager.getInstance().loadJQuery(jsDriver);
     LOG.info("Navigating to page " + page.getPageName());
-    // Dedrick
     page.setPageLoadTimeout(WebUIManager.getInstance().getPageLoadTimeout());
     page.setActionPace(WebUIManager.getInstance().getActionPace());
     page.setBrowser(WebUIManager.getInstance().getBrowser());

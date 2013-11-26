@@ -87,10 +87,10 @@ public class FeatureParser
 
       while ((line = stdin.readLine()) != null)
       {
-        if (StringUtils.isEmpty(line))
-        {
-          continue;
-        }
+//        if (StringUtils.isEmpty(line))
+//        {
+//          continue;
+//        }
 
         String trimmedLine = line.trim();
 
@@ -100,6 +100,7 @@ public class FeatureParser
 
         if (StringUtils.isNotEmpty(trimmedLine) && trimmedLine.startsWith(COMMENT_MARKER))
         {  // skip adding comment lines to the executable feature.
+          stringsForFile.add("\n");
           continue;
         }
 

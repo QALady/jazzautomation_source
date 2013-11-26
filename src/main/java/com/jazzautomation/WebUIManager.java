@@ -353,7 +353,7 @@ public class WebUIManager
         }
       }
 
-      // something wrong with the page, let's ignore it.
+      // something is wrong with the page, let's ignore it.
       if (page == null)
       {
         LOG.warn("Failed to load web page [" + fileName + "] continue to load next.");
