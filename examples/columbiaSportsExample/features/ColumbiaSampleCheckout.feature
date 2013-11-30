@@ -4,10 +4,10 @@ Feature: Go to the Columbia Sportswear web site, search for a product, review pr
   Background: set up for the test
   hope this work
     Given the following settings:
-      | url				    | http://www.columbia.com	|
-      | platform			| OSX 10.6     				|
-      | browser           	| firefox					|
-      | browser version	    | 21     					|
+      | url                    | http://www.columbia.com    |
+      | platform               | OSX 10.6                   |
+      | browser                | firefox                    |
+      | browser version        | 21                         |
 
 
   Scenario: (Optional) Go to the Country/Language page
