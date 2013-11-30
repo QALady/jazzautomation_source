@@ -157,7 +157,7 @@
             <constraints/>
             <properties>
               <editable value="false"/>
-              <font/>
+              <font name="Courier New" style="0"/>
             </properties>
           </component>
         </children>

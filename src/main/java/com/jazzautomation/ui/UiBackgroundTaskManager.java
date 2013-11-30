@@ -13,11 +13,11 @@ import javax.swing.*;
  */
 public class UiBackgroundTaskManager extends SwingWorker<Object, Object>
 {
-  private final ProgressUpdater progressUpdater;
-  private final Settings        settings;
-  private MainUi                mainUi;
+  private final ProgressTailer progressUpdater;
+  private final Settings       settings;
+  private MainUi               mainUi;
 
-  public UiBackgroundTaskManager(ProgressUpdater progressUpdater, Settings settings, MainUi mainUi)
+  public UiBackgroundTaskManager(ProgressTailer progressUpdater, Settings settings, MainUi mainUi)
   {
     this.progressUpdater = progressUpdater;
     this.settings        = settings;

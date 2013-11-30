@@ -177,7 +177,8 @@ public class MainUi extends JFrame
     saveSettings();
     settings.setSystemProperties();  // set the system settings from the stored/modified preferences
 
-    ProgressUpdater progressUpdater = new ProgressUpdater(outputTextArea, settings.getLogsPath());
+    // ProgressUpdater progressUpdater = new ProgressUpdater(outputTextArea, settings.getLogsPath());
+    ProgressTailer progressUpdater = new ProgressTailer(outputTextArea, settings.getLogsPath());
 
     // do something when the "Go" button is clicked
     try
@@ -404,7 +405,7 @@ public class MainUi extends JFrame
                                       new Dimension(1000, -1), 0, false));
     outputTextArea = new JTextArea();
     outputTextArea.setEditable(false);
-    outputTextArea.setFont(new Font(outputTextArea.getFont().getName(), outputTextArea.getFont().getStyle(), outputTextArea.getFont().getSize()));
+    outputTextArea.setFont(new Font("Courier New", Font.PLAIN, outputTextArea.getFont().getSize()));
     outputScrollPane.setViewportView(outputTextArea);
   }
 
