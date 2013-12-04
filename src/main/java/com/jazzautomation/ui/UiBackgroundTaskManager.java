@@ -2,6 +2,9 @@ package com.jazzautomation.ui;
 
 import com.jazzautomation.AutomationDriver;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 
 import javax.swing.*;
@@ -16,6 +19,7 @@ public class UiBackgroundTaskManager extends SwingWorker<Object, Object>
   private final ProgressTailer progressUpdater;
   private final Settings       settings;
   private MainUi               mainUi;
+  private static final Logger  LOG = LoggerFactory.getLogger(UiBackgroundTaskManager.class);
 
   public UiBackgroundTaskManager(ProgressTailer progressUpdater, Settings settings, MainUi mainUi)
   {
@@ -26,7 +30,15 @@ public class UiBackgroundTaskManager extends SwingWorker<Object, Object>
 
   @Override protected Object doInBackground() throws Exception
   {
-    AutomationDriver.beginTestSuite();
+    try
+    {
+      AutomationDriver.beginTestSuite();
+    }
+    catch (Exception e)
+    {
+      LOG.error(e.getMessage(), e);
+    }
+
     progressUpdater.stop();
     mainUi.setNormalCursor();
     Os.getOs().openFile(new File(settings.getConfigurationsPath() + "/reports/index.html"));

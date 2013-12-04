@@ -76,9 +76,9 @@ public class WebUIManager
   private String        projectName        = "";
   private boolean       useRemoteWebDriver;
   private static String remoteWebDriverUrl;
-  private static int pageLoadTimeout = 10;
+  private static int    pageLoadTimeout    = 10;
   private static int    actionPace         = 1;
-  private String customClasspath;
+  private String        customClasspath;
   private static String featureNames;
 
   // from system properties
@@ -110,8 +110,6 @@ public class WebUIManager
    */
   private WebUIManager()
   {
-    FileInputStream jazzSettings;
-
     try
     {
       long startTime = System.currentTimeMillis();
@@ -129,15 +127,8 @@ public class WebUIManager
 
       File configurationsFile;
 
-      if (StringUtils.isNotEmpty(configurationsPath))
-      {
-        configurationsFile = new File(configurationsPath);
-      }
-      else
-      {
-        configurationsFile = new File("configurations");
-      }
-
+      configurationsFile = StringUtils.isNotEmpty(configurationsPath) ? new File(configurationsPath)
+                                                                      : new File("configurations");
       configurationsPath = configurationsFile.getAbsolutePath();
 
       File logsFile;
@@ -160,7 +151,9 @@ public class WebUIManager
       // read settings files:
       LOG.info("Reading jazz.properties from [" + configurationsPath + File.separator + "jazz.properties]");
       LOG.info("Accessing reports directory at [" + reportsPath + "]");
-      jazzSettings = new FileInputStream(configurationsPath + File.separator + JAZZ + ".properties");
+
+      FileInputStream jazzSettings = new FileInputStream(configurationsPath + File.separator + JAZZ + ".properties");
+
       settings.load(jazzSettings);
 
       // loading jazz.properties and populate all WebPages from its configurations.
@@ -273,7 +266,7 @@ public class WebUIManager
       browser = settings.getProperty(BROWSER).trim();
     }
 
-    if(StringUtils.isNotBlank(settings.getProperty(CUSTOM_CLASSPATH)))
+    if (StringUtils.isNotBlank(settings.getProperty(CUSTOM_CLASSPATH)))
     {
       customClasspath = settings.getProperty(CUSTOM_CLASSPATH).trim();
     }
@@ -465,6 +458,7 @@ public class WebUIManager
     return driver;
   }
 
+  // jsheridan CODEREVIEW - note that if we used an enum, this logic could be moved into that, so the browser enum knew how to get it's driver
   // firefox
   public WebDriver getFirefoxDriver() throws MalformedURLException
   {
@@ -725,7 +719,7 @@ public class WebUIManager
   public String getBrowser()
   {
     return browser;
-  }
+  }  // jsheridan CODEREVIEW - nicer with enum instead of String
 
   public void setBrowser(String browser)
   {

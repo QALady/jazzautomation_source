@@ -38,6 +38,7 @@ import javax.xml.bind.annotation.XmlTransient;
  * This is the Java Page Object representing a html page object. After setWebDriver and setJsDriver, one must performing setup() to load page. To do
  * navigations from one this page to a new page, gotoPage needs to be called. Typical sequences are:
  */
+@SuppressWarnings({ "MethodMayBeStatic", "AssignmentToMethodParameter", "BooleanMethodNameMustStartWithQuestion" })
 @XmlRootElement public class Page
 {
   private static final int        NUMBER_OF_RETRY = 3;
@@ -140,47 +141,52 @@ import javax.xml.bind.annotation.XmlTransient;
     }
     catch (Exception te)
     {
-      te.printStackTrace();
-
-      // adding why failed
-      String errorMessage = "";
-
-      if ((title != null) && !title.trim().isEmpty())
-      {
-        errorMessage += "Expected title is '" + title + "'; actual title: '" + webDriver.getTitle() + '\'';
-      }
-
-      if ((urlExtension != null) && !urlExtension.trim().isEmpty())
-      {
-        if (!errorMessage.isEmpty())
-        {
-          errorMessage += " -- ";
-        }
-
-        errorMessage += "Expect url is: '" + urlExtension + "'; actual urlExtension: '" + webDriver.getCurrentUrl() + '\'';
-      }
-
-      if (keyDomElementName != null)
-      {
-        if (!errorMessage.isEmpty())
-        {
-          errorMessage += " -- ";
-        }
-
-        DomElement keyDomComponent = getDomElement(keyDomElementName);
-
-        errorMessage += "Expect " + keyDomElementName + " visible; actual: visible = " + keyDomComponent.isVisible() + " with (dom exists = ? "
-                          + keyDomComponent.isExisted() + ')';
-      }
-
-      LOG.error("timeout to load page: " + pageName + " with error: " + errorMessage);
-      throw new WebActionException(errorMessage);
+      handleSetupException(te);
     }
+  }
+
+  private void handleSetupException(Exception te) throws WebActionException
+  {
+    te.printStackTrace();
+
+    // adding why failed
+    String errorMessage = "";
+
+    if ((title != null) && !title.trim().isEmpty())
+    {
+      errorMessage += "Expected title is '" + title + "'; actual title: '" + webDriver.getTitle() + '\'';
+    }
+
+    if ((urlExtension != null) && !urlExtension.trim().isEmpty())
+    {
+      if (!errorMessage.isEmpty())
+      {
+        errorMessage += " -- ";
+      }
+
+      errorMessage += "Expect url is: '" + urlExtension + "'; actual urlExtension: '" + webDriver.getCurrentUrl() + '\'';
+    }
+
+    if (keyDomElementName != null)
+    {
+      if (!errorMessage.isEmpty())
+      {
+        errorMessage += " -- ";
+      }
+
+      DomElement keyDomComponent = getDomElement(keyDomElementName);
+
+      errorMessage += "Expect " + keyDomElementName + " visible; actual: visible = " + keyDomComponent.isVisible() + " with (dom exists = ? "
+                        + keyDomComponent.isExisted() + ')';
+    }
+
+    LOG.error("timeout to load page: " + pageName + " with error: " + errorMessage);
+    throw new WebActionException(errorMessage);
   }
 
   private void changeWindowsIfNecessary(WebDriver webDriver1, boolean doTitle)
   {
-    if (switchWindows && (!webDriver1.getCurrentUrl().contains(urlExtension)))
+    if (switchWindows && !webDriver1.getCurrentUrl().contains(urlExtension))
     {
       Set<String> windows = webDriver1.getWindowHandles();
 
@@ -376,8 +382,6 @@ import javax.xml.bind.annotation.XmlTransient;
     }
 
     domElement.getDomElement().sendKeys(chars);
-
-    return;
   }
 
   private void performHoverAction(DomElement domElement)
@@ -386,7 +390,7 @@ import javax.xml.bind.annotation.XmlTransient;
                                + "evObj.initEvent('mouseover', true, false); arguments[0].dispatchEvent(evObj);} "
                                + "else if(document.createEventObject) { arguments[0].fireEvent('onmouseover');}";
 
-    this.jsDriver.executeScript(mouseOverScript, domElement.getDomElement());
+    jsDriver.executeScript(mouseOverScript, domElement.getDomElement());
   }
 
   private void performSelectAction(DomElement domElement, String selectValue)
@@ -631,16 +635,16 @@ import javax.xml.bind.annotation.XmlTransient;
     return value;
   }
 
-  public boolean checkExpect(DomElementExpectation expect)
+  public boolean checkExpectation(DomElementExpectation expectation)
   {
-    String expectVlaue = (expect.getValue() == null) ? ""
-                                                     : expect.getValue();
-    String notString = expect.isNegative() ? " not "
-                                           : " ";
+    String expectedValue = (expectation.getValue() == null) ? ""
+                                                            : expectation.getValue();
+    String notString = expectation.isNegative() ? " not "
+                                                : " ";
 
-    LOG.info("Checking expectation: " + expect.getComponentName() + notString + expect.getCondition() + ' ' + expectVlaue);
+    LOG.info("Checking expectation: " + expectation.getComponentName() + notString + expectation.getCondition() + ' ' + expectedValue);
 
-    String     componentName  = expect.getComponentName();
+    String     componentName  = expectation.getComponentName();
     DomElement domElement     = getDomElement(componentName);
     boolean    expectationMet = true;
 
@@ -648,10 +652,10 @@ import javax.xml.bind.annotation.XmlTransient;
     {
       LOG.error("Web action failed on page [" + pageName + "]. Cannot find domElement: " + componentName);
       expectationMet = false;
-      expect.setMessage("Failed to find domElement: " + componentName);
+      expectation.setMessage("Failed to find domElement: " + componentName);
     }
 
-    String condition = expect.getCondition();
+    String condition = expectation.getCondition();
 
     try
     {
@@ -659,64 +663,32 @@ import javax.xml.bind.annotation.XmlTransient;
     }
     catch (WebActionException e)
     {
-      expect.setMessage(e.getMessage());
+      expectation.setMessage(e.getMessage());
 
       return false;
     }
 
-    // jsheridan CODEREVIEW - a better way to do this would be to call valueOf on the enum and include a special case where no match is found.
-    if (condition.equalsIgnoreCase(HtmlActionConditionEnum.EXISTS.getValue()))
-    {
-      if (!domElement.isExisted() && !expect.isNegative())
-      {
-        expectationMet = false;
-        expect.setMessage("Expectation failed (expect exist): " + domElement.getIdentifier() + " doesn't exist.");
-      }
-      else if (domElement.isExisted() && expect.isNegative())
-      {
-        expectationMet = false;
-        expect.setMessage("Expectation failed (expect not exist): " + domElement.getIdentifier() + " exists.");
-      }
+    HtmlActionConditionEnum htmlAction = HtmlActionConditionEnum.findValue(condition);
 
-      LOG.info("Expectation is met. The actual does" + notString + "exist");
+    if (htmlAction == HtmlActionConditionEnum.EXISTS)
+    {
+      expectationMet = handleExistsAction(expectation, notString, domElement, expectationMet);
     }
-    else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.VISIBLE.getValue()))
+    else if (htmlAction == HtmlActionConditionEnum.VISIBLE)
     {
-      boolean isVisible = (domElement.getDomElement() != null) && domElement.getDomElement().isDisplayed() && domElement.getDomElement().isEnabled();
-
-      if (!isVisible && !expect.isNegative())
-      {
-        expectationMet = false;
-        expect.setMessage("Expectation failed (expected visible), however [" + domElement.getIdentifier() + "] isn't visible.");
-        LOG.info("Expectation failed. The actual is invisible.");
-      }
-      else
-      {
-        LOG.info("Expectation is met. The actual is visible.");
-      }
+      expectationMet = handleVisibleAction(expectation, domElement, expectationMet);
     }
-    else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.INVISIBLE.getValue()))
+    else if (htmlAction == HtmlActionConditionEnum.INVISIBLE)
     {
-      boolean isVisible = (domElement.getDomElement() != null) && domElement.getDomElement().isDisplayed() && domElement.getDomElement().isEnabled();
-
-      if (isVisible)
-      {
-        expectationMet = false;
-        expect.setMessage("Expectation failed (expected not visible), however [" + domElement.getIdentifier() + "] is visible.");
-        LOG.info("Expectation failed. The actual is visible.");
-      }
-      else
-      {
-        LOG.info("Expectation is met. The actual is invisible.");
-      }
+      expectationMet = handleInvisibleAction(expectation, domElement, expectationMet);
     }
     else
     {
       if (domElement.getDomElement() == null)
       {
         expectationMet = false;
-        expect.setMessage("Expectation failed: [" + domElement.getIdentifier() + "] expects " + expect.getValue()
-                            + "; actual: the dom element for + [" + domElement.getIdentifier() + "] does not exist");
+        expectation.setMessage("Expectation failed: [" + domElement.getIdentifier() + "] expects " + expectation.getValue()
+                                 + "; actual: the dom element for + [" + domElement.getIdentifier() + "] does not exist");
       }
       else
       {
@@ -724,128 +696,226 @@ import javax.xml.bind.annotation.XmlTransient;
 
         htmlValue = htmlValue.replace("&nbsp;", " ").trim();
 
-        if (condition.equalsIgnoreCase(HtmlActionConditionEnum.EQUALS.getValue()))
-        {  // if string, we only care if the expected value was contained.
-
-          if (Utils.isANumber(expect.getValue()))
-          {
-            double expectValue = Double.parseDouble(expect.getValue());
-            double actualValue = Double.parseDouble(htmlValue.replaceAll("[^0-9\\.]", ""));
-
-            // jsheridan CODEREVIEW - DANGER! you're comparing two double values!!!!!
-            // something like
-            // if (Math.abs(a - b) > ERR)
-            // is better
-            if (expectValue != actualValue)
-            {
-              expectationMet = false;
-              expect.setMessage("Expectation failed (expected equals): [" + domElement.getIdentifier() + "] expects " + expect.getValue()
-                                  + "; actual = [" + htmlValue + ']');
-            }
-          }
-          else
-          {
-            if (expect.isCustomAction())
-            {
-              try
-              {  // create instance of the custom actions and cast the class to our Action interface
-
-                Action instanceOfAction = (Action) expect.getCustomActionClass().newInstance();
-
-                // call the fire method
-                String calculatedExpectation = instanceOfAction.fire();
-
-                if (htmlValue.indexOf(calculatedExpectation) < 0)
-                {
-                  expectationMet = false;
-                  expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of ["
-                                      + calculatedExpectation + "]; actual value is [" + htmlValue + ']');
-                }
-              }
-              catch (InstantiationException | IllegalAccessException e)
-              {
-                String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
-
-                throw new InitializationException("Error creating custom action [" + actionClassString + "].", e);
-              }
-              catch (Exception e)
-              {
-                String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
-
-                LOG.error("Error executing custom action [" + actionClassString + ']', e);
-              }
-            }
-            else if (htmlValue.indexOf(expect.getValue().trim()) < 0)
-            {
-              expectationMet = false;
-              expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
-                                  + "]; actual value is [" + htmlValue + ']');
-            }
-          }
-
-          if (expectationMet)
-          {
-            LOG.info("Expectation is met. The actual is " + htmlValue);
-          }
-          else
-          {
-            LOG.info(expect.getMessage());
-          }
-        }
-        else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.NOT_EQUALS.getValue()))
+        if (htmlAction == HtmlActionConditionEnum.EQUALS)
         {
-          if (expect.getValue().equalsIgnoreCase(htmlValue.trim()))
-          {
-            expectationMet = false;
-            expect.setMessage("Expectation failed (expect not equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue()
-                                + "]; actual is [" + htmlValue + ']');
-          }
+          expectationMet = handleEqualsAction(expectation, domElement, expectationMet, htmlValue);
+        }
+        else if (htmlAction == HtmlActionConditionEnum.NOT_EQUALS)
+        {
+          expectationMet = handleNotEqualsAction(expectation, domElement, expectationMet, htmlValue);
         }
         else
         {
-          double expectDoubleValue = Double.parseDouble(expect.getValue());
+          double expectDoubleValue = Double.parseDouble(expectation.getValue());
           String actualValue       = htmlValue.replaceAll("[^0-9\\.]", "");
           double actualDoubleValue = Double.parseDouble(actualValue);
 
-          if (condition.equalsIgnoreCase(HtmlActionConditionEnum.GREATER_EQUAL_THAN.getValue()))
+          if (htmlAction == HtmlActionConditionEnum.GREATER_EQUAL_THAN)
           {
-            if (expectDoubleValue > actualDoubleValue)
-            {
-              expectationMet = false;
-              expect.setMessage("Expectation failed (expect >=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                                  + actualDoubleValue);
-            }
+            expectationMet = handleGreaterEqualThanAction(expectation, domElement, expectationMet, expectDoubleValue, actualDoubleValue);
           }
-          else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.GREATER_THAN.getValue()))
+          else if (htmlAction == HtmlActionConditionEnum.GREATER_THAN)
           {
-            if (expectDoubleValue >= actualDoubleValue)
-            {
-              expectationMet = false;
-              expect.setMessage("Expectation failed (expect >): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                                  + actualDoubleValue);
-            }
+            expectationMet = handleGreaterThanAction(expectation, domElement, expectationMet, expectDoubleValue, actualDoubleValue);
           }
-          else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.LESS_EQUAL_THAN.getValue()))
+          else if (htmlAction == HtmlActionConditionEnum.LESS_EQUAL_THAN)
           {
-            if (expectDoubleValue < actualDoubleValue)
-            {
-              expectationMet = false;
-              expect.setMessage("Expectation failed (expect <=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                                  + actualDoubleValue);
-            }
+            expectationMet = handleLessThanEqualAction(expectation, domElement, expectationMet, expectDoubleValue, actualDoubleValue);
           }
-          else if (condition.equalsIgnoreCase(HtmlActionConditionEnum.LESS_THAN.getValue()))
+          else if (htmlAction == HtmlActionConditionEnum.LESS_THAN)
           {
-            if (expectDoubleValue <= actualDoubleValue)
-            {
-              expectationMet = false;
-              expect.setMessage("Expectation failed (expect <): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
-                                  + actualDoubleValue);
-            }
+            expectationMet = handleLessThanAction(expectation, domElement, expectationMet, expectDoubleValue, actualDoubleValue);
           }
         }
       }
     }
+
+    return expectationMet;
+  }
+
+  private boolean handleLessThanAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet, double expectDoubleValue,
+                                       double actualDoubleValue)
+  {
+    if (expectDoubleValue <= actualDoubleValue)
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect <): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+                          + actualDoubleValue);
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleLessThanEqualAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet, double expectDoubleValue,
+                                            double actualDoubleValue)
+  {
+    if (expectDoubleValue < actualDoubleValue)
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect <=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+                          + actualDoubleValue);
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleGreaterThanAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet, double expectDoubleValue,
+                                          double actualDoubleValue)
+  {
+    if (expectDoubleValue >= actualDoubleValue)
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect >): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+                          + actualDoubleValue);
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleGreaterEqualThanAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet, double expectDoubleValue,
+                                               double actualDoubleValue)
+  {
+    if (expectDoubleValue > actualDoubleValue)
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect >=): " + domElement.getIdentifier() + " expects " + expectDoubleValue + "; actual ="
+                          + actualDoubleValue);
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleNotEqualsAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet, String htmlValue)
+  {
+    if (expect.getValue().equalsIgnoreCase(htmlValue.trim()))
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect not equals): [" + domElement.getIdentifier() + "] expects [" + expect.getValue()
+                          + "]; actual is [" + htmlValue + ']');
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleEqualsAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet, String htmlValue)
+  {
+    // if string, we only care if the expected value was contained.
+    if (Utils.isANumber(expect.getValue()))
+    {
+      double expectValue = Double.parseDouble(expect.getValue());
+      double actualValue = Double.parseDouble(htmlValue.replaceAll("[^0-9\\.]", ""));
+
+      // jsheridan CODEREVIEW - DANGER! you're comparing two double values!!!!!
+      // something like if (Math.abs(a - b) > ERR) is better
+      if (expectValue != actualValue)
+      {
+        expectationMet = false;
+        expect.setMessage("Expectation failed (expected equals): [" + domElement.getIdentifier() + "] expects " + expect.getValue() + "; actual = ["
+                            + htmlValue + ']');
+      }
+    }
+    else
+    {
+      if (expect.isCustomAction())
+      {
+        try
+        {  // create instance of the custom actions and cast the class to our Action interface
+
+          Action instanceOfAction = (Action) expect.getCustomActionClass().newInstance();
+
+          // call the fire method
+          String calculatedExpectation = instanceOfAction.fire();
+
+          if (!htmlValue.contains(calculatedExpectation))
+          {
+            expectationMet = false;
+            expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + calculatedExpectation
+                                + "]; actual value is [" + htmlValue + ']');
+          }
+        }
+        catch (InstantiationException | IllegalAccessException e)
+        {
+          String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+
+          throw new InitializationException("Error creating custom action [" + actionClassString + "].", e);
+        }
+        catch (Exception e)
+        {
+          String actionClassString = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+
+          LOG.error("Error executing custom action [" + actionClassString + ']', e);
+        }
+      }
+      else if (!htmlValue.contains(expect.getValue().trim()))
+      {
+        expectationMet = false;
+        expect.setMessage("Expectation failed (expect equals): [" + domElement.getIdentifier() + "] expects value of [" + expect.getValue()
+                            + "]; actual value is [" + htmlValue + ']');
+      }
+    }
+
+    if (expectationMet)
+    {
+      LOG.info("Expectation is met. The actual is " + htmlValue);
+    }
+    else
+    {
+      LOG.info(expect.getMessage());
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleInvisibleAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet)
+  {
+    boolean isVisible = (domElement.getDomElement() != null) && domElement.getDomElement().isDisplayed() && domElement.getDomElement().isEnabled();
+
+    if (isVisible)
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expected not visible), however [" + domElement.getIdentifier() + "] is visible.");
+      LOG.info("Expectation failed. The actual is visible.");
+    }
+    else
+    {
+      LOG.info("Expectation is met. The actual is invisible.");
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleVisibleAction(DomElementExpectation expect, DomElement domElement, boolean expectationMet)
+  {
+    boolean isVisible = (domElement.getDomElement() != null) && domElement.getDomElement().isDisplayed() && domElement.getDomElement().isEnabled();
+
+    if (!isVisible && !expect.isNegative())
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expected visible), however [" + domElement.getIdentifier() + "] isn't visible.");
+      LOG.info("Expectation failed. The actual is invisible.");
+    }
+    else
+    {
+      LOG.info("Expectation is met. The actual is visible.");
+    }
+
+    return expectationMet;
+  }
+
+  private boolean handleExistsAction(DomElementExpectation expect, String notString, DomElement domElement, boolean expectationMet)
+  {
+    if (!domElement.isExisted() && !expect.isNegative())
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect exist): " + domElement.getIdentifier() + " doesn't exist.");
+    }
+    else if (domElement.isExisted() && expect.isNegative())
+    {
+      expectationMet = false;
+      expect.setMessage("Expectation failed (expect not exist): " + domElement.getIdentifier() + " exists.");
+    }
+
+    LOG.info("Expectation is met. The actual does" + notString + "exist");
 
     return expectationMet;
   }
