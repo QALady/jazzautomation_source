@@ -11,15 +11,13 @@ apply from: "${project.projectDir}/gradle/dependencies.gradle"
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
-
-
 repositories {
 	mavenCentral()
   ivy {
     
-//    Libraries not in Maven can be uploaded here and used
-            artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
-            ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
+     //    Libraries not in Maven can be uploaded here and used
+     artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
+     ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
   }
 }
 
@@ -43,7 +41,7 @@ task show << {
 }
 
 
-final path = System.properties.find { it.key == "java.home" }.toString()
+def path = System.properties.find { it.key == "java.home" }.toString()
 path=path.split("=")[1]
 def javaHomeDir=new File(path).parent
 
@@ -68,7 +66,8 @@ Running build script ${relativePath(buildFile)}
 ========================================================================================================
 
 """
-task runJazz (type: JavaExec, dependsOn: 'classes', description: 'Run test automation locally'){
+
+task runJazz (type: JavaExec, dependsOn: 'classes', description: 'Run test automation locally from the command line'){
 
 	main = 'com.jazzautomation.AutomationDriver'
 	classpath = sourceSets.main.runtimeClasspath
@@ -126,5 +125,5 @@ idea {
 	module {
 	  downloadSources=true
 	}
-  }
+}
   

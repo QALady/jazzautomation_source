@@ -45,9 +45,9 @@ def appName = project.ext.get('osx_app_name')
             classname: "com.oracle.appbundler.AppBundlerTask",
             classpath: configurations.bundleapp.asPath
     )
-    mkdir("${buildDir}/dist")
+    mkdir("${buildDir}/distOsX")
     ant.bundleapp(
-            outputdirectory: "${buildDir}/dist",
+            outputdirectory: "${buildDir}/distOsX",
             name: appName,
             displayname:  appName,
             identifier: "com.jazzautomation",
@@ -78,69 +78,12 @@ def appName = project.ext.get('osx_app_name')
     }
 }
 
-// Windows Release
-task createLauncherWin << {
-//    def launch4jPath = "Development_Distribution/Windows/Binaries/launch4j/bin_" + os 
-    def launch4jPath = "/Users/douglas_bullard/Downloads/launch4j"
-
-    mkdir("./build/launcher")
-  //todo make a task to always get the version number to what's expected
-    def exeVersion = "${project.versionNumber}.0.0"
-    def versionText = "${project.versionNumber}"
-    ant.taskdef(
-            name: 'launch4j',
-            classname: 'net.sf.launch4j.ant.Launch4jTask',
-            classpath: configurations.launch4j.asPath
-    )
-    ant.launch4j(
-            bindir: '/Users/douglas_bullard/Downloads/launch4j/bin'
-    ) {
-        config(
-                outfile: 'build/launcher/jazzautomation.exe',
-                jarPath: 'jazzautomation.jar',
-                dontwrapjar: true,
-                headerType: 'gui',
-                icon: 'gradle/Windows/jazzautomation.ico'
-        ) {
-            versionInfo(
-                    fileVersion: exeVersion,
-                    txtFileVersion: versionText,
-                    fileDescription: "Jazz Automation Windows Launcher",
-                    copyright: "jazzautomation.github.com",
-                    productVersion: exeVersion,
-                    txtProductVersion: versionText,
-                    productName: "$projectname",
-                    internalName: "jazzautomation",
-                    originalFilename: "jazzautomation.exe"
-            )
-            jre(
-                    path: "build/jre/win64",
-                    minVersion: "1.7.0_40"
-            )
-        }
-    }
-}
-
-task assembleWin << {
-    def nsisPath = "Development_Distribution/Windows/Binaries/NSIS/bin_" + os
-
-    ant.taskdef(name: "nsis",
-            classname: "com.danielreese.nsisant.Task",
-            classpath: configurations.nsis.asPath)
-    ant.nsis(script: "Development_Distribution/Windows/NSIS/anathema.nsi", path: nsisPath) {
-        define(name: "RELEASE_DIR", value: "${releaseDir}")
-        define(name: "RELEASE_FILE", value: "${releaseWinName}")
-        define(name: "RELEASE_VERSION", value: "${versionString}")
-        define(name: "VERSION", value: "${versionString}.0")
-        define(name: "JRE_PATH", value: "build\\jre\\win32\\jre${jreVersion}")
-    }
-}
 
 // JRE archive download and explosion into build folder
 task prepareWinJRE(type: Copy) {
     def target = new File('build/jre/win64');
     into target
-    from { zipTree(configurations.jre.fileCollection{dep -> dep.name == "jdk_windows-1.7.0_40.zip"}) }
+    from { zipTree( "build/zippedJre/jdk_windows-1.7.0_40.zip") }
     onlyIf { !target.exists() }
     doLast {
         ant.delete(includeemptydirs: true, quiet: true) {
@@ -171,7 +114,67 @@ task listJars << {
     configurations.jre.each { File file -> println file.name }
 }
 
-//task prepareJRE dependsOn(prepareWinJRE, prepareMacJRE)
+task uiJar(type: Jar, description: "Put all the classes into a single jar so it can be wrapped in the .exe") {
+    from files(sourceSets.main.output.classesDir)
+    from files(sourceSets.main.resources)    
+    from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+
+    manifest {
+        attributes 'Main-Class': 'com.jazzautomation.ui.MainUi'
+    }
+}
+
+task importAnt()<<{
+  ant.importBuild 'build.xml'
+}
+
+task copyWin64Jre(type: Copy, dependsOn: prepareWinJRE ){
+  from "build/jre/win64/jdk1.7.0_40/jre"
+  into "build/distWin64/jre"
+}
+
+task makeWinZip(type: Zip){
+  archiveName "jazzautomationWin64.zip"
+  from 'build/dist'
+  from 'build/jre/win64/1.7.0_40/jre'
+      into 'build/zipp'
+      include 'jazzautomation.exe'
+      include 'jre'
+}
+
+task createLauncherWin <<{
+  
+  // this requires something like 
+  //      export EXE4J_HOME=~/Downloads/exe4j
+  // in your .profile file
+  File distDir=new File('build/distWin64')
+  distDir.mkdirs()
+  def exe4jHome = "$System.env.EXE4J_HOME"
+  if(exe4jHome){
+    ant.taskdef(name: 'exe4j', classpath: "$exe4jHome/bin/ant.jar", classname: "com.exe4j.Exe4JTask" ) 
+    ant.exe4j (projectfile:"gradle/jazz.exe4j")
+    
+  }
+}
+
+task makeOsxZip(type: Zip){
+  archiveName "jazzautomationOsx.zip"
+  from 'build/distOsX'
+//  include '**/*.app'
+}
+
+task makeWin64Zip(type: Zip, dependsOn: copyWin64Jre){
+  archiveName "jazzautomationWin64.zip"
+  from 'build/distWin64'
+//  include '**/*.app'
+}
+
+//createLauncher.dependsOn unzipExe4j 
+makeWin64Zip.dependsOn createLauncherWin
+makeOsxZip.dependsOn createLauncherMac
 
 createLauncherWin.dependsOn prepareWinJRE
 createLauncherMac.dependsOn prepareMacJRE
+
+task createlaunchers (dependsOn: [makeWin64Zip,makeOsxZip])
+

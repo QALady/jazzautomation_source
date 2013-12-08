@@ -1,0 +1,15 @@
+<project name="JazzAutomation"
+         default="createLauncher"
+         basedir=".">
+ 
+  <target name="createLauncher" if="exe4j_home.exists">
+    <taskdef name="exe4j"
+              classname="com.exe4j.Exe4JTask"
+              classpath="exe4j_home/bin/ant.jar"/>
+    <exe4j projectfile="gradle/jazz.exe4j"/>
+  </target>
+  
+  
+  
+  
+</project>
