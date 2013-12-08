@@ -13,19 +13,15 @@ configurations {
 
 repositories {
   ivy {
-            artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
-            ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
+    artifactPattern "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].[type]"
+    ivyPattern      "http://www.nurflugel.com/Home/repository/[organisation]/[module]/[revision]/[artifact]-[revision].ivy.xml"
   }
 }
 
 dependencies {
   bundleapp "com.oracle:appbundler:1.0"
-  launch4j   files("gradle/launch4j/launch4j.jar")
-  launch4j  'com.thoughtworks.xstream:xstream:1.4.5'
-  
-  jre group: 'com.oracle', name: 'jdk_osx', version: '1.7.0_40', ext: 'zip'
-  jre group: "com.oracle", name: "jdk_windows", version: "1.7.0_40",ext:"zip"
-  
+  jre group: 'com.oracle', name: 'jdk_osx',     version: '1.7.0_40', ext: 'zip'
+  jre group: "com.oracle", name: "jdk_windows", version: "1.7.0_40", ext:"zip"
 }
 
 
@@ -36,6 +32,11 @@ project.ext {
   macAppDir = "${project.projectname}.app"
 
 }
+
+File distDir=new File("${buildDir}/distWin64")
+distDir.mkdirs()
+distDir=new File("$buildDir/distOsX")
+distDir.mkdirs()
 
 // Mac Release - from https://github.com/anathema/anathema/blob/master/build.gradle
 task createLauncherMac(dependsOn: installApp) << {
@@ -83,7 +84,7 @@ def appName = project.ext.get('osx_app_name')
 task prepareWinJRE(type: Copy) {
     def target = new File('build/jre/win64');
     into target
-    from { zipTree( "build/zippedJre/jdk_windows-1.7.0_40.zip") }
+    from { zipTree( "${buildDir}/zippedJre/jdk_windows-1.7.0_40.zip") }
     onlyIf { !target.exists() }
     doLast {
         ant.delete(includeemptydirs: true, quiet: true) {
@@ -92,11 +93,10 @@ task prepareWinJRE(type: Copy) {
     }
 }
 
-task prepareMacJRE(type: Copy, dependsOn: "copyLibs") {
+task prepareMacJRE(type: Copy) {
     def target = new File('build/jre/osx');
     into target
-//    from { zipTree(configurations.jre.fileCollection{dep -> dep.name == "jdk1.7.0_40_osx.zip"}) }
-    from { zipTree( "build/zippedJre/jdk_osx-1.7.0_40.zip") }
+    from { zipTree( "${buildDir}/zippedJre/jdk_osx-1.7.0_40.zip") }
     onlyIf { !target.exists() }
     doLast {
         ant.delete(includeemptydirs: true, quiet: true) {
@@ -105,13 +105,13 @@ task prepareMacJRE(type: Copy, dependsOn: "copyLibs") {
     }
 }
 
-task copyLibs(type: Copy) {
+task stageJREs(type: Copy, description: "Get the JREs out of Gradle's dependency cache and put them where we can find them") {
   from configurations.jre
   into 'build/zippedJre'
 }
 
 task listJars << {
-    configurations.jre.each { File file -> println file.name }
+    configurations.runtime.each { File file -> println file.name }
 }
 
 task uiJar(type: Jar, description: "Put all the classes into a single jar so it can be wrapped in the .exe") {
@@ -128,7 +128,7 @@ task importAnt()<<{
   ant.importBuild 'build.xml'
 }
 
-task copyWin64Jre(type: Copy, dependsOn: prepareWinJRE ){
+task copyWin64Jre(type: Copy ){
   from "build/jre/win64/jdk1.7.0_40/jre"
   into "build/distWin64/jre"
 }
@@ -142,39 +142,38 @@ task makeWinZip(type: Zip){
       include 'jre'
 }
 
+
+// this requires something like 
+//      export EXE4J_HOME=~/Downloads/exe4j
+// in your .profile file
 task createLauncherWin <<{
-  
-  // this requires something like 
-  //      export EXE4J_HOME=~/Downloads/exe4j
-  // in your .profile file
-  File distDir=new File('build/distWin64')
-  distDir.mkdirs()
   def exe4jHome = "$System.env.EXE4J_HOME"
   if(exe4jHome){
     ant.taskdef(name: 'exe4j', classpath: "$exe4jHome/bin/ant.jar", classname: "com.exe4j.Exe4JTask" ) 
     ant.exe4j (projectfile:"gradle/jazz.exe4j")
-    
   }
 }
 
 task makeOsxZip(type: Zip){
   archiveName "jazzautomationOsx.zip"
   from 'build/distOsX'
-//  include '**/*.app'
 }
 
-task makeWin64Zip(type: Zip, dependsOn: copyWin64Jre){
+task makeWin64Zip(type: Zip){
   archiveName "jazzautomationWin64.zip"
   from 'build/distWin64'
-//  include '**/*.app'
 }
 
-//createLauncher.dependsOn unzipExe4j 
+task createlaunchers (dependsOn: [makeWin64Zip,makeOsxZip])
 makeWin64Zip.dependsOn createLauncherWin
 makeOsxZip.dependsOn createLauncherMac
+prepareWinJRE.dependsOn stageJREs
+prepareMacJRE.dependsOn stageJREs
 
-createLauncherWin.dependsOn prepareWinJRE
+createLauncherWin.dependsOn prepareWinJRE, uiJar
 createLauncherMac.dependsOn prepareMacJRE
 
-task createlaunchers (dependsOn: [makeWin64Zip,makeOsxZip])
+copyWin64Jre.dependsOn prepareWinJRE 
+makeWin64Zip.dependsOn copyWin64Jre
+
 
