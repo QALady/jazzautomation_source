@@ -1,5 +1,8 @@
 package com.jazzautomation.ui;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.util.StatusPrinter;
+
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
@@ -79,6 +82,11 @@ public class MainUi extends JFrame
 
   public MainUi()
   {
+    LOG.error("Setting log stuff now!");
+
+    LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+    StatusPrinter.print(lc);
     settings = new Settings();
     initializeComponents();
     addListeners();
