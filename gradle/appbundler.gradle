@@ -32,7 +32,7 @@ project.ext {
   macAppDir = "${project.projectname}.app"
 
 }
-
+// create the dirs needed
 File distDir=new File("${buildDir}/distWin64")
 distDir.mkdirs()
 distDir=new File("$buildDir/distOsX")
@@ -114,7 +114,7 @@ task listJars << {
     configurations.runtime.each { File file -> println file.name }
 }
 
-task uiJar(type: Jar, description: "Put all the classes into a single jar so it can be wrapped in the .exe") {
+task prepareSingleJar(type: Jar, description: "Put all the classes into a single jar so it can be wrapped in the .exe") {
     from files(sourceSets.main.output.classesDir)
     from files(sourceSets.main.resources)    
     from configurations.runtime.asFileTree.files.collect { zipTree(it) }
@@ -122,10 +122,6 @@ task uiJar(type: Jar, description: "Put all the classes into a single jar so it 
     manifest {
         attributes 'Main-Class': 'com.jazzautomation.ui.MainUi'
     }
-}
-
-task importAnt()<<{
-  ant.importBuild 'build.xml'
 }
 
 task copyWin64Jre(type: Copy ){
@@ -148,6 +144,16 @@ task makeWinZip(type: Zip){
 // in your .profile file
 task createLauncherWin <<{
   def exe4jHome = "$System.env.EXE4J_HOME"
+  println "Setting for EXE4J_HOME is: $exe4jHome"
+  if(exe4jHome.toString().equals("null")){
+    throw new GradleException("EXE4J_HOME _must_ be set in your system properties if you're going to build the Windows distribution.  Please set this and try again")
+  }
+  File exe4jJar=new File("$exe4jHome/bin/ant.jar")
+  println "Looking here for Exej4 jar: " + exe4jJar.getAbsolutePath()
+
+  if(!exe4jJar.exists()){
+    throw new GradleException("Expected to find Exe4j in $exe4jHome, but the file $exe4jHome/bin/ant.jar was not found.  Please install Exe4j and try again") 
+  }
   if(exe4jHome){
     ant.taskdef(name: 'exe4j', classpath: "$exe4jHome/bin/ant.jar", classname: "com.exe4j.Exe4JTask" ) 
     ant.exe4j (projectfile:"gradle/jazz.exe4j")
@@ -164,13 +170,17 @@ task makeWin64Zip(type: Zip){
   from 'build/distWin64'
 }
 
-task createlaunchers (dependsOn: [makeWin64Zip,makeOsxZip])
+// Big "make all" task
+task createLaunchers (dependsOn: [makeWin64Zip,makeOsxZip])
+
+
+// dependencies declared below, so it's tidy
 makeWin64Zip.dependsOn createLauncherWin
 makeOsxZip.dependsOn createLauncherMac
 prepareWinJRE.dependsOn stageJREs
 prepareMacJRE.dependsOn stageJREs
 
-createLauncherWin.dependsOn prepareWinJRE, uiJar
+createLauncherWin.dependsOn prepareWinJRE, prepareSingleJar
 createLauncherMac.dependsOn prepareMacJRE
 
 copyWin64Jre.dependsOn prepareWinJRE 
