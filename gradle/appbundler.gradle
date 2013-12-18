@@ -156,7 +156,7 @@ task createLauncherWin <<{
   }
   if(exe4jHome){
     ant.taskdef(name: 'exe4j', classpath: "$exe4jHome/bin/ant.jar", classname: "com.exe4j.Exe4JTask" ) 
-    ant.exe4j (projectfile:"gradle/jazz.exe4j")
+    ant.exe4j (projectfile:"gradle/windows/jazz.exe4j")
   }
 }
 

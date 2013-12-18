@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <exe4j version="4.5.2" transformSequenceNumber="1">
-  <directoryPresets config="/Users/douglas_bullard/Documents/JavaStuff/Google_Code/gradle-script-visualizer/trunk" />
-  <application name="Jazz Automation" distributionSourceDir="../build/distWin64">
+  <directoryPresets config="/Users/douglas_bullard/Documents/JavaStuff/Google_Code/jazzautomation_source_FRESH/build/libs" />
+  <application name="Jazz Automation" distributionSourceDir="/Users/douglas_bullard/Documents/JavaStuff/Google_Code/jazzautomation_source_FRESH/build/distWin64">
     <languages>
       <principalLanguage id="en" customLocalizationFile="" />
     </languages>
@@ -10,7 +10,7 @@
     <messageSet />
     <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" companyName="" productVersion="" />
   </executable>
-  <splashScreen show="false" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="/Users/douglas_bullard/Documents/JavaStuff/Google_Code/gradle-script-visualizer/trunk/build_small.png" java6SplashScreen="false">
+  <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="jazzAutomation.png" java6SplashScreen="false">
     <text>
       <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
       <versionLine x="20" y="40" text="version %VERSION%" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
