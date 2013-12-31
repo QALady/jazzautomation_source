@@ -14,11 +14,15 @@
         {
           "jquery": "$('a.checkout')"      
         },
-      "delivery" :
+        "delivery" :
         {
-          "jquery": "$('.fulfillment-type-radio[value=\"DELIVERY\"]')"      
+            "jquery": "$('.fulfillment-type-radio[value=\"SHIPPING\"]')"
+        },
+        "noThanks" :
+        {
+            "jquery": "$('.no-thanks')"
         }
     }    
 }
-        
-        
+				
+				

@@ -46,21 +46,23 @@ Feature: Go to bestbuy web site, add a product to cart and all the way to checko
     Then I should be ON "CartPage"
     
 
-  Scenario: Check my cart, I should see one product in my cart
-    Given I am ON "CartPage"
-    Then I should EXPECT
-            | cartItems    | 1      |
-            
-  Scenario: Go to Checkout page
-    Given I am ON "CartPage"
-    And I Click "delivery"
-    And I WAIT 5 seconds    
-    And I CLICK "checkout"
-    And I WAIT 2 seconds    
-    Then I should be ON "CheckoutPage" 
-  
-  Scenario: Checkout As a guest
-    Given I am ON "CheckoutPage"
-    And I CLICK "checkoutAsGuest"
-    Then I should be ON "BillingAddressPage"
-    
+	Scenario: Check my cart, I should see one product in my cart
+		Given I am ON "CartPage"
+		Then I should EXPECT
+		      	| cartItems		| 1			|
+		      	
+	Scenario: Go to Checkout page
+		Given I am ON "CartPage"
+		And I Click "delivery"
+		And I WAIT 5 seconds		
+		And I CLICK "checkout"
+		And I WAIT 2 seconds		
+		And ((Optional) I CLICK "noThanks"
+		And I WAIT 2 seconds		
+		Then I should be ON "CheckoutPage" 
+	
+	Scenario: Checkout As a guest
+		Given I am ON "CheckoutPage"
+		And I CLICK "checkoutAsGuest"
+		Then I should be ON "BillingAddressPage"
+		

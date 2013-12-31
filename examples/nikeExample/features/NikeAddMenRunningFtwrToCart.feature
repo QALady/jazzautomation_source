@@ -2,10 +2,10 @@ Feature: Go to the Nike consumer web site, add a product to cart and all the way
 
   Background: set up for the test
     Given the following settings:
-      | url                | http://www.nike.com        |
-      | platform           | OSX 10.8                   |
-      | browser            | chrome                     |
-      | browser version    | 28                         |
+      | url				| http://www.nike.com	    |
+      | platform		| OSX 10.8     				|
+      | browser        	| firefox 					|
+      | browser version	| 28   						|                     |
 
   Scenario: Go to the nike portal page and verify the required elements.
     Given I am ON "NikeHomePage"

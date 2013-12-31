@@ -39,7 +39,7 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
     Given I am ON "BookDetailPage" 
     Then I should EXPECT    
     | kindlePrice            | $7.99             |
-    | libraryBindingPrice    | $16.21            |    
+    | libraryBindingPrice    | $16.23            |    
     | paperbackPrice         | $8.98             |
     
   Scenario: Add to cart
@@ -51,8 +51,8 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
   Scenario: on pre-checkout page, I check all my items
     Given I am ON "PreCheckoutPage"
     Then I should EXPECT
-      | orderSubtotal          | 16.21   |
-      | cartCount              | 1       |     
+      | orderSubtotal          	| 16.32 	|
+      | cartCount          		| 1 		|     
        
   Scenario: proceed to checkout
     Given I am ON "PreCheckoutPage"

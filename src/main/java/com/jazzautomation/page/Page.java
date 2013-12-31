@@ -361,6 +361,30 @@ import javax.xml.bind.annotation.XmlTransient;
     }
   }
 
+  private Action instantiateCustomAction(Class clazz) throws InstantiationException, IllegalAccessException
+  {
+    return (Action)clazz.newInstance();
+  }
+
+  private Action getCustomAction(String customActionHandle)
+  {
+    Action action = null;
+    String actionClass = customActionHandle.substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+
+    try
+    {
+      Class clazz = Class.forName(actionClass);
+      action = instantiateCustomAction(clazz);
+    }
+    catch (Exception e)
+    {
+      LOG.error("Error creating custom action", e);
+    }
+
+
+    return action;
+  }
+
   private void handleEnterAction(DomElement domElement, String actionValue)
   {
     try
@@ -371,8 +395,29 @@ import javax.xml.bind.annotation.XmlTransient;
     {  // do nothing for now.
     }
 
-    CharSequence chars = (actionValue == null) ? domElement.getValue().trim()
-                                               : actionValue;
+    CharSequence chars = null;
+
+    if (actionValue != null && actionValue.startsWith(Constants.CUSTOM_ACTION_INDICATOR))
+    {
+      try
+      {
+        Action instanceOfAction = getCustomAction(actionValue);
+
+        // call the fire method
+        String valueToEnter = instanceOfAction.fire();
+        chars = valueToEnter;
+      }
+      catch(Exception e)
+      {
+        LOG.error("Error creating or executing custom action.", e);
+        chars = actionValue;
+      }
+    }
+    else
+    {
+      chars = (actionValue == null) ? domElement.getValue().trim()
+          : actionValue;
+    }
 
     LOG.info("Entering [" + domElement.getIdentifier() + "] and value is [" + chars + ']');
 
@@ -819,9 +864,9 @@ import javax.xml.bind.annotation.XmlTransient;
       if (expect.isCustomAction())
       {
         try
-        {  // create instance of the custom actions and cast the class to our Action interface
-
-          Action instanceOfAction = (Action) expect.getCustomActionClass().newInstance();
+        {
+          // create instance of the custom actions and cast the class to our Action interface
+          Action instanceOfAction = instantiateCustomAction(expect.getCustomActionClass());
 
           // call the fire method
           String calculatedExpectation = instanceOfAction.fire();

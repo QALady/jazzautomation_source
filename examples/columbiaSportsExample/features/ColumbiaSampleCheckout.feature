@@ -53,7 +53,7 @@ Feature: Go to the Columbia Sportswear web site, search for a product, review pr
 
   Scenario: Continue checking out from the Shopping Cart Page
     Given I am ON "ShoppingCartPage"
-    And I CLICK "continueToCheckOut"
+    And I (optional) CLICK "continueToCheckOut"
     Then I should be ON "CheckoutPage"
 
   Scenario: Check out as a guest
@@ -65,7 +65,7 @@ Feature: Go to the Columbia Sportswear web site, search for a product, review pr
     Given I am ON "CheckoutGuestPage"
     And I ENTER
     | firstName                 | Lukas                 |
-    | lastName                  | Test                  |
+    | lastName                  | $action=com.sample.TestAction           |
     | address1                  | 1 Test Dr.            |
     And I SELECT
     | state                     | Oregon                |

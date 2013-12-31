@@ -422,7 +422,7 @@ public class FeatureParser
     }
     else if ((action == HtmlAction.ENTER) || (action == HtmlAction.SELECT))
     {
-      // do something - select can be multiple and enter can be multiple
+      // select and enter actions can be multiples
       // the rest of line are key-value pairs
       String line = lines.get(index);
 
@@ -556,7 +556,7 @@ public class FeatureParser
 
             if (expectationString.startsWith(Constants.CUSTOM_ACTION_INDICATOR))
             {
-              String actionClass = expect.getValue().trim().substring(Constants.CUSTOM_ACTION_INDICATOR.length());
+              String actionClass = expectationString.substring(Constants.CUSTOM_ACTION_INDICATOR.length());
 
               try
               {
