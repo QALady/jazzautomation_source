@@ -8,7 +8,20 @@ import com.jazzautomation.action.HtmlAction;
 import com.jazzautomation.cucumber.And;
 import com.jazzautomation.cucumber.Background;
 import com.jazzautomation.cucumber.CucumberBase;
-import static com.jazzautomation.cucumber.CucumberConstants.*;
+import static com.jazzautomation.cucumber.CucumberConstants.AND;
+import static com.jazzautomation.cucumber.CucumberConstants.BACKGROUND;
+import static com.jazzautomation.cucumber.CucumberConstants.COLON;
+import static com.jazzautomation.cucumber.CucumberConstants.ESCAPE_CHAR;
+import static com.jazzautomation.cucumber.CucumberConstants.FEATURE;
+import static com.jazzautomation.cucumber.CucumberConstants.GIVEN;
+import static com.jazzautomation.cucumber.CucumberConstants.LINE_END_MARK;
+import static com.jazzautomation.cucumber.CucumberConstants.LINE_START_MARK;
+import static com.jazzautomation.cucumber.CucumberConstants.ON;
+import static com.jazzautomation.cucumber.CucumberConstants.OPTIONAL;
+import static com.jazzautomation.cucumber.CucumberConstants.SCENARIO;
+import static com.jazzautomation.cucumber.CucumberConstants.TABLE_COLUMN_SEPERATOR;
+import static com.jazzautomation.cucumber.CucumberConstants.TABLE_COLUMN_SEPERATOR_CHAR;
+import static com.jazzautomation.cucumber.CucumberConstants.THEN;
 import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.Given;
 import com.jazzautomation.cucumber.Scenario;
@@ -26,11 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -66,98 +74,81 @@ public class FeatureParser
   /**
    * parse a file return a Feature object. Throw IllegalCucumberFormatException and stop if there is formatting errors
    *
-   * @param   in
-   *
-   * @return
+   * @param  originalLines
    */
-  public Feature parse(FileInputStream in) throws IllegalCucumberFormatException
+  public Feature parse(List<String> originalLines) throws IllegalCucumberFormatException
   {
-    // jsheridan CODEREVIEW - If we're just reading a file in, FileUtils.readLines is much nicer than buffered reader stuff
     // jsheridan CODEREVIEW - long method break up for clarity
     Feature       feature            = new Feature();
     List<String>  stringsForFile     = new ArrayList<>();
     StringBuilder originalTextBuffer = new StringBuilder();
+    int           lineNum            = 1;
 
-    try(BufferedReader stdin = new BufferedReader(new InputStreamReader(in)))
+    for (String line : originalLines)
     {
-      int lineNum = 1;
+      // if (StringUtils.isEmpty(line))
+      // {
+      // continue;
+      // }
+      String trimmedLine = line.trim();
 
-      // read everything into the stringsForFile
-      String line;
+      originalTextBuffer.append(line).append('\n');
 
-      while ((line = stdin.readLine()) != null)
-      {
-//        if (StringUtils.isEmpty(line))
-//        {
-//          continue;
-//        }
+      String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + trimmedLine;
 
-        String trimmedLine = line.trim();
+      if (StringUtils.isNotEmpty(trimmedLine) && trimmedLine.startsWith(COMMENT_MARKER))
+      {  // skip adding comment lines to the executable feature.
+        stringsForFile.add("\n");
 
-        originalTextBuffer.append(line).append('\n');
-
-        String formattedLine = LINE_START_MARK + (lineNum++) + LINE_END_MARK + trimmedLine;
-
-        if (StringUtils.isNotEmpty(trimmedLine) && trimmedLine.startsWith(COMMENT_MARKER))
-        {  // skip adding comment lines to the executable feature.
-          stringsForFile.add("\n");
-          continue;
-        }
-
-        stringsForFile.add(formattedLine);
+        continue;
       }
 
-      // add an extra line at the end of file.
-      stringsForFile.add("\n");
-      feature.setOriginalText(originalTextBuffer.toString());
-
-      // setup feature description - background is optional
-      String[] featureEndWords = { BACKGROUND, SCENARIO };
-      int      index           = 0;
-
-      index = setupText(feature, stringsForFile, index, FEATURE, featureEndWords);
-
-      List<String>  lines      = scanIntoLine(feature.getText());
-      StringBuilder descBuffer = new StringBuilder();
-
-      descBuffer.append(filterWords(lines.get(0), FEATURE, COLON)).append('\n');
-
-      String[] descriptionEndWords = {};
-
-      retrieveDescription(lines, descBuffer, descriptionEndWords);
-      feature.setDescription(descBuffer.toString());
-
-      // setup background
-      String[]   backgroundEndWords = { SCENARIO };
-      Background background         = new Background();
-
-      index = setupText(background, stringsForFile, index, BACKGROUND, backgroundEndWords);
-
-      if (background.getText() != null)
-      {
-        processBackground(background);
-        feature.setBackground(background);
-      }
-
-      // loop through scenarios and add to list
-      // setup scenarios
-      String[] scenarioEndWords = { SCENARIO };
-
-      while (index < stringsForFile.size())
-      {
-        Scenario scenario = new Scenario();
-
-        index = setupText(scenario, stringsForFile, index, SCENARIO, scenarioEndWords);
-        processScenario(scenario);
-        feature.addScenario(scenario);
-      }
+      stringsForFile.add(formattedLine);
     }
-    catch (IOException e)
+
+    // add an extra line at the end of file.
+    stringsForFile.add("\n");
+    feature.setOriginalText(originalTextBuffer.toString());
+
+    // setup feature description - background is optional
+    String[] featureEndWords = { BACKGROUND, SCENARIO };
+    int      index           = 0;
+
+    index = setupText(feature, stringsForFile, index, FEATURE, featureEndWords);
+
+    List<String>  lines      = scanIntoLine(feature.getText());
+    StringBuilder descBuffer = new StringBuilder();
+
+    descBuffer.append(filterWords(lines.get(0), FEATURE, COLON)).append('\n');
+
+    String[] descriptionEndWords = {};
+
+    retrieveDescription(lines, descBuffer, descriptionEndWords);
+    feature.setDescription(descBuffer.toString());
+
+    // setup background
+    String[]   backgroundEndWords = { SCENARIO };
+    Background background         = new Background();
+
+    index = setupText(background, stringsForFile, index, BACKGROUND, backgroundEndWords);
+
+    if (background.getText() != null)
     {
-      if (LOG.isDebugEnabled())
-      {
-        LOG.debug("Error parsing feature", e);
-      }
+      processBackground(background);
+      feature.setBackground(background);
+    }
+
+    // loop through scenarios and add to list
+    // setup scenarios
+    String[] scenarioEndWords = { SCENARIO };
+
+    while (index < stringsForFile.size())
+    {
+      Scenario scenario = new Scenario();
+
+      index = setupText(scenario, stringsForFile, index, SCENARIO, scenarioEndWords);
+      processScenario(scenario);
+      feature.addScenario(scenario);
     }
 
     LOG.info("Successfully parsed feature: " + feature.getOriginalText());

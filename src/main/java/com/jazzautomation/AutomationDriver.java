@@ -4,17 +4,18 @@ import com.jazzautomation.cucumber.Feature;
 import com.jazzautomation.cucumber.parser.FeatureParser;
 import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
 
+import com.jazzautomation.loader.CustomClassLoader;
+
 import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
 
-import com.jazzautomation.loader.CustomClassLoader;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,7 +73,7 @@ public class AutomationDriver
       featureNames = WebUIManager.getInstance().getFeatureNames();
     }
 
-    if(null != webUIManager.getCustomClasspath())
+    if (null != webUIManager.getCustomClasspath())
     {
       CustomClassLoader.addPath(webUIManager.getCustomClasspath());
     }
@@ -93,7 +94,8 @@ public class AutomationDriver
     }
 
     // create a new suite and get the features
-    Suite suite = new Suite(loadFeatures(webUIManager, featureNameList));
+    List<Feature> features = loadFeatures(webUIManager, featureNameList);
+    Suite         suite    = new Suite(features);
 
     // run the test suite
     SuiteProcessor.process(suite, null);
@@ -122,21 +124,23 @@ public class AutomationDriver
       }
 
       try
-      {
-        FileInputStream in      = new FileInputStream(featurePath + featureName + FEATURE);
-        FeatureParser   parser  = FeatureParser.getInstance();
-        Feature         feature = parser.parse(in);
+      {  // jsheridan CODEREVIEW - FileUtils.readLines is easier...
+
+        // FileInputStream in      = new FileInputStream(featurePath + featureName + FEATURE);
+        List<String>  lines   = FileUtils.readLines(new File(featurePath + featureName + FEATURE));
+        FeatureParser parser  = FeatureParser.getInstance();
+        Feature       feature = parser.parse(lines);
 
         feature.setName(featureName);
         features.add(feature);
       }
-      catch (FileNotFoundException e)
+      catch (IOException e)
       {
-        LOG.warn("Could not locate file for Feature[" + featureName + "]. Feature has been excluded from the test run.", e);
+        LOG.error("Could not locate file for Feature[" + featureName + "]. Feature has been excluded from the test run.", e);
       }
       catch (IllegalCucumberFormatException ice)
       {
-        LOG.warn("Could not parse Feature[" + featureName + "]. Feature has been excluded from the test run.", ice);
+        LOG.error("Could not parse Feature[" + featureName + "]. Feature has been excluded from the test run.", ice);
       }
     }
 
