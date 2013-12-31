@@ -65,7 +65,7 @@ Feature: Go to the Columbia Sportswear web site, search for a product, review pr
     Given I am ON "CheckoutGuestPage"
     And I ENTER
     | firstName                 | Lukas                 |
-    | lastName                  | $action=com.sample.TestAction           |
+    | lastName                  | Test                  |
     | address1                  | 1 Test Dr.            |
     And I SELECT
     | state                     | Oregon                |
