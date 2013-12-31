@@ -10,6 +10,7 @@ apply from: "${project.projectDir}/gradle/dependencies.gradle"
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
+versionClassName = 'com.jazzautomation.Version'
 
 repositories {
 	mavenCentral()
@@ -23,6 +24,11 @@ repositories {
 
 configurations {
   jre
+  versionUpdate
+}
+
+dependencies{
+  versionUpdate 'com.ryangrier.ant:version_tool:1.1.4_fixed'
 }
 
 project.ext {
@@ -112,6 +118,25 @@ task jazzJar(type: Jar) {
         attributes 'Main-Class': 'com.jazzautomation.AutomationDriver'
     }
 }
+
+// Updates the constant in the give class to the next major, minor, or point release.
+private void updateVersion(String versionUpdateType)
+{
+  //todo throw exception if versionClassName isn't defined.
+  ant.taskdef(name: 'versionupdate', classname: 'com.ryangrier.ant.VersionUpdate', classpath: configurations.versionUpdate.asPath)
+  ant.versionupdate(srcdir: sourceSets.main.java.getSrcDirs().toArray()[0].getAbsolutePath(),
+                    classname: versionClassName,
+                    variablename: "VERSION",
+                    debug: "true",
+                    versionupdatetype: versionUpdateType
+  )
+}
+
+// Notice that I disagree with the author's definition of "point" and "minor" - I've flipped them
+task versionMajor(description: "Increment the version number by a major version (i.e., from 1.0 to 2.0)")<<{ updateVersion("Major") }
+task versionMinor(description: "Increment the version number by a major version (i.e., from v. 2.0.0 to v. 2.1.0)")<<{ updateVersion("Point") }
+task versionPoint(description: "Increment the version number by a major version (i.e., from v. 2.0.0 to v. 2.0.1)")<<{ updateVersion("Minor") }
+
 
 eclipse {
 	jdt {

@@ -3,12 +3,13 @@
 ext {
 	testngVersion = '6.4'
 	logbackVersion = '1.0.1'
-	sourceCompatibility = JavaVersion.VERSION_1_6
+	sourceCompatibility = JavaVersion.VERSION_1_7
 }
 
 final path = System.properties.find { it.key == "java.home" }.toString()
 path=path.split("=")[1]
 def javaHomeDir=new File(path).parent
+
 
 
 dependencies {
@@ -26,7 +27,5 @@ dependencies {
 
  // these are needed for forms - when JavaFX version is working, they won't be needed
   compile files("$javaHomeDir/jre/lib/jfxrt.jar") 
-  
-
 
 }

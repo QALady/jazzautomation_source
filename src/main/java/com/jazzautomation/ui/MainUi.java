@@ -7,6 +7,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 
+import com.jazzautomation.Version;
 import com.jazzautomation.WebUIManager;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +40,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import static javax.swing.JOptionPane.ERROR_MESSAGE;
 import static javax.swing.JOptionPane.showMessageDialog;
-// import org.slf4j.Logger;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -111,14 +111,13 @@ public class MainUi extends JFrame
     addListeners();
     setInitialSettings();
     JFrame.setDefaultLookAndFeelDecorated(false);
-    setTitle(TITLE_TEXT + VERSION);
+    setTitle(TITLE_TEXT + Version.getVersion());
     setVisible(true);
   }
 
   /** Configure the UI components after creation. */
   private void initializeComponents()
   {
-    setTitle("Jazz Automation v1.0");
     setContentPane(mainPanel);
     setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel", this);
 
@@ -340,7 +339,7 @@ public class MainUi extends JFrame
 
     final JPanel panel1 = new JPanel();
 
-    panel1.setLayout(new GridLayoutManager(6, 5, new Insets(0, 0, 0, 0), -1, -1));
+    panel1.setLayout(new GridLayoutManager(6, 5, new Insets(0, 10, 0, 10), -1, -1));
     mainPanel.add(panel1,
                   new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
                                       GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
@@ -423,6 +422,7 @@ public class MainUi extends JFrame
     useProxyCheckBox = new JCheckBox();
     useProxyCheckBox.setEnabled(false);
     useProxyCheckBox.setText("Use Proxy");
+    useProxyCheckBox.setVisible(false);
     panel1.add(useProxyCheckBox,
                new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
                                    GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED,
