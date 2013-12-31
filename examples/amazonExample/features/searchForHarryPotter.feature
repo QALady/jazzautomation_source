@@ -17,9 +17,9 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
     Given I am ON "HomePage"
     And I click "allButton"
     And I select
-      |  selectCategory   | Books    |   
+      |  selectCategory   | Books         |   
     And I enter
-      | searchField       | Harry Potter                 | 
+      | searchField       | Harry Potter  | 
     And I click "go"   
     And I wait 10 seconds
 
@@ -51,8 +51,8 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
   Scenario: on pre-checkout page, I check all my items
     Given I am ON "PreCheckoutPage"
     Then I should EXPECT
-      | orderSubtotal          	| 16.32 	|
-      | cartCount          		| 1 		|     
+      | orderSubtotal            | 16.32   |
+      | cartCount                | 1       |     
        
   Scenario: proceed to checkout
     Given I am ON "PreCheckoutPage"
