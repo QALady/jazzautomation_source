@@ -28,14 +28,17 @@ configurations {
 }
 
 dependencies{
-  versionUpdate 'com.ryangrier.ant:version_tool:1.1.4_fixed'
+//  versionUpdate 'com.ryangrier.ant:version_tool:1.1.4_fixed'
+  versionUpdate fileTree(dir: '/Users/douglas_bullard/Documents/JavaStuff/Google_Code/ant-master-build-scripts/trunk/build/libs', includes: ["buildtasks-1.0.2-SNAPSHOT.jar"])
+  versionUpdate  'org.apache.commons:commons-lang3:3.2'
+  versionUpdate  'org.apache:commons-io:2.2'
 }
 
 project.ext {
 	projectname = 'jazzautomation'
 	artifactId = 'com-jazzautomation'
 	groupId = group
-	versionNumber = 1.0	
+	versionNumber = '999.999.999'	// note that this value is NOT USED - it's a placeholder for the value read in from Version.java at build time
   osx_app_name = 'Jazz Automation'
 }
 
@@ -119,6 +122,7 @@ task jazzJar(type: Jar) {
     }
 }
 
+
 // Updates the constant in the give class to the next major, minor, or point release.
 private void updateVersion(String versionUpdateType)
 {
@@ -127,16 +131,32 @@ private void updateVersion(String versionUpdateType)
   ant.versionupdate(srcdir: sourceSets.main.java.getSrcDirs().toArray()[0].getAbsolutePath(),
                     classname: versionClassName,
                     variablename: "VERSION",
-                    debug: "true",
+                    propertyName: "theProperty",
                     versionupdatetype: versionUpdateType
   )
+  project.ext.versionNumber = ant.properties.theProperty
 }
 
+// Updates the constant in the give class to the next major, minor, or point release.
 // Notice that I disagree with the author's definition of "point" and "minor" - I've flipped them
 task versionMajor(description: "Increment the version number by a major version (i.e., from 1.0 to 2.0)")<<{ updateVersion("Major") }
 task versionMinor(description: "Increment the version number by a major version (i.e., from v. 2.0.0 to v. 2.1.0)")<<{ updateVersion("Point") }
 task versionPoint(description: "Increment the version number by a major version (i.e., from v. 2.0.0 to v. 2.0.1)")<<{ updateVersion("Minor") }
 
+task findCurrentVersion()<<{
+   //todo throw exception if versionClassName isn't defined.
+  ant.taskdef(name: 'versionfinder', classname: 'com.ryangrier.ant.VersionFinder', classpath: configurations.versionUpdate.asPath)
+  ant.versionfinder(srcdir: sourceSets.main.java.getSrcDirs().toArray()[0].getAbsolutePath(),
+                    classname: versionClassName,
+                    variablename: "VERSION",
+                    propertyName: "theProperty"
+  )
+  project.ext.versionNumber = ant.properties.theProperty
+  println "the current version is " + project.ext.versionNumber
+}
+
+// make sure that we always go find the current version when compiling, so the jars will be numbered properly
+compileJava.dependsOn findCurrentVersion
 
 eclipse {
 	jdt {

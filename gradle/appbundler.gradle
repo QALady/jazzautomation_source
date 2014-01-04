@@ -25,13 +25,6 @@ dependencies {
 }
 
 
-project.ext {
-  releaseZipName = "${project.projectname}_Zip_v${project.versionNumber}.zip"
-  releaseWinName = "${project.projectname}_Win_v${project.versionNumber}.exe"
-  releaseMacName = "${project.projectname}_Mac_v${project.versionNumber}.zip"
-  macAppDir = "${project.projectname}.app"
-
-}
 // create the dirs needed
 File distDir=new File("${buildDir}/distWin64")
 distDir.mkdirs()
@@ -159,15 +152,19 @@ task createLauncherWin <<{
     ant.exe4j (projectfile:"gradle/windows/jazz.exe4j")
   }
 }
-
-task makeOsxZip(type: Zip){
-  archiveName "jazzautomationOsx.zip"
-  from 'build/distOsX'
+// we do this via ant's zip task so we can use the project name dynamically at runtime instead of fixed at initializtion time.
+task makeOsxZip(){
+}<<{
+  ant.zip(destfile: "build/distributions/jazzautomationOsx_${project.ext.versionNumber}.zip") {
+          fileset(dir: 'build/distOsX') 
+      }
 }
 
-task makeWin64Zip(type: Zip){
-  archiveName "jazzautomationWin64.zip"
-  from 'build/distWin64'
+task makeWin64Zip(){
+}<<{
+  ant.zip(destfile: "build/distributions/jazzautomationWin64_${project.ext.versionNumber}.zip") {
+          fileset(dir: 'build/distWin64') 
+      }
 }
 
 // Big "make all" task
@@ -185,5 +182,6 @@ createLauncherMac.dependsOn prepareMacJRE
 
 copyWin64Jre.dependsOn prepareWinJRE 
 makeWin64Zip.dependsOn copyWin64Jre
+
 
 
