@@ -8,7 +8,19 @@ import com.jazzautomation.action.PageAction;
 import com.jazzautomation.page.DomElement;
 import com.jazzautomation.page.Page;
 
-import static com.jazzautomation.util.Constants.*;
+import static com.jazzautomation.util.Constants.ACTION_PACE;
+import static com.jazzautomation.util.Constants.BROWSER;
+import static com.jazzautomation.util.Constants.BROWSER_VERSION;
+import static com.jazzautomation.util.Constants.CUSTOM_CLASSPATH;
+import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
+import static com.jazzautomation.util.Constants.JAZZ;
+import static com.jazzautomation.util.Constants.PAGES_DIRECTORY_NAME;
+import static com.jazzautomation.util.Constants.PAGE_LOAD_TIMEOUT;
+import static com.jazzautomation.util.Constants.PLATFORM;
+import static com.jazzautomation.util.Constants.PROJECT_NAME;
+import static com.jazzautomation.util.Constants.REMOTE_WEB_DRIVER_URL;
+import static com.jazzautomation.util.Constants.SETTINGS_USE_XML;
+import static com.jazzautomation.util.Constants.USE_REMOTE;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -34,7 +46,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.ArrayList;
@@ -103,6 +114,12 @@ public class WebUIManager
     }
 
     return instance;
+  }
+
+  /** called by the UI to reintialize the driver code so subsequent invocations will work. */
+  public static void reinitialize()
+  {
+    instance = null;
   }
 
   /*

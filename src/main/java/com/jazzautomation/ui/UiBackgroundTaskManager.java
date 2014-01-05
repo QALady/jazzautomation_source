@@ -1,13 +1,14 @@
 package com.jazzautomation.ui;
 
 import com.jazzautomation.AutomationDriver;
+import com.jazzautomation.WebUIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
-import javax.swing.*;
+import javax.swing.SwingWorker;
 
 /**
  * Runner for the driver - has to be done in the background so the UI is still responsive.
@@ -28,10 +29,12 @@ public class UiBackgroundTaskManager extends SwingWorker<Object, Object>
     this.mainUi          = mainUi;
   }
 
-  @Override protected Object doInBackground() throws Exception
+  @Override
+  protected Object doInBackground() throws Exception
   {
     try
     {
+      WebUIManager.reinitialize();
       AutomationDriver.beginTestSuite();
     }
     catch (Exception e)
