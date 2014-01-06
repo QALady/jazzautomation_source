@@ -176,3 +176,5 @@ idea {
 createLaunchers.mustRunAfter("versionMajor")
 createLaunchers.mustRunAfter("versionMinor")
 createLaunchers.mustRunAfter("versionPoint")
+createLauncherWin.dependsOn("findCurrentVersion")
+createLauncherMac.dependsOn("findCurrentVersion")
