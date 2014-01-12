@@ -26,5 +26,6 @@ dependencies {
 
  // these are needed for forms - when JavaFX version is working, they won't be needed
   compile files("$javaHomeDir/jre/lib/jfxrt.jar") 
+  runtime files("gradle/logos/smallJazzAutomation1.png") 
 
 }
