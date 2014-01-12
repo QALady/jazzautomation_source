@@ -122,14 +122,15 @@ task copyWin64Jre(type: Copy ){
   into "build/distWin64/jre"
 }
 
-task makeWinZip(type: Zip){
-  archiveName "jazzautomationWin64.zip"
-  from 'build/dist'
-  from 'build/jre/win64/1.7.0_40/jre'
-      into 'build/zipp'
-      include 'jazzautomation.exe'
-      include 'jre'
-}
+//task makeWinZip(type: Zip){
+//  archiveName "jazzautomationWin64.zip"
+//  from 'build/dist'
+//  from 'examples'
+//  from 'build/jre/win64/1.7.0_40/jre'
+//      into 'build/zipp'
+//      include 'jazzautomation.exe'
+//      include 'jre'
+//}
 
 
 // this requires something like 
@@ -157,6 +158,7 @@ task makeOsxZip(){
 }<<{
   ant.zip(destfile: "build/distributions/jazzautomationOsx_${project.ext.versionNumber}.zip") {
           fileset(dir: 'build/distOsX') 
+          fileset(dir: '.', includes: 'examples/') 
       }
 }
 
@@ -164,6 +166,7 @@ task makeWin64Zip(){
 }<<{
   ant.zip(destfile: "build/distributions/jazzautomationWin64_${project.ext.versionNumber}.zip") {
           fileset(dir: 'build/distWin64') 
+          fileset(dir: '.', includes: 'examples/') 
       }
 }
 
