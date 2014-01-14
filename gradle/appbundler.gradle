@@ -45,9 +45,8 @@ def appName = project.ext.get('osx_app_name')
             name: appName,
             displayname:  appName,
             identifier: "com.jazzautomation",
-//            icon: "gradle/logos/JA-Red-Logo-Extended-170x65.icns", //opt
-//            icon: "gradle/logos/smallJazzAutomation1.icns", //opt
-            icon: "gradle/logos/logoWhite2.icns", //opt
+            icon: "src/main/resources/JA_app_logo.icns", //opt
+//            icon: "gradle/logos/logoWhite2.icns", //opt
 //            shortversion: "${versionString}", //opt
 //            signature: "????", //opt
             //copyright: blah , //opt
@@ -59,6 +58,7 @@ def appName = project.ext.get('osx_app_name')
 //        runtime(dir: "$javaHomeDir") //opt
 //
         classpath(dir: "${buildDir}/install/${rootProject.name}/lib/")
+        classpath(file: "src/main/resources/smallJazzAutomation1.png")
 //        classpath(file: "$javaHomeDir/jre/lib/jfxrt.jar")
 //        classpath(file: "src/main/resources/FobIcon.png")
       
@@ -66,7 +66,7 @@ def appName = project.ext.get('osx_app_name')
 //        classpath(dir: "${buildDir}/dependencies/")
 //        classpath(dir: "${buildDir}/plugins/")
 
-        option(value: "-splash:\$APP_ROOT/Contents/Java/smallJazzAutomation1.png")// shows image, but app hangs with no errors
+        option(value: "-splash:\$APP_ROOT/Contents/Java/smallJazzAutomation1.png")
         option(value: "-Dapple.laf-useScreenMenuBar=true")
         option(value: "-Djazz.configs=examples/bestBuyExample")
         option(value: "-Dfeatures=AddToCart,CheckoutAsGuest")
@@ -105,14 +105,22 @@ task stageJREs(type: Copy, description: "Get the JREs out of Gradle's dependency
   into 'build/zippedJre'
 }
 
+
+
 task listJars << {
-    configurations.runtime.each { File file -> println file.name }
+    configurations.each {
+      Configuration configuration -> configuration.each { 
+        File file -> println "$configuration \t $file.name"; 
+      }
+  }
 }
+
 
 task prepareSingleJar(type: Jar, description: "Put all the classes into a single jar so it can be wrapped in the .exe") {
     from files(sourceSets.main.output.classesDir)
     from files(sourceSets.main.resources)    
     from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+//    from configurations.runtime.asFileTree.files.collect { zipTree(it) }.remove("smallJazzAutomation1.png")
 
     manifest {
         attributes 'Main-Class': 'com.jazzautomation.ui.MainUi'
