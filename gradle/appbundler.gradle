@@ -59,6 +59,7 @@ def appName = project.ext.get('osx_app_name')
 //
         classpath(dir: "${buildDir}/install/${rootProject.name}/lib/")
         classpath(file: "src/main/resources/smallJazzAutomation1.png")
+        classpath(file: "src/main/resources/JA_Red_Logo_Extended_1282x398.png")
 //        classpath(file: "$javaHomeDir/jre/lib/jfxrt.jar")
 //        classpath(file: "src/main/resources/FobIcon.png")
       
@@ -66,7 +67,8 @@ def appName = project.ext.get('osx_app_name')
 //        classpath(dir: "${buildDir}/dependencies/")
 //        classpath(dir: "${buildDir}/plugins/")
 
-        option(value: "-splash:\$APP_ROOT/Contents/Java/smallJazzAutomation1.png")
+        option(value: "-splash:\$APP_ROOT/Contents/Java/JA_Red_Logo_Extended_1282x398.png")    // splash screen 
+//        option(value: "-splash:\$APP_ROOT/Contents/Java/smallJazzAutomation1.png")
         option(value: "-Dapple.laf-useScreenMenuBar=true")
         option(value: "-Djazz.configs=examples/bestBuyExample")
         option(value: "-Dfeatures=AddToCart,CheckoutAsGuest")
