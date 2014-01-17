@@ -45,7 +45,8 @@ def appName = project.ext.get('osx_app_name')
             name: appName,
             displayname:  appName,
             identifier: "com.jazzautomation",
-//            icon: "src/main/resources/gradleLogo_big.icns", //opt
+            icon: "src/main/resources/JA_app_logo.icns", //opt
+//            icon: "gradle/logos/logoWhite2.icns", //opt
 //            shortversion: "${versionString}", //opt
 //            signature: "????", //opt
             //copyright: blah , //opt
@@ -57,6 +58,8 @@ def appName = project.ext.get('osx_app_name')
 //        runtime(dir: "$javaHomeDir") //opt
 //
         classpath(dir: "${buildDir}/install/${rootProject.name}/lib/")
+        classpath(file: "src/main/resources/smallJazzAutomation1.png")
+        classpath(file: "src/main/resources/JA_Red_Logo_Extended_641x199.png")
 //        classpath(file: "$javaHomeDir/jre/lib/jfxrt.jar")
 //        classpath(file: "src/main/resources/FobIcon.png")
       
@@ -64,7 +67,8 @@ def appName = project.ext.get('osx_app_name')
 //        classpath(dir: "${buildDir}/dependencies/")
 //        classpath(dir: "${buildDir}/plugins/")
 
-//        option(value: "-splash:\$APP_ROOT/Contents/Java/FobIcon.png")// shows image, but app hangs with no errors
+        option(value: "-splash:\$APP_ROOT/Contents/Java/JA_Red_Logo_Extended_641x199.png")    // splash screen 
+//        option(value: "-splash:\$APP_ROOT/Contents/Java/smallJazzAutomation1.png")
         option(value: "-Dapple.laf-useScreenMenuBar=true")
         option(value: "-Djazz.configs=examples/bestBuyExample")
         option(value: "-Dfeatures=AddToCart,CheckoutAsGuest")
@@ -103,14 +107,22 @@ task stageJREs(type: Copy, description: "Get the JREs out of Gradle's dependency
   into 'build/zippedJre'
 }
 
+
+
 task listJars << {
-    configurations.runtime.each { File file -> println file.name }
+    configurations.each {
+      Configuration configuration -> configuration.each { 
+        File file -> println "$configuration \t $file.name"; 
+      }
+  }
 }
+
 
 task prepareSingleJar(type: Jar, description: "Put all the classes into a single jar so it can be wrapped in the .exe") {
     from files(sourceSets.main.output.classesDir)
     from files(sourceSets.main.resources)    
     from configurations.runtime.asFileTree.files.collect { zipTree(it) }
+//    from configurations.runtime.asFileTree.files.collect { zipTree(it) }.remove("smallJazzAutomation1.png")
 
     manifest {
         attributes 'Main-Class': 'com.jazzautomation.ui.MainUi'
@@ -120,15 +132,6 @@ task prepareSingleJar(type: Jar, description: "Put all the classes into a single
 task copyWin64Jre(type: Copy ){
   from "build/jre/win64/jdk1.7.0_40/jre"
   into "build/distWin64/jre"
-}
-
-task makeWinZip(type: Zip){
-  archiveName "jazzautomationWin64.zip"
-  from 'build/dist'
-  from 'build/jre/win64/1.7.0_40/jre'
-      into 'build/zipp'
-      include 'jazzautomation.exe'
-      include 'jre'
 }
 
 
@@ -155,8 +158,11 @@ task createLauncherWin <<{
 // we do this via ant's zip task so we can use the project name dynamically at runtime instead of fixed at initializtion time.
 task makeOsxZip(){
 }<<{
+  // zip up the contents preserving the executable file permissions for JavaAppLauncher
   ant.zip(destfile: "build/distributions/jazzautomationOsx_${project.ext.versionNumber}.zip") {
-          fileset(dir: 'build/distOsX') 
+        zipfileset (dir:"build/distOsX", includes:"**/JavaAppLauncher" , filemode: "755" ) 
+        zipfileset (dir:"build/distOsX", excludes:"**/JavaAppLauncher"  ) 
+          fileset(dir: '.', includes: 'examples/') 
       }
 }
 
@@ -164,6 +170,7 @@ task makeWin64Zip(){
 }<<{
   ant.zip(destfile: "build/distributions/jazzautomationWin64_${project.ext.versionNumber}.zip") {
           fileset(dir: 'build/distWin64') 
+          fileset(dir: '.', includes: 'examples/') 
       }
 }
 

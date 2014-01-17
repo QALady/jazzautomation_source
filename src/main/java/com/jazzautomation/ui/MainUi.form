@@ -47,6 +47,7 @@
             </constraints>
             <properties>
               <text value="Browser:"/>
+              <visible value="false"/>
             </properties>
           </component>
           <component id="f5a31" class="javax.swing.JComboBox" binding="browserComboBox">
@@ -60,6 +61,7 @@
                 <item value="Chrome"/>
                 <item value="IE"/>
               </model>
+              <visible value="false"/>
             </properties>
           </component>
           <component id="99cef" class="javax.swing.JLabel">
@@ -123,14 +125,6 @@
               <text value="Go"/>
             </properties>
           </component>
-          <component id="d603b" class="javax.swing.JButton" binding="quitButton" default-binding="true">
-            <constraints>
-              <grid row="5" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Quit"/>
-            </properties>
-          </component>
           <component id="3c4f7" class="javax.swing.JCheckBox" binding="useProxyCheckBox">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -139,6 +133,14 @@
               <enabled value="false"/>
               <text value="Use Proxy"/>
               <visible value="false"/>
+            </properties>
+          </component>
+          <component id="d603b" class="javax.swing.JButton" binding="quitButton" default-binding="true">
+            <constraints>
+              <grid row="4" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Quit"/>
             </properties>
           </component>
         </children>
