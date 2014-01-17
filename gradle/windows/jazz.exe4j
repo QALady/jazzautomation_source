@@ -10,7 +10,7 @@
     <messageSet />
     <versionInfo include="false" fileVersion="" fileDescription="" legalCopyright="" internalName="" productName="" companyName="" productVersion="" />
   </executable>
-  <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="../../build/resources/main/JA_Red_Logo_Extended_1282x398.png" java6SplashScreen="true">
+  <splashScreen show="true" autoOff="true" alwaysOnTop="true" width="0" height="0" bitmapFile="../../build/resources/main/JA_Red_Logo_Extended_641x199.png" java6SplashScreen="true">
     <text>
       <statusLine x="20" y="20" text="" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
       <versionLine x="20" y="40" text="version %VERSION%" font="Arial" fontSize="8" fontColor="0,0,0" fontWeight="500" />
