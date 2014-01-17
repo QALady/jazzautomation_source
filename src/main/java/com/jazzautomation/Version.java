@@ -5,7 +5,7 @@ public class Version
 {
   // don't modify, build script will do this.  Do not place comments after the end of the line.
   // This MUST be in the form of Major.Minor.Point - else build will fail
-  public static final String VERSION = "0.9.107";
+  public static final String VERSION = "0.9.108";
 
   private Version() {}
 

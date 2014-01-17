@@ -359,10 +359,12 @@ public class MainUi extends JFrame
     final JLabel label3 = new JLabel();
 
     label3.setText("Browser:");
+    label3.setVisible(false);
     panel1.add(label3,
                new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
     browserComboBox = new JComboBox();
+    browserComboBox.setVisible(false);
     panel1.add(browserComboBox,
                new GridConstraints(5, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -413,18 +415,18 @@ public class MainUi extends JFrame
                new GridConstraints(1, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
                                    GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED,
                                    null, null, null, 0, false));
-    quitButton = new JButton();
-    quitButton.setText("Quit");
-    panel1.add(quitButton,
-               new GridConstraints(5, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
-                                   GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED,
-                                   null, null, null, 0, false));
     useProxyCheckBox = new JCheckBox();
     useProxyCheckBox.setEnabled(false);
     useProxyCheckBox.setText("Use Proxy");
     useProxyCheckBox.setVisible(false);
     panel1.add(useProxyCheckBox,
                new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+                                   GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED,
+                                   null, null, null, 0, false));
+    quitButton = new JButton();
+    quitButton.setText("Quit");
+    panel1.add(quitButton,
+               new GridConstraints(4, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
                                    GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED,
                                    null, null, null, 0, false));
     outputScrollPane = new JScrollPane();
