@@ -1103,4 +1103,14 @@ import javax.xml.bind.annotation.XmlTransient;
   {
     this.browser = browser;
   }
+
+  public boolean isSwitchWindows()
+  {
+    return switchWindows;
+  }
+
+  public void setSwitchWindows(boolean switchWindows)
+  {
+    this.switchWindows = switchWindows;
+  }
 }
