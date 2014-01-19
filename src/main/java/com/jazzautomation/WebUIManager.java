@@ -22,6 +22,7 @@ import static com.jazzautomation.util.Constants.REMOTE_WEB_DRIVER_URL;
 import static com.jazzautomation.util.Constants.SETTINGS_USE_XML;
 import static com.jazzautomation.util.Constants.USE_REMOTE;
 
+import java.net.MalformedURLException;
 import org.apache.commons.lang3.StringUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
