@@ -35,6 +35,14 @@ public class UiBackgroundTaskManager extends SwingWorker<Object, Object>
     try
     {
       WebUIManager.reinitialize();
+
+      Browsers browser = settings.getBrowser();
+
+      if (browser != Browsers.NOT_SPECIFIED)
+      {
+        WebUIManager.getInstance().setBrowser(browser, true);  // override anything read in from feature files
+      }
+
       AutomationDriver.beginTestSuite();
     }
     catch (Exception e)

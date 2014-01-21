@@ -17,6 +17,7 @@
     </text>
   </splashScreen>
   <java mainClass="com.jazzautomation.ui.MainUi" vmParameters="" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true" minVersion="1.7.0_40" maxVersion="" allowBetaVM="false" jdkOnly="false">
+  <!--<java mainClass="com.jazzautomation.ui.javafx.MainFxUi" vmParameters="" arguments="" allowVMPassthroughParameters="true" preferredVM="" bundleRuntime="true" minVersion="1.7.0_40" maxVersion="" allowBetaVM="false" jdkOnly="false">-->
     <searchSequence>
       <directory location="jre" />
       <registry />

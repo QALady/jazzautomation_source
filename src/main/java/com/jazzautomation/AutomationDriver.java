@@ -27,9 +27,8 @@ import java.util.Set;
 public class AutomationDriver
 {
   private static final Logger LOG               = LoggerFactory.getLogger(AutomationDriver.class);
-  private static final String FEATURE_SEPERATOR = ",";
+  private static final String FEATURE_SEPARATOR = ",";
   public static final String  FEATURE           = ".feature";
-  private static String       featureNames;
 
   private AutomationDriver() {}
 
@@ -58,19 +57,26 @@ public class AutomationDriver
     }
   }
 
+  /**
+   * Javadoc this. What does "true" or "false" return mean?
+   *
+   * @return
+   */
   public static boolean beginTestSuite() throws Exception
   {
-    final WebUIManager webUIManager    = WebUIManager.getInstance();
-    Set<String>        featureNameList = new LinkedHashSet<>();  // use set to prevent same feature multiple times - unless this is desired?
+    WebUIManager webUIManager    = WebUIManager.getInstance();
+    Set<String>  featureNameList = new LinkedHashSet<>();  // use set to prevent same feature multiple times - unless this is desired?
 
     // override features from jazz.properties
+    String featureNames;
+
     if (System.getProperty(FEATURE_NAMES_EXECUTION) != null)
     {
       featureNames = System.getProperty(FEATURE_NAMES_EXECUTION);
     }
     else
     {
-      featureNames = WebUIManager.getInstance().getFeatureNames();
+      featureNames = webUIManager.getFeatureNames();
     }
 
     if (null != webUIManager.getCustomClasspath())
@@ -80,7 +86,7 @@ public class AutomationDriver
 
     if (StringUtils.isNotEmpty(featureNames))
     {
-      String[] featureArray = featureNames.split(FEATURE_SEPERATOR);
+      String[] featureArray = featureNames.split(FEATURE_SEPARATOR);
 
       for (String aFeatureName : featureArray)
       {
@@ -124,9 +130,7 @@ public class AutomationDriver
       }
 
       try
-      {  // jsheridan CODEREVIEW - FileUtils.readLines is easier...
-
-        // FileInputStream in      = new FileInputStream(featurePath + featureName + FEATURE);
+      {
         List<String>  lines   = FileUtils.readLines(new File(featurePath + featureName + FEATURE));
         FeatureParser parser  = FeatureParser.getInstance();
         Feature       feature = parser.parse(lines);

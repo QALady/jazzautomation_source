@@ -1,6 +1,8 @@
 package com.jazzautomation.ui;
 
-import static com.jazzautomation.WebUIManager.*;
+import static com.jazzautomation.WebUIManager.SYSTEM_BROWSERS_SETTING;
+import static com.jazzautomation.WebUIManager.SYSTEM_CONFIGURATION_PATH;
+import static com.jazzautomation.WebUIManager.SYSTEM_REPORTS_PATH;
 
 import static com.jazzautomation.ui.Browsers.Firefox;
 
@@ -76,7 +78,7 @@ public class Settings
   }
 
   /** get the property from System if it exists, else return empty string. */
-  private static String getNotNullSystemProperty(String propertyName)
+  public static String getNotNullSystemProperty(String propertyName)
   {
     String property = System.getProperty(propertyName);
 

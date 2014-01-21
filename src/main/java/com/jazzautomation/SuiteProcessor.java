@@ -1,5 +1,9 @@
 package com.jazzautomation;
 
+import com.google.common.base.Optional;
+
+import static com.jazzautomation.WebUIManager.SYSTEM_BROWSERS_SETTING;
+
 import com.jazzautomation.action.ComponentAction;
 import com.jazzautomation.action.HtmlAction;
 
@@ -18,7 +22,12 @@ import com.jazzautomation.report.FeatureResult;
 import com.jazzautomation.report.ScenarioResult;
 import com.jazzautomation.report.SuiteResult;
 
-import static com.jazzautomation.ui.Browsers.*;
+import com.jazzautomation.ui.Browsers;
+import static com.jazzautomation.ui.Browsers.Chrome;
+import static com.jazzautomation.ui.Browsers.IE;
+import static com.jazzautomation.ui.Browsers.NOT_SPECIFIED;
+import static com.jazzautomation.ui.Browsers.Safari;
+import com.jazzautomation.ui.Settings;
 
 import static com.jazzautomation.util.Constants.IMG_FOLDER_NAME;
 import com.jazzautomation.util.WebActionException;
@@ -116,7 +125,7 @@ public class SuiteProcessor
       }
       catch (MalformedURLException e)
       {
-        featureResult.setMessage("Error: remoteWebDriver Url is incorrect (STOPPED): " + WebUIManager.getInstance().getRemoteWebDriverUrl()
+        featureResult.setMessage("Error: remoteWebDriver Url is incorrect (STOPPED): " + WebUIManager.getRemoteWebDriverUrl()
                                    + " Please check your settings.properties ");
         featureResult.setSuccess(false);
         resetSettings(null, true);
@@ -147,7 +156,7 @@ public class SuiteProcessor
 
     long featureTimeEnded = System.currentTimeMillis();
 
-    featureResult.setDuration((featureTimeEnded - featureTimeStarted) / 1000.0);
+    featureResult.setDuration((featureTimeEnded - featureTimeStarted) / 1000);
     featureResult.calculateSuccessRate();
     driver.quit();
   }
@@ -224,6 +233,15 @@ public class SuiteProcessor
     scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000.0);
   }
 
+  /**
+   * What does return true mean? False? //CODEREVIEW - need docs
+   *
+   * @param   scenario
+   * @param   scenarioResult
+   * @param   page
+   *
+   * @return
+   */
   private static boolean loadPage(Scenario scenario, ScenarioResult scenarioResult, Page page)
   {
     try
@@ -255,11 +273,14 @@ public class SuiteProcessor
   {
     page.setWebDriver(driver);
     page.setJsDriver(jsDriver);
-    WebUIManager.getInstance().loadJQuery(jsDriver);
+
+    WebUIManager webUiManager = WebUIManager.getInstance();
+
+    WebUIManager.loadJQuery(jsDriver);
     LOG.info("Navigating to page " + page.getPageName());
-    page.setPageLoadTimeout(WebUIManager.getInstance().getPageLoadTimeout());
-    page.setActionPace(WebUIManager.getInstance().getActionPace());
-    page.setBrowser(WebUIManager.getInstance().getBrowser());
+    page.setPageLoadTimeout(WebUIManager.getPageLoadTimeout());
+    page.setActionPace(WebUIManager.getActionPace());
+    page.setBrowser(webUiManager.getBrowser());
   }
 
   private static void verifyPageExpectation(ScenarioResult scenarioResult, Then then)
@@ -343,11 +364,21 @@ public class SuiteProcessor
 
   private static void resetSettings(Map<String, String> backgroundSettings, boolean resetToNull)
   {
+    WebUIManager uiManager = WebUIManager.getInstance();
+
     if (resetToNull)
     {
-      WebUIManager.getInstance().setPlatform(null);
-      WebUIManager.getInstance().setBrowser(null);
-      WebUIManager.getInstance().setBrowserVersion(null);
+      uiManager.setPlatform(null);
+
+      String browserProperty = Settings.getNotNullSystemProperty(SYSTEM_BROWSERS_SETTING);
+
+      // noinspection UnnecessarilyQualifiedStaticallyImportedElement
+      Optional<Browsers> possible = Browsers.findValueOf(browserProperty);
+      Browsers           browser  = possible.isPresent() ? possible.get()
+                                                         : NOT_SPECIFIED;
+
+      uiManager.setBrowser(browser, true);
+      uiManager.setBrowserVersion(null);
     }
     else
     {
@@ -357,41 +388,44 @@ public class SuiteProcessor
       {
         if (key.toLowerCase().equals("platform"))
         {
-          WebUIManager.getInstance().setPlatform(backgroundSettings.get(key).trim());
+          uiManager.setPlatform(backgroundSettings.get(key));
         }
         else if (key.toLowerCase().equals("browser"))
         {
           LOG.info("browser is " + backgroundSettings.get(key));
-          WebUIManager.getInstance().setBrowser(backgroundSettings.get(key).trim());
+
+          Optional<Browsers> possible = Browsers.findValueOf(backgroundSettings.get(key));
+
+          uiManager.setBrowser(possible.get(), false);
         }
         else if (key.toLowerCase().equals("browserVersion"))
         {
-          WebUIManager.getInstance().setBrowserVersion(backgroundSettings.get(key).trim());
+          uiManager.setBrowserVersion(backgroundSettings.get(key));
         }
       }
     }
   }
 
-  private static WebDriver setWebDriver(String browserName) throws MalformedURLException
+  private static WebDriver setWebDriver(Browsers browser) throws MalformedURLException
   {
     WebUIManager webUIManager = WebUIManager.getInstance();
 
     if (LOG.isDebugEnabled())
     {
-      LOG.debug("browser name =" + browserName + '\'');
+      LOG.debug("browser name = '" + browser.getLowercaseName() + '\'');
     }
 
     WebDriver driver;
 
-    if (browserName.trim().equalsIgnoreCase(Chrome.getLowercaseName()))
+    if (browser == Chrome)
     {
       driver = webUIManager.getChromeDriver();
     }
-    else if (browserName.trim().equalsIgnoreCase(IE.getLowercaseName()))
+    else if (browser == IE)
     {
       driver = webUIManager.getIEDriver();
     }
-    else if (browserName.trim().equalsIgnoreCase(Safari.getLowercaseName()))
+    else if (browser == Safari)
     {
       driver = webUIManager.getSafariDriver();
     }

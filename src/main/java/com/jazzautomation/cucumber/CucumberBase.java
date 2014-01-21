@@ -1,12 +1,30 @@
 package com.jazzautomation.cucumber;
 
+import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 
-public class CucumberBase
+public abstract class CucumberBase
 {
-  private String             description = null;
+  private String               description;
   @JsonIgnore
-  private String             text        = null;
+  private String               text;
+  @JsonIgnore
+  private String[]             endWords    = {};
+  @JsonIgnore
+  private String               leadingWord;
+
+  protected CucumberBase() {}
+
+  public String[] getEndWords()
+  {
+    return endWords;
+  }
+
+  void setEndWords(String... endWords)
+  {
+    this.endWords = endWords;
+  }
 
   public String getDescription()
   {
@@ -32,4 +50,16 @@ public class CucumberBase
   {
     return text;
   }
+
+  public String getLeadingWord()
+  {
+    return leadingWord;
+  }
+
+  public void setLeadingWords(String leadingWord)
+  {
+    this.leadingWord = leadingWord;
+  }
+
+  public abstract void process() throws IllegalCucumberFormatException;
 }

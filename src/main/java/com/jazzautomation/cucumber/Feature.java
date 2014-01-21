@@ -1,5 +1,9 @@
 package com.jazzautomation.cucumber;
 
+import static com.jazzautomation.cucumber.CucumberConstants.BACKGROUND;
+import static com.jazzautomation.cucumber.CucumberConstants.FEATURE;
+import static com.jazzautomation.cucumber.CucumberConstants.SCENARIO;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.ArrayList;
@@ -7,10 +11,20 @@ import java.util.List;
 
 public class Feature extends CucumberBase
 {
-  @JsonIgnore private String originalText;
+  @JsonIgnore
+  private String             originalText;
   private String             name;
   private Background         background;
   private List<Scenario>     scenarios = new ArrayList<>();
+
+  public Feature()
+  {
+    setLeadingWords(FEATURE);
+    setEndWords(SCENARIO, BACKGROUND);
+  }
+
+  @Override
+  public void process() throws IllegalCucumberFormatException {}
 
   public void addScenario(Scenario scenario)
   {

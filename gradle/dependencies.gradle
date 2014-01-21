@@ -21,7 +21,8 @@ dependencies {
             'org.codehaus.groovy:groovy:2.2.0-rc-3',
             'org.threeten:threetenbp:0.8.1',
             'org.apache.commons:commons-vfs2:2.0',
-            'com.intellij:forms_rt:12.0'
+            'com.intellij:forms_rt:12.0',
+            'commons-validator:commons-validator:1.4.0'
 
  // these are needed for forms - when JavaFX version is working, they won't be needed
   compile files("$javaHomeDir/jre/lib/jfxrt.jar") 

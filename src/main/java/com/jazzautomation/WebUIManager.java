@@ -1,12 +1,15 @@
 package com.jazzautomation;
 
 import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
 import com.google.common.io.Resources;
 
 import com.jazzautomation.action.PageAction;
 
 import com.jazzautomation.page.DomElement;
 import com.jazzautomation.page.Page;
+
+import com.jazzautomation.ui.Browsers;
 
 import static com.jazzautomation.util.Constants.ACTION_PACE;
 import static com.jazzautomation.util.Constants.BROWSER;
@@ -22,7 +25,7 @@ import static com.jazzautomation.util.Constants.REMOTE_WEB_DRIVER_URL;
 import static com.jazzautomation.util.Constants.SETTINGS_USE_XML;
 import static com.jazzautomation.util.Constants.USE_REMOTE;
 
-import java.net.MalformedURLException;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -46,6 +49,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import java.net.URL;
 
@@ -65,7 +69,13 @@ import javax.xml.bind.Unmarshaller;
  * UIManager holds all pages and their web components, page actions. It loads all configurations from settings.properties then go through all
  * registeredPages to load page object classes as well as their xml configurations.
  */
-@SuppressWarnings({ "AssignmentToStaticFieldFromInstanceMethod", "UnusedDeclaration", "TypeMayBeWeakened", "StaticMethodOnlyUsedInOneClass" })
+@SuppressWarnings({
+                    "AssignmentToStaticFieldFromInstanceMethod",
+                    "UnusedDeclaration",
+                    "TypeMayBeWeakened",
+                    "StaticMethodOnlyUsedInOneClass",
+                    "KeySetIterationMayUseEntrySet"
+                  })
 public class WebUIManager
 {
   private static final Logger LOG                       = LoggerFactory.getLogger(WebUIManager.class);
@@ -73,7 +83,8 @@ public class WebUIManager
   public static final String  SYSTEM_BROWSERS_SETTING   = "browsers";
   public static final String  SYSTEM_REPORTS_PATH       = "jazz.reports";
   public static final String  SYSTEM_CONFIGURATION_PATH = "jazz.configs";
-  private static WebUIManager instance                  = null;
+  public static final String  WEBDRIVER_CHROME_DRIVER   = "webdriver.chrome.driver";
+  private static WebUIManager instance;
 
   // TODO - Move these to method level variables, or move this class away from a Singleton.
   private Map<String, Page>             pages          = new HashMap<>();
@@ -94,7 +105,7 @@ public class WebUIManager
   private static String featureNames;
 
   // from system properties
-  private String     browser        = null;
+  private Browsers   browser        = null;
   private String     platform       = null;
   private String     browserVersion = null;
   private Properties settings       = new Properties();
@@ -121,6 +132,7 @@ public class WebUIManager
   public static void reinitialize()
   {
     instance = null;
+    getInstance();
   }
 
   /*
@@ -128,53 +140,30 @@ public class WebUIManager
    */
   private WebUIManager()
   {
-    try
+    long startTime = System.currentTimeMillis();
+
+    configurationsPath = System.getProperty(SYSTEM_CONFIGURATION_PATH);
+    reportsPath        = System.getProperty(SYSTEM_REPORTS_PATH);
+    browser            = getBrowserFromSystemProperty();
+
+    String useRemote   = System.getProperty("remote");
+
+    useRemoteWebDriver = BooleanUtils.toBoolean(useRemote);
+
+    File configurationsFile = StringUtils.isNotEmpty(configurationsPath) ? new File(configurationsPath)
+                                                                         : new File("configurations");
+
+    configurationsPath = configurationsFile.getAbsolutePath();
+    getOrCreateLogsPath();
+    LOG.info("Initializing Jazz Automation configuration sub-system");
+
+    // read settings files:
+    LOG.info("Reading jazz.properties from [" + configurationsPath + File.separator + "jazz.properties]");
+    LOG.info("Accessing reports directory at [" + reportsPath + "]");
+
+    try(InputStream stream = new FileInputStream(new File(configurationsPath, JAZZ + ".properties")))
     {
-      long startTime = System.currentTimeMillis();
-
-      configurationsPath = System.getProperty(SYSTEM_CONFIGURATION_PATH);
-      reportsPath        = System.getProperty(SYSTEM_REPORTS_PATH);
-      browser            = System.getProperty(SYSTEM_BROWSERS_SETTING);
-
-      String useRemote   = System.getProperty("remote");
-
-      if ((useRemote != null) && useRemote.equalsIgnoreCase("true"))
-      {
-        useRemoteWebDriver = true;
-      }
-
-      File configurationsFile;
-
-      configurationsFile = StringUtils.isNotEmpty(configurationsPath) ? new File(configurationsPath)
-                                                                      : new File("configurations");
-      configurationsPath = configurationsFile.getAbsolutePath();
-
-      File logsFile;
-
-      if (StringUtils.isNotEmpty(reportsPath))
-      {
-        logsFile = new File(reportsPath);
-
-        // recursively create file path if needed
-        recursiveLyCreatePath(logsFile);
-      }
-      else
-      {
-        logsFile = new File("reports");
-      }
-
-      reportsPath = logsFile.getAbsolutePath();
-      LOG.info("Initializing Jazz Automation configuration sub-system");
-
-      // read settings files:
-      LOG.info("Reading jazz.properties from [" + configurationsPath + File.separator + "jazz.properties]");
-      LOG.info("Accessing reports directory at [" + reportsPath + "]");
-
-      FileInputStream jazzSettings = new FileInputStream(configurationsPath + File.separator + JAZZ + ".properties");
-
-      settings.load(jazzSettings);
-
-      // loading jazz.properties and populate all WebPages from its configurations.
+      settings.load(stream);
       loadConfiguration();
 
       long endTime = System.currentTimeMillis();
@@ -189,6 +178,33 @@ public class WebUIManager
     {
       LOG.error("An unexpected error has occurred.", e);
     }
+  }
+
+  private Browsers getBrowserFromSystemProperty()
+  {
+    return Browsers.valueOf(System.getProperty(SYSTEM_BROWSERS_SETTING));
+  }
+
+  private void getOrCreateLogsPath()
+  {
+    File logsFile;
+
+    if (StringUtils.isNotEmpty(reportsPath))
+    {
+      logsFile = new File(reportsPath);
+
+      // recursively create file path if needed
+      if (!logsFile.exists())
+      {
+        logsFile.mkdirs();
+      }
+    }
+    else
+    {
+      logsFile = new File("reports");
+    }
+
+    reportsPath = logsFile.getAbsolutePath();
   }
 
   // getter and setters
@@ -281,7 +297,12 @@ public class WebUIManager
 
     if (settings.getProperty(BROWSER) != null)
     {
-      browser = settings.getProperty(BROWSER).trim();
+      Optional<Browsers> possible = Browsers.findValueOf(settings.getProperty(BROWSER));
+
+      if (possible.isPresent())
+      {
+        browser = possible.get();  // only override if it exists
+      }
     }
 
     if (StringUtils.isNotBlank(settings.getProperty(CUSTOM_CLASSPATH)))
@@ -417,7 +438,7 @@ public class WebUIManager
     }
   }
 
-  private static boolean shouldPathStop(List<String> aPath, String key)
+  private boolean shouldPathStop(List<String> aPath, String key)
   {
     for (String pageName : aPath)
     {
@@ -430,7 +451,7 @@ public class WebUIManager
     return false;
   }
 
-  private static ArrayList<String> clonePath(List<String> path)
+  private ArrayList<String> clonePath(List<String> path)
   {
     ArrayList<String> newPath = new ArrayList<>();
 
@@ -458,7 +479,7 @@ public class WebUIManager
     }
     else
     {
-      if (System.getProperty("webdriver.chrome.driver") == null)
+      if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null)
       {
         String chromeDriver = settings.getProperty("chrome.webdriver.chrome.driver");
 
@@ -467,7 +488,7 @@ public class WebUIManager
           throw new IllegalArgumentException("No chrome driver specified! Please specify as a system property or in your jazz.properties file.");
         }
 
-        System.setProperty("webdriver.chrome.driver", settings.getProperty("chrome.webdriver.chrome.driver"));
+        System.setProperty(WEBDRIVER_CHROME_DRIVER, settings.getProperty("chrome.webdriver.chrome.driver"));
       }
 
       driver = new ChromeDriver(capabilities);
@@ -494,11 +515,11 @@ public class WebUIManager
     {
       FirefoxProfile profile = new FirefoxProfile();
 
-      if (settings.getProperty("firefox.network.proxy.type").equalsIgnoreCase("AUTODETECT"))
+      if (settings.getProperty("firefox.network.proxy.type").equalsIgnoreCase(ProxyType.AUTODETECT.name()))
       {
         profile.setPreference("network.proxy.type", ProxyType.AUTODETECT.ordinal());
       }
-      else if (settings.getProperty("firefox.network.proxy.type").equalsIgnoreCase("DIRECT"))
+      else if (settings.getProperty("firefox.network.proxy.type").equalsIgnoreCase(ProxyType.DIRECT.name()))
       {
         profile.setPreference("network.proxy.type", ProxyType.DIRECT.ordinal());
       }
@@ -574,7 +595,7 @@ public class WebUIManager
     }
   }
 
-  public static JavascriptExecutor getJQueryDriver(WebDriver webDriver)
+  public JavascriptExecutor getJQueryDriver(WebDriver webDriver)
   {
     return (JavascriptExecutor) webDriver;
   }
@@ -602,7 +623,7 @@ public class WebUIManager
     }
   }
 
-  public static String getCustomJS(String jsName)
+  public String getCustomJS(String jsName)
   {
     URL    jsUrl  = Resources.getResource(jsName);
     String jsText = "";
@@ -617,22 +638,6 @@ public class WebUIManager
     }
 
     return jsText;
-  }
-
-  // jsheridan CODEREVIEW - I think you can do this with aDir.mkdirs() - that creates all parent directories
-  private static void recursiveLyCreatePath(File aDir)
-  {
-    if (!aDir.exists())
-    {
-      File parentDir = aDir.getParentFile();
-
-      if ((null != parentDir) && !parentDir.exists())
-      {
-        recursiveLyCreatePath(parentDir);
-      }
-
-      aDir.mkdir();
-    }
   }
 
   private String applyPlatform()
@@ -734,14 +739,22 @@ public class WebUIManager
     this.useRemoteWebDriver = useRemoteWebDriver;
   }
 
-  public String getBrowser()
+  public Browsers getBrowser()
   {
     return browser;
-  }  // jsheridan CODEREVIEW - nicer with enum instead of String
+  }
 
-  public void setBrowser(String browser)
+  public void setBrowser(Browsers browser, boolean overwriteSystem)
   {
-    this.browser = browser;
+    // if system property is set, use that instead
+    if (overwriteSystem)
+    {
+      this.browser = browser;
+    }
+    else
+    {
+      this.browser = getBrowserFromSystemProperty();
+    }
   }
 
   public String getBrowserVersion()

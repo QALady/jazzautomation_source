@@ -13,3 +13,6 @@ jazzautomation_source.ipr
 jazzautomation_source.iws
 
 logs/*
+/classes/
+/.idea/
+/*.iml

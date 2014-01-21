@@ -214,7 +214,7 @@ public class MainUi extends JFrame
     try
     {
       setCursor(waitCursor);
-      WebUIManager.getInstance().setBrowser(settings.getBrowser().name());
+      WebUIManager.getInstance().setBrowser(settings.getBrowser(), true);
 
       UiBackgroundTaskManager uiBackgroundTaskManager = new UiBackgroundTaskManager(progressUpdater, settings, this);
 
