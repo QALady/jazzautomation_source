@@ -1,12 +1,11 @@
 package com.jazzautomation.cucumber;
 
-import static com.jazzautomation.cucumber.CucumberConstants.BACKGROUND;
-import static com.jazzautomation.cucumber.CucumberConstants.COLON;
-import static com.jazzautomation.cucumber.CucumberConstants.GIVEN;
-import static com.jazzautomation.cucumber.CucumberConstants.SCENARIO;
 import com.jazzautomation.cucumber.parser.FeatureParser;
+import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
 
 import java.util.List;
+
+import static com.jazzautomation.cucumber.CucumberConstants.*;
 
 public class Background extends CucumberBase
 {

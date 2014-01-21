@@ -1,14 +1,12 @@
 package com.jazzautomation.cucumber;
 
-import static com.jazzautomation.cucumber.CucumberConstants.AND;
-import static com.jazzautomation.cucumber.CucumberConstants.COLON;
-import static com.jazzautomation.cucumber.CucumberConstants.GIVEN;
-import static com.jazzautomation.cucumber.CucumberConstants.SCENARIO;
-import static com.jazzautomation.cucumber.CucumberConstants.THEN;
 import com.jazzautomation.cucumber.parser.FeatureParser;
+import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.jazzautomation.cucumber.CucumberConstants.*;
 
 public class Scenario extends CucumberBase
 {

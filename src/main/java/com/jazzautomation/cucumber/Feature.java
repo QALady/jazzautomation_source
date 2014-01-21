@@ -1,13 +1,12 @@
 package com.jazzautomation.cucumber;
 
-import static com.jazzautomation.cucumber.CucumberConstants.BACKGROUND;
-import static com.jazzautomation.cucumber.CucumberConstants.FEATURE;
-import static com.jazzautomation.cucumber.CucumberConstants.SCENARIO;
-
+import com.jazzautomation.cucumber.parser.IllegalCucumberFormatException;
 import org.codehaus.jackson.annotate.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.jazzautomation.cucumber.CucumberConstants.*;
 
 public class Feature extends CucumberBase
 {
@@ -24,7 +23,8 @@ public class Feature extends CucumberBase
   }
 
   @Override
-  public void process() throws IllegalCucumberFormatException {}
+  public void process() throws IllegalCucumberFormatException
+  {}
 
   public void addScenario(Scenario scenario)
   {
