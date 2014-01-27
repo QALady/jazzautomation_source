@@ -1,5 +1,5 @@
 #!groovy
-
+apply plugin: 'groovy'
 apply plugin: 'war'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
@@ -43,6 +43,22 @@ project.ext {
   osx_app_name = 'Jazz Automation'
 }
 
+// this is a workaround to have .groovy files in the Java src dirs compile - not needed if I moved all the .java
+// files into the groovy src dir. This is less confusing. If this isn't done, then any java files that reference groovy classes
+// won't find them. This way lets the Groovy compiler compile all classes.
+sourceSets {
+  main {
+    java { srcDirs = [] } // no source dirs
+    groovy { srcDir 'src/main/java' } // includes all .groovy and .java files under src
+    groovy { srcDir 'src/main/groovy' } // includes all .groovy and .java files under src
+  }
+  test {
+    java { srcDirs = [] } // no source dirs
+    groovy { srcDir 'src/test/java' } // includes all .groovy and .java files under src
+    groovy { srcDir 'src/test/groovy' } // includes all .groovy and .java files under src
+
+  }
+}
 
 task show << {
 	println relativePath(compileJava.destinationDir)
@@ -129,7 +145,8 @@ private void updateVersion(String versionUpdateType)
 {
   //todo throw exception if versionClassName isn't defined.
   ant.taskdef(name: 'versionupdate', classname: 'com.ryangrier.ant.VersionUpdate', classpath: configurations.versionUpdate.asPath)
-  ant.versionupdate(srcdir: sourceSets.main.java.getSrcDirs().toArray()[0].getAbsolutePath(),
+
+  ant.versionupdate(srcdir: sourceSets.main.groovy.getSrcDirs().toArray()[1].getAbsolutePath(),
                     classname: versionClassName,
                     variablename: "VERSION",
                     propertyName: "theProperty",
@@ -146,8 +163,9 @@ task versionPoint(description: "Increment the version number by a major version 
 
 task findCurrentVersion()<<{
    //todo throw exception if versionClassName isn't defined.
+  // note that switching to Groovy for srouces puts Java in index 1 instead of index 0 of srcdrs
   ant.taskdef(name: 'versionfinder', classname: 'com.ryangrier.ant.VersionFinder', classpath: configurations.versionUpdate.asPath)
-  ant.versionfinder(srcdir: sourceSets.main.java.getSrcDirs().toArray()[0].getAbsolutePath(),
+  ant.versionfinder(srcdir: sourceSets.main.groovy.getSrcDirs().toArray()[1].getAbsolutePath(),
                     classname: versionClassName,
                     variablename: "VERSION",
                     propertyName: "theProperty"

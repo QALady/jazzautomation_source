@@ -175,12 +175,31 @@ public class SuiteProcessor
     pageSetup(driver, jsDriver, page);
 
     // loading page
-    long scenarioTimeEnded;
+    if (loadPage(scenario, driver, scenarioTimeStarted, scenarioResult, page))
+    {
+      return;
+    }
 
+    // take actions
+    takeActions(scenario, scenarioResult, page);
+
+    // verify expectations
+    verifyExpectations(scenario, driver, jsDriver, scenarioResult, page);
+    scenarioResult.calculateSuccessRate();
+
+    long scenarioTimeEnded = System.currentTimeMillis();
+
+    scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000.0);
+  }
+
+  private static boolean loadPage(Scenario scenario, WebDriver driver, long scenarioTimeStarted, ScenarioResult scenarioResult, Page page)
+  {
     if (!loadPage(scenario, scenarioResult, page))
     {
       scenarioResult.calculateSuccessRate();
-      scenarioTimeEnded = System.currentTimeMillis();
+
+      long scenarioTimeEnded = System.currentTimeMillis();
+
       scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000);
 
       if (scenario.isOptional())
@@ -195,21 +214,14 @@ public class SuiteProcessor
         scenarioResult.setScreenShotPath(captureScreen(driver));
       }
 
-      return;
+      return true;
     }
 
-    // take actions
-    for (And and : scenario.getAnds())
-    {
-      LOG.info("Working on 'and' [" + and.getText() + ']');
+    return false;
+  }
 
-      for (ComponentAction componentAction : and.getActions())
-      {
-        executeAction(scenarioResult, page, and, componentAction);
-      }
-    }
-
-    // verify expectations
+  private static void verifyExpectations(Scenario scenario, WebDriver driver, JavascriptExecutor jsDriver, ScenarioResult scenarioResult, Page page)
+  {
     Then then = scenario.getThen();
 
     if (then != null)
@@ -227,10 +239,19 @@ public class SuiteProcessor
         }
       }
     }
+  }
 
-    scenarioResult.calculateSuccessRate();
-    scenarioTimeEnded = System.currentTimeMillis();
-    scenarioResult.setDuration((scenarioTimeEnded - scenarioTimeStarted) / 1000.0);
+  private static void takeActions(Scenario scenario, ScenarioResult scenarioResult, Page page)
+  {
+    for (And and : scenario.getAnds())
+    {
+      LOG.info("Working on 'and' [" + and.getText() + ']');
+
+      for (ComponentAction componentAction : and.getActions())
+      {
+        executeAction(scenarioResult, page, and, componentAction);
+      }
+    }
   }
 
   /**
@@ -252,17 +273,17 @@ public class SuiteProcessor
     }
     catch (Exception exception)
     {
-      if (!scenario.isOptional())
+      if (scenario.isOptional())
+      {
+        scenarioResult.setMessage("Skipped page for :" + page.getPageName() + " [" + exception.getMessage() + "].");
+        LOG.info("Skipped page for :" + page.getPageName() + " - optional.");
+      }
+      else
       {
         scenarioResult.setSuccess(false);
         scenarioResult.setSuccessRate(0.0);
         scenarioResult.setMessage("Failed to load page: " + page.getPageName() + " [" + exception.getMessage() + "].");
         LOG.info("Failed to load page for :" + page.getPageName() + " for " + scenario.getText() + " Please check your feature settings");
-      }
-      else
-      {
-        scenarioResult.setMessage("Skipped page for :" + page.getPageName() + " [" + exception.getMessage() + "].");
-        LOG.info("Skipped page for :" + page.getPageName() + " - optional.");
       }
 
       return false;
@@ -419,7 +440,7 @@ public class SuiteProcessor
 
     if (browser == Chrome)
     {
-      driver = webUIManager.getChromeDriver();
+      driver = webUIManager.getChromeDriver();  // todo why isn't this a property of the browser enum?
     }
     else if (browser == IE)
     {

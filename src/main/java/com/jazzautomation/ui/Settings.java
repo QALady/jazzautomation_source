@@ -111,6 +111,7 @@ public class Settings
     preferences.putInt(PROXY_SERVER_PORT, proxyServerPort);
     preferences.putBoolean(USE_PROXY_AUTHENTICATION, shouldUseProxyAuthentication);
     preferences.put(PROXY_USER_NAME, proxyUserName);
+    setSystemProperties();  // set the system settings from the stored/modified preferences
 
     // preferences.put(PROXY_USER_PASSWORD, proxyPassword);
   }
@@ -155,9 +156,14 @@ public class Settings
     System.setProperty(FEATURE_NAMES_EXECUTION, features);
     System.setProperty(SYSTEM_CONFIGURATION_PATH, configurationsPath);
     System.setProperty(SYSTEM_REPORTS_PATH, reportsPath);
-
-    // System.setProperty(SYSTEM_LOGS_PATH, logsPath);
     System.setProperty(SYSTEM_BROWSERS_SETTING, browser.name());
+
+    String driverName = browser.getDriver().getDriverName();
+
+    if (driverName != null)
+    {
+      System.setProperty(driverName, driverName);
+    }
   }
 
   public void setUseHttpProxy(boolean useHttpProxy)

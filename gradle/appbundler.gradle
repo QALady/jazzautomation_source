@@ -163,6 +163,7 @@ task makeOsxZip(){
         zipfileset (dir:"build/distOsX", includes:"**/JavaAppLauncher" , filemode: "755" ) 
         zipfileset (dir:"build/distOsX", excludes:"**/JavaAppLauncher"  ) 
           fileset(dir: '.', includes: 'examples/') 
+          fileset(dir: 'src', includes: 'drivers/') 
       }
 }
 
@@ -171,6 +172,7 @@ task makeWin64Zip(){
   ant.zip(destfile: "build/distributions/jazzautomationWin64_${project.ext.versionNumber}.zip") {
           fileset(dir: 'build/distWin64') 
           fileset(dir: '.', includes: 'examples/') 
+          fileset(dir: 'src', includes: 'drivers/') 
       }
 }
 

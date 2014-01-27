@@ -41,13 +41,13 @@
               <text value="Reports Path:"/>
             </properties>
           </component>
-          <component id="43c1b" class="javax.swing.JLabel">
+          <component id="43c1b" class="javax.swing.JLabel" binding="browserLabel">
             <constraints>
               <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="1" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Browser:"/>
-              <visible value="false"/>
+              <visible value="true"/>
             </properties>
           </component>
           <component id="f5a31" class="javax.swing.JComboBox" binding="browserComboBox">
@@ -61,7 +61,7 @@
                 <item value="Chrome"/>
                 <item value="IE"/>
               </model>
-              <visible value="false"/>
+              <visible value="true"/>
             </properties>
           </component>
           <component id="99cef" class="javax.swing.JLabel">

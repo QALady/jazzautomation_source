@@ -10,6 +10,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import com.jazzautomation.Version;
 import com.jazzautomation.WebUIManager;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
@@ -27,6 +28,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import java.io.File;
+import java.io.IOException;
+
+import java.util.ArrayList;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -64,7 +68,7 @@ public class MainUi extends JFrame
   private Cursor              normalCursor           = getPredefinedCursor(Cursor.DEFAULT_CURSOR);
   private Cursor              waitCursor             = getPredefinedCursor(Cursor.WAIT_CURSOR);
   private Toolkit             toolkit                = getDefaultToolkit();
-  private Dimension           screenSize             = toolkit.getScreenSize();
+  private Dimension           screenSize;
   private JPanel              mainPanel;
   private JTextField          featuresTextField;
   private JComboBox<Browsers> browserComboBox;
@@ -74,6 +78,7 @@ public class MainUi extends JFrame
   private JLabel              reportsPathLabel;
   private JLabel              logPathLabel;
   private JScrollPane         outputScrollPane;
+  private JLabel              browserLabel;
 
   /** Sets the look and feel. */
   @SuppressWarnings("UseOfSystemOutOrSystemErr")
@@ -112,6 +117,8 @@ public class MainUi extends JFrame
     setInitialSettings();
     JFrame.setDefaultLookAndFeelDecorated(false);
     setTitle(TITLE_TEXT + Version.getVersion());
+    browserComboBox.setVisible(false);
+    browserLabel.setVisible(false);
     setVisible(true);
   }
 
@@ -120,8 +127,7 @@ public class MainUi extends JFrame
   {
     setContentPane(mainPanel);
     setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel", this);
-
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 
     // initial size of 1000 x 700, or full screen, whichever is smaller
     int maxWidth  = (int) Math.min(DEFAULT_WIDTH, screenSize.getWidth());
@@ -130,7 +136,8 @@ public class MainUi extends JFrame
     setSize(new Dimension(maxWidth, maxHeight));
     browserComboBox.setModel(new DefaultComboBoxModel<>(Browsers.values()));
     centerApp(this);
-    setVisible(true);
+
+    // setVisible(true);
   }
 
   /** Center the app in the window. */
@@ -205,10 +212,10 @@ public class MainUi extends JFrame
   private void handleGoButtonAction()
   {
     saveSettings();
-    settings.setSystemProperties();  // set the system settings from the stored/modified preferences
+    clearLogFile();
 
     // ProgressUpdater progressUpdater = new ProgressUpdater(outputTextArea, settings.getLogsPath());
-    ProgressTailer progressUpdater = new ProgressTailer(outputTextArea, settings.getLogsPath());
+    ProgressTailer progressUpdater = new ProgressTailer(outputTextArea, settings.getLogsPath(), outputScrollPane);
 
     // do something when the "Go" button is clicked
     try
@@ -221,13 +228,24 @@ public class MainUi extends JFrame
       uiBackgroundTaskManager.execute();  // fire off the driver
       progressUpdater.execute();          // run the updater in the background'
     }
-    catch (Exception e1)
+    catch (Exception e)
     {
-      LOG.error("Unexpected exception", e1);
+      LOG.error("Unexpected exception", e);
+      showMessageDialog(this, e.getMessage(), "Error running Jazz Automation", ERROR_MESSAGE);
+    }
+  }
 
-      String message = e1.getMessage();
+  private void clearLogFile()
+  {
+    File logFile = new File(settings.getLogsPath());
 
-      showMessageDialog(this, message, "Error running Jazz Automation", ERROR_MESSAGE);
+    try
+    {
+      FileUtils.writeLines(logFile, new ArrayList<String>());
+    }
+    catch (IOException e)
+    {
+      LOG.error("Unable to clear log file from previous runs");
     }
   }
 
@@ -355,24 +373,22 @@ public class MainUi extends JFrame
     panel1.add(label2,
                new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-
-    final JLabel label3 = new JLabel();
-
-    label3.setText("Browser:");
-    label3.setVisible(false);
-    panel1.add(label3,
+    browserLabel = new JLabel();
+    browserLabel.setText("Browser:");
+    browserLabel.setVisible(true);
+    panel1.add(browserLabel,
                new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
     browserComboBox = new JComboBox();
-    browserComboBox.setVisible(false);
+    browserComboBox.setVisible(true);
     panel1.add(browserComboBox,
                new GridConstraints(5, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
 
-    final JLabel label4 = new JLabel();
+    final JLabel label3 = new JLabel();
 
-    label4.setText("Log path:");
-    panel1.add(label4,
+    label3.setText("Log path:");
+    panel1.add(label3,
                new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 1, false));
     configurationPathLabel = new JLabel();
@@ -403,10 +419,10 @@ public class MainUi extends JFrame
                new GridConstraints(5, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW,
                                    1, null, null, null, 0, false));
 
-    final JLabel label5 = new JLabel();
+    final JLabel label4 = new JLabel();
 
-    label5.setText("Configuration Dir:");
-    panel1.add(label5,
+    label4.setText("Configuration Dir:");
+    panel1.add(label4,
                new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
                                    GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
     goButton = new JButton();

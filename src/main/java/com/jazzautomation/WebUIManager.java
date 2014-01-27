@@ -3,13 +3,33 @@ package com.jazzautomation;
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.io.Resources;
+
 import com.jazzautomation.action.PageAction;
+
 import com.jazzautomation.page.DomElement;
 import com.jazzautomation.page.Page;
+
 import com.jazzautomation.ui.Browsers;
+
+import static com.jazzautomation.util.Constants.ACTION_PACE;
+import static com.jazzautomation.util.Constants.BROWSER;
+import static com.jazzautomation.util.Constants.BROWSER_VERSION;
+import static com.jazzautomation.util.Constants.CUSTOM_CLASSPATH;
+import static com.jazzautomation.util.Constants.FEATURE_NAMES_EXECUTION;
+import static com.jazzautomation.util.Constants.JAZZ;
+import static com.jazzautomation.util.Constants.PAGES_DIRECTORY_NAME;
+import static com.jazzautomation.util.Constants.PAGE_LOAD_TIMEOUT;
+import static com.jazzautomation.util.Constants.PLATFORM;
+import static com.jazzautomation.util.Constants.PROJECT_NAME;
+import static com.jazzautomation.util.Constants.REMOTE_WEB_DRIVER_URL;
+import static com.jazzautomation.util.Constants.SETTINGS_USE_XML;
+import static com.jazzautomation.util.Constants.USE_REMOTE;
+
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+
 import org.codehaus.jackson.map.ObjectMapper;
+
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Proxy.ProxyType;
 import org.openqa.selenium.WebDriver;
@@ -21,19 +41,18 @@ import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.safari.SafariDriver;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,7 +61,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.jazzautomation.util.Constants.*;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
 
 /**
  * UIManager holds all pages and their web components, page actions. It loads all configurations from settings.properties then go through all
@@ -161,7 +182,14 @@ public class WebUIManager
 
   private Browsers getBrowserFromSystemProperty()
   {
-    return Browsers.valueOf(System.getProperty(SYSTEM_BROWSERS_SETTING));
+    Optional<Browsers> possible = Browsers.findValueOf(System.getProperty(SYSTEM_BROWSERS_SETTING));
+
+    if (possible.isPresent())
+    {
+      return possible.get();
+    }
+
+    return Browsers.NOT_SPECIFIED;
   }
 
   private void getOrCreateLogsPath()
@@ -460,14 +488,14 @@ public class WebUIManager
     {
       if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null)
       {
-        String chromeDriver = settings.getProperty("chrome.webdriver.chrome.driver");
+        String chromeDriver = Drivers.CHROME.getDriverName();
 
         if (StringUtils.isEmpty(chromeDriver))
         {
           throw new IllegalArgumentException("No chrome driver specified! Please specify as a system property or in your jazz.properties file.");
         }
 
-        System.setProperty(WEBDRIVER_CHROME_DRIVER, settings.getProperty("chrome.webdriver.chrome.driver"));
+        System.setProperty(WEBDRIVER_CHROME_DRIVER, chromeDriver);
       }
 
       driver = new ChromeDriver(capabilities);
@@ -492,13 +520,14 @@ public class WebUIManager
     }
     else
     {
-      FirefoxProfile profile = new FirefoxProfile();
+      FirefoxProfile profile   = new FirefoxProfile();
+      String         proxyType = settings.getProperty("firefox.network.proxy.type");
 
-      if (settings.getProperty("firefox.network.proxy.type").equalsIgnoreCase(ProxyType.AUTODETECT.name()))
+      if (proxyType.equalsIgnoreCase(ProxyType.AUTODETECT.name()))
       {
         profile.setPreference("network.proxy.type", ProxyType.AUTODETECT.ordinal());
       }
-      else if (settings.getProperty("firefox.network.proxy.type").equalsIgnoreCase(ProxyType.DIRECT.name()))
+      else if (proxyType.equalsIgnoreCase(ProxyType.DIRECT.name()))
       {
         profile.setPreference("network.proxy.type", ProxyType.DIRECT.ordinal());
       }

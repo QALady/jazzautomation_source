@@ -10,7 +10,11 @@ import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-import javax.swing.*;
+import javax.swing.BoundedRangeModel;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingWorker;
 
 /**
  * Runner for the log tailer - has to be done in the background so the UI is still responsive.
@@ -19,24 +23,27 @@ import javax.swing.*;
  */
 public class ProgressTailer extends SwingWorker<Object, Object>
 {
-  public static final int PIXELS_PER_ROW = 18;
-  public static final int DELAY_MILLIS   = 250;
+  public static final int PIXELS_PER_ROW   = 18;
+  public static final int DELAY_MILLIS     = 250;
   private JTextArea       outputTextArea;
   private String          logsPath;
+  private JScrollPane     outputScrollPane;
   private Tailer          tailer;
   private int             maxSize;
-  private Queue<String>   queue          = new ArrayDeque<>(25);  // initial size
+  private Queue<String>   queue            = new ArrayDeque<>(25);  // initial size
 
-  public ProgressTailer(JTextArea outputTextArea, String logsPath)
+  public ProgressTailer(JTextArea outputTextArea, String logsPath, JScrollPane outputScrollPane)
   {
-    this.outputTextArea = outputTextArea;
-    this.logsPath       = logsPath;
+    this.outputTextArea   = outputTextArea;
+    this.logsPath         = logsPath;
+    this.outputScrollPane = outputScrollPane;
   }
 
   /**
    * We're in a loop, constantly getting the log. We remove any lines previously there before we started, then paste what's left into the text area.
    */
-  @Override protected Object doInBackground() throws Exception
+  @Override
+  protected Object doInBackground() throws Exception
   {
     File           logFile  = new File(logsPath);
     TailerListener listener = new MyTailerListener();
@@ -58,7 +65,6 @@ public class ProgressTailer extends SwingWorker<Object, Object>
       maxSize = outputTextArea.getSize().height / PIXELS_PER_ROW;  // UI size could have changed
 
       // For now, never pop the queue - tail the entire new part of the log
-
       // while (queue.size() >= maxSize)
       // {
       // System.out.println("queue.size() [" + queue.size() + ']' + " >= maxSize[" + maxSize + ']');
@@ -81,6 +87,12 @@ public class ProgressTailer extends SwingWorker<Object, Object>
 
       text = StringUtils.removeEnd(text, "\n");
       outputTextArea.setText(text);
+
+      JScrollBar        verticalScrollBar = outputScrollPane.getVerticalScrollBar();
+      BoundedRangeModel model             = verticalScrollBar.getModel();
+      int               maximum           = model.getMaximum();
+
+      model.setValue(maximum);
     }
   }
 }
