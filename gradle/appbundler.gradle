@@ -72,6 +72,7 @@ def appName = project.ext.get('osx_app_name')
         option(value: "-Dapple.laf-useScreenMenuBar=true")
         option(value: "-Djazz.configs=examples/bestBuyExample")
         option(value: "-Dfeatures=AddToCart,CheckoutAsGuest")
+        option(value: "-Dfile.encoding=UTF-8")
 //        option(value: "-Ddefaultrepository=%USER_HOME%/Library/Application Support/Anathema")
     }
 }
