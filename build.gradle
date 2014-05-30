@@ -191,6 +191,8 @@ idea {
 	}
 }
 
+applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+
 createLaunchers.mustRunAfter("versionMajor")
 createLaunchers.mustRunAfter("versionMinor")
 createLaunchers.mustRunAfter("versionPoint")
