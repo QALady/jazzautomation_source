@@ -11,7 +11,7 @@
         },
       "orderSubtotal" :
         {
-            "jquery": "$('#hlb-cart-subtotal span')"
+            "jquery": "$('#hlb-cart-subtotal span.a-size-medium')"
         }              
     }
 }

@@ -21,7 +21,7 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
     And I enter
       | searchField       | Harry Potter  | 
     And I click "go"   
-    And I wait 10 seconds
+    And I wait 3 seconds
 
   Scenario: Go to SearchResultsPage and verify  first result Special Edition Harry Potter Paperback Box Set 
     Given I am ON "SearchResultsPage"
@@ -39,8 +39,8 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
     Given I am ON "BookDetailPage" 
     Then I should EXPECT    
     | kindlePrice            | $7.99             |
-    | hardcoverPrice    	 | $16.89            |    
-    | paperbackPrice         | $8.53             |
+    | hardcoverPrice    	 | $14.40            |
+    | paperbackPrice         | $6.64             |
     
   Scenario: Add to cart
     Given I am ON "BookDetailPage"
@@ -51,7 +51,7 @@ Feature: Go to the Amazon web site, search for Harry Porter at book section. Fin
   Scenario: on pre-checkout page, I check all my items
     Given I am ON "PreCheckoutPage"
     Then I should EXPECT
-      | orderSubtotal            | 16.89   |
+      | orderSubtotal            | 14.40   |
       | cartCount                | 1       |     
        
   Scenario: proceed to checkout

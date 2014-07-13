@@ -6,7 +6,7 @@
     {
         "firstResult" :
         {
-          "jquery": "$('#result_1 .data h3.title a.title')"
+          "jquery": "$('#result_3 .data h3.title a.title')"
         },
         "chamberOfSecretsBook" :
         {
